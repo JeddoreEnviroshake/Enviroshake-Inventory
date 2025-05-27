@@ -710,6 +710,12 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
     }
   }, [settings.vendors, settings.rawMaterials, formData.vendor, formData.rawMaterial]);
 
+  // Force component to re-render when settings change
+  const [refreshKey, setRefreshKey] = useState(0);
+  useEffect(() => {
+    setRefreshKey(prev => prev + 1);
+  }, [settings]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const barcode = addRawMaterial({

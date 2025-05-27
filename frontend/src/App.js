@@ -357,13 +357,17 @@ function App() {
       'Warehouse Manager'
     );
   };
+
+  // Add production (Lead Hand Log)
+  const addProduction = (productionData) => {
     const productId = generateProductId();
     const newProduction = {
       ...productionData,
       id: Math.max(...warehouseInventory.map(w => w.id), 0) + 1,
       productId,
       dateCreated: new Date().toISOString().split('T')[0],
-      warehouse: 'Dresden' // All production starts in Dresden
+      warehouse: 'Dresden', // All production starts in Dresden
+      stage: 'Available' // Default stage
     };
 
     setWarehouseInventory([...warehouseInventory, newProduction]);

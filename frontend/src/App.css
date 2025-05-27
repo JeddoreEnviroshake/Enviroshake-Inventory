@@ -328,6 +328,16 @@ tbody tr:hover {
   @page {
     margin: 0 !important;
   }
+
+  /* Additional browser header/footer removal */
+  body::before,
+  body::after {
+    display: none !important;
+  }
+  
+  #emergent-badge {
+    display: none !important;
+  }
 }
 
 /* Screen display styles for label */

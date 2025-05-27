@@ -1544,6 +1544,16 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
                           >
                             Print
                           </button>
+                          <button
+                            onClick={() => {
+                              if (window.confirm('Are you sure you want to delete this raw material?')) {
+                                deleteRawMaterial(material.id);
+                              }
+                            }}
+                            className="text-red-600 hover:text-red-800 text-sm"
+                          >
+                            Delete
+                          </button>
                         </div>
                       )}
                     </td>

@@ -511,6 +511,11 @@ const SettingsView = ({ settings, updateSettings }) => {
   const [newRawMaterial, setNewRawMaterial] = useState('');
   const [newVendor, setNewVendor] = useState('');
 
+  // Update formData when settings prop changes
+  useEffect(() => {
+    setFormData(settings);
+  }, [settings]);
+
   const handleSave = () => {
     updateSettings(formData);
     alert('Settings saved successfully! Changes will be available immediately.');

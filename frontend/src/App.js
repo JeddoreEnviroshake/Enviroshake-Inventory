@@ -684,7 +684,10 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
     if (formData.vendor && !settings.vendors.includes(formData.vendor)) {
       setFormData(prev => ({ ...prev, vendor: '' }));
     }
-  }, [settings.vendors, formData.vendor]);
+    if (formData.rawMaterial && !settings.rawMaterials.includes(formData.rawMaterial)) {
+      setFormData(prev => ({ ...prev, rawMaterial: '' }));
+    }
+  }, [settings.vendors, settings.rawMaterials, formData.vendor, formData.rawMaterial]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

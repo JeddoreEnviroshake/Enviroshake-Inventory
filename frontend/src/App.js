@@ -1716,6 +1716,23 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
           ))}
         </select>
       </div>
+
+      {/* Summary Section */}
+      {Object.keys(summary).length > 0 && (
+        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            {selectedWarehouse === 'All' ? 'All Warehouses' : selectedWarehouse} Summary
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {Object.entries(summary).map(([key, value]) => (
+              <div key={key} className="text-center">
+                <p className="text-2xl font-bold text-blue-600">{value.toLocaleString()}</p>
+                <p className="text-sm text-gray-600">{key}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
         <div className="overflow-x-auto">
@@ -1726,6 +1743,7 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Colour</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stage</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Created</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number of Bundles</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warehouse</th>
@@ -1780,6 +1798,29 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
                       <span className="text-gray-900">{item.type}</span>
                     )}
                   </td>
+                  <td className="px-6 py-4">
+                    {editingItem === item.id ? (
+                      <select
+                        value={editFormData.stage}
+                        onChange={(e) => setEditFormData({...editFormData, stage: e.target.value})}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                      >
+                        {STAGES.map(stage => (
+                          <option key={stage} value={stage}>{stage}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        item.stage === 'Available' ? 'bg-green-100 text-green-800' :
+                        item.stage === 'Open' ? 'bg-blue-100 text-blue-800' :
+                        item.stage === 'Released' ? 'bg-yellow-100 text-yellow-800' :
+                        item.stage === 'Staged' ? 'bg-purple-100 text-purple-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {item.stage}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-6 py-4 text-gray-900">{item.dateCreated}</td>
                   <td className="px-6 py-4">
                     {editingItem === item.id ? (
@@ -1825,12 +1866,31 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
                         </button>
                       </div>
                     ) : (
-                      <button
-                        onClick={() => startEdit(item)}
-                        className="text-blue-600 hover:text-blue-800 text-sm"
-                      >
-                        Edit
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => startEdit(item)}
+                          className="text-blue-600 hover:text-blue-800 text-sm"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleSplit(item)}
+                          className="text-purple-600 hover:text-purple-800 text-sm"
+                          disabled={item.numberOfBundles <= 1}
+                        >
+                          Split
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm('Are you sure you want to delete this inventory item?')) {
+                              deleteWarehouseItem(item.id);
+                            }
+                          }}
+                          className="text-red-600 hover:text-red-800 text-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -1839,6 +1899,47 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
           </table>
         </div>
       </div>
+
+      {/* Split Modal */}
+      {showSplitModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-6">Split Inventory Item</h3>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                How many bundles do you want to split off?
+              </label>
+              <input
+                type="number"
+                min="1"
+                max={inventory.find(i => i.id === splitItemId)?.numberOfBundles - 1 || 1}
+                value={splitQuantity}
+                onChange={(e) => setSplitQuantity(parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="text-sm text-gray-600 mt-1">
+                Current quantity: {inventory.find(i => i.id === splitItemId)?.numberOfBundles} bundles
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowSplitModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmSplit}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Split
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

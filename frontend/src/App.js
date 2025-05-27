@@ -550,9 +550,12 @@ function App() {
         {currentView === 'warehouse' && (
           <WarehouseView 
             inventory={filteredWarehouseInventory}
+            allInventory={warehouseInventory}
             selectedWarehouse={selectedWarehouse}
             setSelectedWarehouse={setSelectedWarehouse}
             updateWarehouseItem={updateWarehouseItem}
+            deleteWarehouseItem={deleteWarehouseItem}
+            splitWarehouseItem={splitWarehouseItem}
           />
         )}
         

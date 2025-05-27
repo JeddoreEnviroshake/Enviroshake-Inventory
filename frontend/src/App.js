@@ -833,31 +833,62 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
               <h3 className="text-lg font-semibold">Label Preview</h3>
               <button
                 onClick={handlePrint}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors no-print"
               >
                 🖨️ Print Label
               </button>
             </div>
             
-            <div className="print-label border-2 border-dashed border-gray-300 p-4 bg-gray-50">
-              <div className="text-center mb-3">
-                <h4 className="font-bold text-lg">ENVIROSHAKE</h4>
-                <p className="text-sm text-gray-600">Raw Material Label</p>
+            <div className="zebra-label border-2 border-dashed border-gray-300 p-4 bg-gray-50">
+              <div className="text-center mb-4">
+                <h4 className="font-bold text-xl">ENVIROSHAKE INC.</h4>
+                <p className="text-sm text-gray-700">Raw Material Inventory Label</p>
               </div>
               
-              <div className="space-y-2 text-sm">
-                <div><strong>Material:</strong> {formData.rawMaterial}</div>
-                <div><strong>Vendor:</strong> {formData.vendor}</div>
-                <div><strong>PO Number:</strong> {formData.poNumber}</div>
-                <div><strong>Date Received:</strong> {new Date().toLocaleDateString()}</div>
-                <div><strong>Bags:</strong> {formData.bagsReceived}</div>
-              </div>
-              
-              <div className="mt-4 text-center">
-                <div className="bg-white p-2 border">
-                  <div className="font-mono text-xs mb-1">||||| |||| ||||| ||||</div>
-                  <div className="font-mono text-xs">{generatedBarcode}</div>
+              <div className="label-content space-y-3 text-base">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <strong>Material:</strong><br />
+                    <span className="material-name">{formData.rawMaterial || 'Not Selected'}</span>
+                  </div>
+                  <div>
+                    <strong>Vendor:</strong><br />
+                    <span className="vendor-name">{formData.vendor || 'Not Selected'}</span>
+                  </div>
                 </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <strong>PO Number:</strong><br />
+                    <span className="po-number">{formData.poNumber || 'Not Entered'}</span>
+                  </div>
+                  <div>
+                    <strong>Date Received:</strong><br />
+                    <span className="date-received">{new Date().toLocaleDateString()}</span>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <strong>Bags Received:</strong><br />
+                    <span className="bags-count">{formData.bagsReceived || 0}</span>
+                  </div>
+                  <div>
+                    <strong>Weight (lbs):</strong><br />
+                    <span className="weight-received">{formData.startingWeight ? parseFloat(formData.startingWeight).toLocaleString() : 0}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 text-center barcode-section">
+                <div className="bg-white p-3 border-2 border-black inline-block">
+                  <div className="barcode-lines font-mono text-lg mb-2">||||| |||| ||||| |||| |||||</div>
+                  <div className="barcode-text font-mono text-sm font-bold">{generatedBarcode || 'BARCODE-PENDING'}</div>
+                </div>
+              </div>
+              
+              <div className="mt-4 text-center text-xs text-gray-600">
+                <p>Scan barcode for material tracking and usage logging</p>
               </div>
             </div>
           </div>

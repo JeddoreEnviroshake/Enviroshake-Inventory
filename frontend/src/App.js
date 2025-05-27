@@ -1270,10 +1270,11 @@ const ProductionView = ({ addProduction }) => {
   );
 };
 
-// Enhanced Raw Materials View Component with editing
+// Enhanced Raw Materials View Component with editing and printing
 const RawMaterialsView = ({ rawMaterials, updateRawMaterial, settings }) => {
   const [editingItem, setEditingItem] = useState(null);
   const [editFormData, setEditFormData] = useState({});
+  const [printingItem, setPrintingItem] = useState(null);
 
   const startEdit = (item) => {
     setEditingItem(item.id);
@@ -1290,6 +1291,14 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, settings }) => {
   const cancelEdit = () => {
     setEditingItem(null);
     setEditFormData({});
+  };
+
+  const printLabel = (material) => {
+    setPrintingItem(material);
+    // Use setTimeout to ensure state is set before printing
+    setTimeout(() => {
+      window.print();
+    }, 100);
   };
 
   const getStatusInfo = (material) => {

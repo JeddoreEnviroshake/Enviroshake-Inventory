@@ -180,11 +180,28 @@ const initialActivityHistory = [
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
-  const [settings, setSettings] = useState(initialSettings);
-  const [rawMaterials, setRawMaterials] = useState(initialRawMaterials);
-  const [warehouseInventory, setWarehouseInventory] = useState(initialWarehouseInventory);
-  const [activityHistory, setActivityHistory] = useState(initialActivityHistory);
+  const [settings, setSettings] = useState(() => loadFromLocalStorage('enviroshake_settings', initialSettings));
+  const [rawMaterials, setRawMaterials] = useState(() => loadFromLocalStorage('enviroshake_rawMaterials', initialRawMaterials));
+  const [warehouseInventory, setWarehouseInventory] = useState(() => loadFromLocalStorage('enviroshake_warehouseInventory', initialWarehouseInventory));
+  const [activityHistory, setActivityHistory] = useState(() => loadFromLocalStorage('enviroshake_activityHistory', initialActivityHistory));
   const [selectedWarehouse, setSelectedWarehouse] = useState('All');
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    saveToLocalStorage('enviroshake_settings', settings);
+  }, [settings]);
+
+  useEffect(() => {
+    saveToLocalStorage('enviroshake_rawMaterials', rawMaterials);
+  }, [rawMaterials]);
+
+  useEffect(() => {
+    saveToLocalStorage('enviroshake_warehouseInventory', warehouseInventory);
+  }, [warehouseInventory]);
+
+  useEffect(() => {
+    saveToLocalStorage('enviroshake_activityHistory', activityHistory);
+  }, [activityHistory]);
 
   // Add activity log entry with enhanced details
   const addActivity = (action, details, user = 'System') => {

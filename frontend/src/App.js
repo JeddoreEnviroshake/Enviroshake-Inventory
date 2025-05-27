@@ -699,6 +699,7 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
   });
   const [showLabel, setShowLabel] = useState(false);
   const [generatedBarcode, setGeneratedBarcode] = useState('');
+  const [labelData, setLabelData] = useState({}); // Store label data separately
 
   // Reset vendor selection if it's no longer available in settings
   useEffect(() => {

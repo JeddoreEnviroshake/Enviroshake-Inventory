@@ -1442,12 +1442,20 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, settings }) => {
                           </button>
                         </div>
                       ) : (
-                        <button
-                          onClick={() => startEdit(material)}
-                          className="text-blue-600 hover:text-blue-800 text-sm"
-                        >
-                          Edit
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => startEdit(material)}
+                            className="text-blue-600 hover:text-blue-800 text-sm"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => printLabel(material)}
+                            className="text-green-600 hover:text-green-800 text-sm"
+                          >
+                            Print
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>

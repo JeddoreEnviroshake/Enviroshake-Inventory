@@ -863,33 +863,33 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <strong>Material:</strong><br />
-                    <span className="material-name">{formData.rawMaterial || 'Not Selected'}</span>
+                    <span className="material-name">{labelData.rawMaterial || 'Not Selected'}</span>
                   </div>
                   <div>
                     <strong>Vendor:</strong><br />
-                    <span className="vendor-name">{formData.vendor || 'Not Selected'}</span>
+                    <span className="vendor-name">{labelData.vendor || 'Not Selected'}</span>
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <strong>PO Number:</strong><br />
-                    <span className="po-number">{formData.poNumber || 'Not Entered'}</span>
+                    <span className="po-number">{labelData.poNumber || 'Not Entered'}</span>
                   </div>
                   <div>
                     <strong>Date Received:</strong><br />
-                    <span className="date-received">{new Date().toLocaleDateString()}</span>
+                    <span className="date-received">{labelData.dateReceived || new Date().toLocaleDateString()}</span>
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <strong>Bags Received:</strong><br />
-                    <span className="bags-count">{formData.bagsReceived || 0}</span>
+                    <span className="bags-count">{labelData.bagsReceived || 0}</span>
                   </div>
                   <div>
                     <strong>Weight (lbs):</strong><br />
-                    <span className="weight-received">{formData.startingWeight ? parseFloat(formData.startingWeight).toLocaleString() : 0}</span>
+                    <span className="weight-received">{labelData.startingWeight ? parseFloat(labelData.startingWeight).toLocaleString() : 0}</span>
                   </div>
                 </div>
               </div>

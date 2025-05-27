@@ -679,6 +679,13 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
   const [showLabel, setShowLabel] = useState(false);
   const [generatedBarcode, setGeneratedBarcode] = useState('');
 
+  // Reset vendor selection if it's no longer available in settings
+  useEffect(() => {
+    if (formData.vendor && !settings.vendors.includes(formData.vendor)) {
+      setFormData(prev => ({ ...prev, vendor: '' }));
+    }
+  }, [settings.vendors, formData.vendor]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const barcode = addRawMaterial({

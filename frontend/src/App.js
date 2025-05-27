@@ -1,19 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-// Raw Materials list
-const RAW_MATERIALS = [
-  'PP EFS', 'PP Clear Co-Polymer', 'PP White', 'PE EFS', 'PE Clear', 'PE White', 
-  'LXR', 'Rubber Crumb', 'Colour Masterbatch', 'PP EFS - HMF', 'Microingredients', 
-  'Wax', 'AC MB CR20050', 'SC MB CR20060', 'Carbon Black MB CB84002', 
-  'Cool Roof MB CSC 10030', 'TSL/CR CSC 10050', 'TSL MB CR20062', 
-  'Disney Brown MB CR20080', 'FR78070PP', 'PP Co-Polymer Virgin', 'Wood Fiber'
-];
+// Initial configuration values
+const initialSettings = {
+  lowStockAlertLevel: 0.2, // 20% of starting weight
+  rawMaterials: [
+    'PP EFS', 'PP Clear Co-Polymer', 'PP White', 'PE EFS', 'PE Clear', 'PE White', 
+    'LXR', 'Rubber Crumb', 'Colour Masterbatch', 'PP EFS - HMF', 'Microingredients', 
+    'Wax', 'AC MB CR20050', 'SC MB CR20060', 'Carbon Black MB CB84002', 
+    'Cool Roof MB CSC 10030', 'TSL/CR CSC 10050', 'TSL MB CR20062', 
+    'Disney Brown MB CR20080', 'FR78070PP', 'PP Co-Polymer Virgin', 'Wood Fiber'
+  ],
+  vendors: ['EFS Plastics', 'SM Polymers', 'Kraton', 'CRM Canada', 'Polyten', 'AWF']
+};
 
-const VENDORS = ['EFS Plastics', 'SM Polymers', 'Kraton', 'CRM Canada', 'Polyten', 'AWF'];
 const PRODUCTS = ['Enviroshake', 'Enviroslate', 'Enviroshingle'];
 const WAREHOUSES = ['Dresden', 'BC', 'Buffalo'];
 const TYPES = ['Bundle', 'Cap'];
+
+// Generate unique product ID
+const generateProductId = () => {
+  return 'PID' + Date.now().toString().slice(-6) + Math.random().toString(36).substr(2, 3).toUpperCase();
+};
 
 // Mock initial data
 const initialRawMaterials = [
@@ -46,6 +54,7 @@ const initialRawMaterials = [
 const initialWarehouseInventory = [
   {
     id: 1,
+    productId: 'PID001ABC',
     product: 'Enviroshake',
     colour: 'Weathered Wood',
     type: 'Bundle',
@@ -55,6 +64,7 @@ const initialWarehouseInventory = [
   },
   {
     id: 2,
+    productId: 'PID002DEF',
     product: 'Enviroslate',
     colour: 'Charcoal',
     type: 'Bundle',
@@ -83,12 +93,13 @@ const initialActivityHistory = [
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
+  const [settings, setSettings] = useState(initialSettings);
   const [rawMaterials, setRawMaterials] = useState(initialRawMaterials);
   const [warehouseInventory, setWarehouseInventory] = useState(initialWarehouseInventory);
   const [activityHistory, setActivityHistory] = useState(initialActivityHistory);
   const [selectedWarehouse, setSelectedWarehouse] = useState('All');
 
-  // Add activity log entry
+  // Add activity log entry with enhanced details
   const addActivity = (action, details, user = 'System') => {
     const newActivity = {
       id: Math.max(...activityHistory.map(a => a.id), 0) + 1,
@@ -98,6 +109,15 @@ function App() {
       user
     };
     setActivityHistory([newActivity, ...activityHistory]);
+  };
+
+  // Enhanced activity logging for edits
+  const addEditActivity = (action, itemId, changes, user = 'System') => {
+    const changeDetails = Object.entries(changes)
+      .map(([field, {from, to}]) => `${field}: "${from}" → "${to}"`)
+      .join(', ');
+    
+    addActivity(action, `${itemId} - ${changeDetails}`, user);
   };
 
   // Generate barcode
@@ -126,6 +146,32 @@ function App() {
     );
     
     return barcode;
+  };
+
+  // Update raw material
+  const updateRawMaterial = (id, updatedData, originalData) => {
+    setRawMaterials(materials =>
+      materials.map(material => 
+        material.id === id ? { ...material, ...updatedData } : material
+      )
+    );
+
+    // Track changes for activity log
+    const changes = {};
+    Object.keys(updatedData).forEach(key => {
+      if (originalData[key] !== updatedData[key]) {
+        changes[key] = { from: originalData[key], to: updatedData[key] };
+      }
+    });
+
+    if (Object.keys(changes).length > 0) {
+      addEditActivity(
+        'Raw Material Updated',
+        `Barcode: ${originalData.barcode}`,
+        changes,
+        'Inventory Manager'
+      );
+    }
   };
 
   // Use raw material
@@ -157,9 +203,11 @@ function App() {
 
   // Add production (Lead Hand Log)
   const addProduction = (productionData) => {
+    const productId = generateProductId();
     const newProduction = {
       ...productionData,
       id: Math.max(...warehouseInventory.map(w => w.id), 0) + 1,
+      productId,
       dateCreated: new Date().toISOString().split('T')[0],
       warehouse: 'Dresden' // All production starts in Dresden
     };
@@ -167,22 +215,44 @@ function App() {
     setWarehouseInventory([...warehouseInventory, newProduction]);
     addActivity(
       'Production Added',
-      `${productionData.product} - ${productionData.colour} (${productionData.type}), ${productionData.numberOfBundles} bundles`,
+      `Product ID: ${productId}, ${productionData.product} - ${productionData.colour} (${productionData.type}), ${productionData.numberOfBundles} bundles`,
       'Lead Hand'
     );
   };
 
-  // Update warehouse inventory
-  const updateWarehouseItem = (id, updatedData) => {
+  // Update warehouse inventory with enhanced logging
+  const updateWarehouseItem = (id, updatedData, originalData) => {
     setWarehouseInventory(inventory =>
       inventory.map(item => 
         item.id === id ? { ...item, ...updatedData } : item
       )
     );
+
+    // Track changes for activity log
+    const changes = {};
+    Object.keys(updatedData).forEach(key => {
+      if (originalData[key] !== updatedData[key]) {
+        changes[key] = { from: originalData[key], to: updatedData[key] };
+      }
+    });
+
+    if (Object.keys(changes).length > 0) {
+      addEditActivity(
+        'Warehouse Item Updated',
+        `Product ID: ${originalData.productId}`,
+        changes,
+        'Warehouse Manager'
+      );
+    }
+  };
+
+  // Update settings
+  const updateSettings = (newSettings) => {
+    setSettings(newSettings);
     addActivity(
-      'Warehouse Updated',
-      `Item ID: ${id} updated`,
-      'Warehouse Manager'
+      'Settings Updated',
+      'System configuration updated',
+      'Administrator'
     );
   };
 
@@ -271,6 +341,19 @@ function App() {
               📋 Activity History
             </button>
           </div>
+
+          <div className="mt-6 px-6">
+            <h3 className="text-xs uppercase tracking-wide text-gray-400 mb-3">System</h3>
+            
+            <button
+              onClick={() => setCurrentView('settings')}
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
+                currentView === 'settings' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              }`}
+            >
+              ⚙️ Settings
+            </button>
+          </div>
         </nav>
       </div>
 
@@ -281,12 +364,13 @@ function App() {
             rawMaterials={rawMaterials}
             warehouseInventory={warehouseInventory}
             activityHistory={activityHistory}
+            settings={settings}
             setCurrentView={setCurrentView}
           />
         )}
         
         {currentView === 'receiving' && (
-          <ReceivingView addRawMaterial={addRawMaterial} />
+          <ReceivingView addRawMaterial={addRawMaterial} settings={settings} />
         )}
         
         {currentView === 'using' && (
@@ -298,7 +382,11 @@ function App() {
         )}
         
         {currentView === 'rawMaterials' && (
-          <RawMaterialsView rawMaterials={rawMaterials} />
+          <RawMaterialsView 
+            rawMaterials={rawMaterials} 
+            updateRawMaterial={updateRawMaterial}
+            settings={settings}
+          />
         )}
         
         {currentView === 'warehouse' && (
@@ -313,15 +401,21 @@ function App() {
         {currentView === 'activity' && (
           <ActivityView activityHistory={activityHistory} />
         )}
+
+        {currentView === 'settings' && (
+          <SettingsView settings={settings} updateSettings={updateSettings} />
+        )}
       </div>
     </div>
   );
 }
 
 // Dashboard View Component
-const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, setCurrentView }) => {
+const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, settings, setCurrentView }) => {
   const totalRawMaterialWeight = rawMaterials.reduce((sum, item) => sum + item.currentWeight, 0);
-  const lowStockRawMaterials = rawMaterials.filter(item => item.currentWeight < (item.startingWeight * 0.2));
+  const lowStockRawMaterials = rawMaterials.filter(item => 
+    item.currentWeight < (item.startingWeight * settings.lowStockAlertLevel)
+  );
   const totalFinishedGoods = warehouseInventory.reduce((sum, item) => sum + item.numberOfBundles, 0);
   const recentActivities = activityHistory.slice(0, 5);
 
@@ -411,8 +505,170 @@ const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, setC
   );
 };
 
+// Settings View Component
+const SettingsView = ({ settings, updateSettings }) => {
+  const [formData, setFormData] = useState(settings);
+  const [newRawMaterial, setNewRawMaterial] = useState('');
+  const [newVendor, setNewVendor] = useState('');
+
+  const handleSave = () => {
+    updateSettings(formData);
+    alert('Settings saved successfully!');
+  };
+
+  const addRawMaterial = () => {
+    if (newRawMaterial && !formData.rawMaterials.includes(newRawMaterial)) {
+      setFormData({
+        ...formData,
+        rawMaterials: [...formData.rawMaterials, newRawMaterial]
+      });
+      setNewRawMaterial('');
+    }
+  };
+
+  const removeRawMaterial = (material) => {
+    setFormData({
+      ...formData,
+      rawMaterials: formData.rawMaterials.filter(m => m !== material)
+    });
+  };
+
+  const addVendor = () => {
+    if (newVendor && !formData.vendors.includes(newVendor)) {
+      setFormData({
+        ...formData,
+        vendors: [...formData.vendors, newVendor]
+      });
+      setNewVendor('');
+    }
+  };
+
+  const removeVendor = (vendor) => {
+    setFormData({
+      ...formData,
+      vendors: formData.vendors.filter(v => v !== vendor)
+    });
+  };
+
+  return (
+    <div>
+      <h2 className="text-3xl font-bold text-gray-900 mb-8">Settings</h2>
+      
+      <div className="space-y-8">
+        {/* Low Stock Alert Level */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Low Stock Alert Level</h3>
+          <div className="max-w-md">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Alert when raw material drops below this percentage of starting weight
+            </label>
+            <div className="flex items-center gap-4">
+              <input
+                type="range"
+                min="0.1"
+                max="0.5"
+                step="0.05"
+                value={formData.lowStockAlertLevel}
+                onChange={(e) => setFormData({...formData, lowStockAlertLevel: parseFloat(e.target.value)})}
+                className="flex-1"
+              />
+              <span className="text-lg font-medium w-16">
+                {(formData.lowStockAlertLevel * 100).toFixed(0)}%
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Raw Materials Management */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Raw Materials</h3>
+          
+          <div className="mb-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newRawMaterial}
+                onChange={(e) => setNewRawMaterial(e.target.value)}
+                placeholder="Add new raw material"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={addRawMaterial}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto">
+            {formData.rawMaterials.map((material, index) => (
+              <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                <span className="text-sm">{material}</span>
+                <button
+                  onClick={() => removeRawMaterial(material)}
+                  className="text-red-600 hover:text-red-800 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Vendors Management */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Vendors</h3>
+          
+          <div className="mb-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newVendor}
+                onChange={(e) => setNewVendor(e.target.value)}
+                placeholder="Add new vendor"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={addVendor}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            {formData.vendors.map((vendor, index) => (
+              <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                <span className="text-sm">{vendor}</span>
+                <button
+                  onClick={() => removeVendor(vendor)}
+                  className="text-red-600 hover:text-red-800 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={handleSave}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
+          >
+            Save Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Receiving View Component
-const ReceivingView = ({ addRawMaterial }) => {
+const ReceivingView = ({ addRawMaterial, settings }) => {
   const [formData, setFormData] = useState({
     rawMaterial: '',
     poNumber: '',
@@ -466,7 +722,7 @@ const ReceivingView = ({ addRawMaterial }) => {
                 required
               >
                 <option value="">Select Raw Material</option>
-                {RAW_MATERIALS.map(material => (
+                {settings.rawMaterials.map(material => (
                   <option key={material} value={material}>{material}</option>
                 ))}
               </select>
@@ -493,7 +749,7 @@ const ReceivingView = ({ addRawMaterial }) => {
                 required
               >
                 <option value="">Select Vendor</option>
-                {VENDORS.map(vendor => (
+                {settings.vendors.map(vendor => (
                   <option key={vendor} value={vendor}>{vendor}</option>
                 ))}
               </select>
@@ -859,8 +1115,39 @@ const ProductionView = ({ addProduction }) => {
   );
 };
 
-// Raw Materials View Component
-const RawMaterialsView = ({ rawMaterials }) => {
+// Enhanced Raw Materials View Component with editing
+const RawMaterialsView = ({ rawMaterials, updateRawMaterial, settings }) => {
+  const [editingItem, setEditingItem] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
+
+  const startEdit = (item) => {
+    setEditingItem(item.id);
+    setEditFormData(item);
+  };
+
+  const saveEdit = () => {
+    const originalData = rawMaterials.find(r => r.id === editingItem);
+    updateRawMaterial(editingItem, editFormData, originalData);
+    setEditingItem(null);
+    setEditFormData({});
+  };
+
+  const cancelEdit = () => {
+    setEditingItem(null);
+    setEditFormData({});
+  };
+
+  const getStatusInfo = (material) => {
+    const percentage = (material.currentWeight / material.startingWeight);
+    if (percentage < settings.lowStockAlertLevel) {
+      return { status: 'Low Stock', color: 'bg-red-100 text-red-800' };
+    } else if (percentage < 0.5) {
+      return { status: 'Medium', color: 'bg-yellow-100 text-yellow-800' };
+    } else {
+      return { status: 'Good', color: 'bg-green-100 text-green-800' };
+    }
+  };
+
   return (
     <div>
       <h2 className="text-3xl font-bold text-gray-900 mb-8">Raw Material Inventory</h2>
@@ -878,31 +1165,130 @@ const RawMaterialsView = ({ rawMaterials }) => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Weight</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bags Available</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {rawMaterials.map(material => (
-                <tr key={material.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <span className="font-mono text-sm">{material.barcode}</span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-900">{material.poNumber}</td>
-                  <td className="px-6 py-4 font-medium text-gray-900">{material.rawMaterial}</td>
-                  <td className="px-6 py-4 text-gray-900">{material.vendor}</td>
-                  <td className="px-6 py-4 text-gray-900">{material.startingWeight.toLocaleString()} lbs</td>
-                  <td className="px-6 py-4 text-gray-900">{material.currentWeight.toLocaleString()} lbs</td>
-                  <td className="px-6 py-4 text-gray-900">{material.bagsAvailable}</td>
-                  <td className="px-6 py-4">
-                    {material.currentWeight < (material.startingWeight * 0.2) ? (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Low Stock</span>
-                    ) : material.currentWeight < (material.startingWeight * 0.5) ? (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Medium</span>
-                    ) : (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Good</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {rawMaterials.map(material => {
+                const statusInfo = getStatusInfo(material);
+                return (
+                  <tr key={material.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <span className="font-mono text-sm">{material.barcode}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      {editingItem === material.id ? (
+                        <input
+                          type="text"
+                          value={editFormData.poNumber}
+                          onChange={(e) => setEditFormData({...editFormData, poNumber: e.target.value})}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        />
+                      ) : (
+                        <span className="text-gray-900">{material.poNumber}</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {editingItem === material.id ? (
+                        <select
+                          value={editFormData.rawMaterial}
+                          onChange={(e) => setEditFormData({...editFormData, rawMaterial: e.target.value})}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        >
+                          {settings.rawMaterials.map(rm => (
+                            <option key={rm} value={rm}>{rm}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span className="font-medium text-gray-900">{material.rawMaterial}</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {editingItem === material.id ? (
+                        <select
+                          value={editFormData.vendor}
+                          onChange={(e) => setEditFormData({...editFormData, vendor: e.target.value})}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        >
+                          {settings.vendors.map(vendor => (
+                            <option key={vendor} value={vendor}>{vendor}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span className="text-gray-900">{material.vendor}</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {editingItem === material.id ? (
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={editFormData.startingWeight}
+                          onChange={(e) => setEditFormData({...editFormData, startingWeight: parseFloat(e.target.value)})}
+                          className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                        />
+                      ) : (
+                        <span className="text-gray-900">{material.startingWeight.toLocaleString()} lbs</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {editingItem === material.id ? (
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={editFormData.currentWeight}
+                          onChange={(e) => setEditFormData({...editFormData, currentWeight: parseFloat(e.target.value)})}
+                          className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                        />
+                      ) : (
+                        <span className="text-gray-900">{material.currentWeight.toLocaleString()} lbs</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {editingItem === material.id ? (
+                        <input
+                          type="number"
+                          value={editFormData.bagsAvailable}
+                          onChange={(e) => setEditFormData({...editFormData, bagsAvailable: parseInt(e.target.value)})}
+                          className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                        />
+                      ) : (
+                        <span className="text-gray-900">{material.bagsAvailable}</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+                        {statusInfo.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      {editingItem === material.id ? (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={saveEdit}
+                            className="text-green-600 hover:text-green-800 text-sm"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={cancelEdit}
+                            className="text-red-600 hover:text-red-800 text-sm"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => startEdit(material)}
+                          className="text-blue-600 hover:text-blue-800 text-sm"
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -911,7 +1297,7 @@ const RawMaterialsView = ({ rawMaterials }) => {
   );
 };
 
-// Warehouse View Component
+// Enhanced Warehouse View Component with Product ID
 const WarehouseView = ({ inventory, selectedWarehouse, setSelectedWarehouse, updateWarehouseItem }) => {
   const [editingItem, setEditingItem] = useState(null);
   const [editFormData, setEditFormData] = useState({});
@@ -922,7 +1308,8 @@ const WarehouseView = ({ inventory, selectedWarehouse, setSelectedWarehouse, upd
   };
 
   const saveEdit = () => {
-    updateWarehouseItem(editingItem, editFormData);
+    const originalData = inventory.find(i => i.id === editingItem);
+    updateWarehouseItem(editingItem, editFormData, originalData);
     setEditingItem(null);
     setEditFormData({});
   };
@@ -954,6 +1341,7 @@ const WarehouseView = ({ inventory, selectedWarehouse, setSelectedWarehouse, upd
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Colour</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
@@ -966,6 +1354,9 @@ const WarehouseView = ({ inventory, selectedWarehouse, setSelectedWarehouse, upd
             <tbody className="divide-y divide-gray-200">
               {inventory.map(item => (
                 <tr key={item.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <span className="font-mono text-sm text-blue-600">{item.productId}</span>
+                  </td>
                   <td className="px-6 py-4">
                     {editingItem === item.id ? (
                       <select

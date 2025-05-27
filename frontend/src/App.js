@@ -145,7 +145,8 @@ const initialWarehouseInventory = [
     type: 'Bundle',
     dateCreated: '2024-12-15',
     numberOfBundles: 25,
-    warehouse: 'Dresden'
+    warehouse: 'Dresden',
+    stage: 'Available'
   },
   {
     id: 2,
@@ -155,7 +156,8 @@ const initialWarehouseInventory = [
     type: 'Bundle',
     dateCreated: '2024-12-14',
     numberOfBundles: 18,
-    warehouse: 'BC'
+    warehouse: 'BC',
+    stage: 'Available'
   }
 ];
 

@@ -513,16 +513,18 @@ const SettingsView = ({ settings, updateSettings }) => {
 
   const handleSave = () => {
     updateSettings(formData);
-    alert('Settings saved successfully!');
+    alert('Settings saved successfully! Changes will be available immediately.');
   };
 
   const addRawMaterial = () => {
-    if (newRawMaterial && !formData.rawMaterials.includes(newRawMaterial)) {
+    if (newRawMaterial.trim() && !formData.rawMaterials.includes(newRawMaterial.trim())) {
       setFormData({
         ...formData,
-        rawMaterials: [...formData.rawMaterials, newRawMaterial]
+        rawMaterials: [...formData.rawMaterials, newRawMaterial.trim()]
       });
       setNewRawMaterial('');
+    } else if (formData.rawMaterials.includes(newRawMaterial.trim())) {
+      alert('This raw material already exists!');
     }
   };
 
@@ -534,12 +536,14 @@ const SettingsView = ({ settings, updateSettings }) => {
   };
 
   const addVendor = () => {
-    if (newVendor && !formData.vendors.includes(newVendor)) {
+    if (newVendor.trim() && !formData.vendors.includes(newVendor.trim())) {
       setFormData({
         ...formData,
-        vendors: [...formData.vendors, newVendor]
+        vendors: [...formData.vendors, newVendor.trim()]
       });
       setNewVendor('');
+    } else if (formData.vendors.includes(newVendor.trim())) {
+      alert('This vendor already exists!');
     }
   };
 

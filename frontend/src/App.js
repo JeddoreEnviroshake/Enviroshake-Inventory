@@ -1,6 +1,79 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
+// Code 128 Barcode Generator
+const generateCode128Barcode = (text) => {
+  // Code 128 character set
+  const code128 = {
+    ' ': '11011001100', '!': '11001101100', '"': '11001100110', '#': '10010011000',
+    '$': '10010001100', '%': '10001001100', '&': '10011001000', "'": '10011000100',
+    '(': '10001100100', ')': '11001001000', '*': '11001000100', '+': '11000100100',
+    ',': '10110011100', '-': '10011011100', '.': '10011001110', '/': '10111001100',
+    '0': '10011101100', '1': '10011100110', '2': '11001110010', '3': '11001011100',
+    '4': '11001001110', '5': '11011100100', '6': '11001110100', '7': '11101101110',
+    '8': '11101001100', '9': '11100101100', ':': '11100100110', ';': '11101100100',
+    '<': '11100110100', '=': '11100110010', '>': '11011011000', '?': '11011000110',
+    '@': '11000110110', 'A': '10100011000', 'B': '10001011000', 'C': '10001000110',
+    'D': '10110001000', 'E': '10001101000', 'F': '10001100010', 'G': '11010001000',
+    'H': '11000101000', 'I': '11000100010', 'J': '10110111000', 'K': '10110001110',
+    'L': '10001101110', 'M': '10111011000', 'N': '10111000110', 'O': '10001110110',
+    'P': '11101110110', 'Q': '11010001110', 'R': '11000101110', 'S': '11011101000',
+    'T': '11011100010', 'U': '11011101110', 'V': '11101011000', 'W': '11101000110',
+    'X': '11100010110', 'Y': '11101101000', 'Z': '11101100010'
+  };
+  
+  let barcode = '11010000100'; // Start code B
+  let checksum = 104; // Start code B value
+  
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (code128[char]) {
+      barcode += code128[char];
+      checksum += (i + 1) * (char.charCodeAt(0) - 32);
+    }
+  }
+  
+  // Add checksum
+  checksum = checksum % 103;
+  const checksumChar = String.fromCharCode(checksum + 32);
+  if (code128[checksumChar]) {
+    barcode += code128[checksumChar];
+  }
+  
+  barcode += '1100011101011'; // Stop code
+  
+  return barcode;
+};
+
+// Convert binary barcode to SVG bars
+const renderBarcodeSVG = (binaryCode, width = 200, height = 50) => {
+  const bars = [];
+  let xPos = 0;
+  const barWidth = width / binaryCode.length;
+  
+  for (let i = 0; i < binaryCode.length; i++) {
+    if (binaryCode[i] === '1') {
+      bars.push(
+        <rect
+          key={i}
+          x={xPos}
+          y={0}
+          width={barWidth}
+          height={height}
+          fill="black"
+        />
+      );
+    }
+    xPos += barWidth;
+  }
+  
+  return (
+    <svg width={width} height={height} className="barcode-svg">
+      {bars}
+    </svg>
+  );
+};
+
 // Initial configuration values
 const initialSettings = {
   lowStockAlertLevel: 0.2, // 20% of starting weight

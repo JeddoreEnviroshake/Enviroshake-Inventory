@@ -1459,12 +1459,68 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, settings }) => {
                       )}
                     </td>
                   </tr>
-                );
-              })}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Hidden Print Label for Raw Materials */}
+      {printingItem && (
+        <div className="print-only-label" style={{ display: 'none' }}>
+          <div className="zebra-label">
+            <div className="text-center mb-4">
+              <h4 className="font-bold text-xl">Enviroshake</h4>
+              <p className="text-sm text-gray-700">Raw Material Inventory Label</p>
+            </div>
+            
+            <div className="label-content space-y-3 text-base">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <strong>Material:</strong><br />
+                  <span className="material-name">{printingItem.rawMaterial}</span>
+                </div>
+                <div>
+                  <strong>Vendor:</strong><br />
+                  <span className="vendor-name">{printingItem.vendor}</span>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <strong>PO Number:</strong><br />
+                  <span className="po-number">{printingItem.poNumber}</span>
+                </div>
+                <div>
+                  <strong>Date Received:</strong><br />
+                  <span className="date-received">{printingItem.dateReceived}</span>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <strong>Bags Received:</strong><br />
+                  <span className="bags-count">{printingItem.bagsReceived}</span>
+                </div>
+                <div>
+                  <strong>Weight (lbs):</strong><br />
+                  <span className="weight-received">{printingItem.startingWeight.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-6 text-center barcode-section">
+              <div className="bg-white p-3 border-2 border-black inline-block">
+                {renderBarcodeSVG(generateCode128Barcode(printingItem.barcode), 250, 60)}
+                <div className="barcode-text font-mono text-sm font-bold mt-2">{printingItem.barcode}</div>
+              </div>
+            </div>
+            
+            <div className="mt-4 text-center text-xs text-gray-600">
+              <p>Scan barcode for material tracking and usage logging</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

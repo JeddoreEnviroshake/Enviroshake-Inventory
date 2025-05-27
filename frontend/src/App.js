@@ -1360,7 +1360,7 @@ const ProductionView = ({ addProduction }) => {
 };
 
 // Enhanced Raw Materials View Component with editing and printing
-const RawMaterialsView = ({ rawMaterials, updateRawMaterial, settings }) => {
+const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, settings }) => {
   const [editingItem, setEditingItem] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [printingItem, setPrintingItem] = useState(null);

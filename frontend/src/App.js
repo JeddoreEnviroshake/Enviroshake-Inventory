@@ -1626,10 +1626,13 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
   );
 };
 
-// Enhanced Warehouse View Component with Product ID
-const WarehouseView = ({ inventory, selectedWarehouse, setSelectedWarehouse, updateWarehouseItem }) => {
+// Enhanced Warehouse View Component with Product ID, Split, Delete, and Summary
+const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelectedWarehouse, updateWarehouseItem, deleteWarehouseItem, splitWarehouseItem }) => {
   const [editingItem, setEditingItem] = useState(null);
   const [editFormData, setEditFormData] = useState({});
+  const [showSplitModal, setShowSplitModal] = useState(false);
+  const [splitItemId, setSplitItemId] = useState(null);
+  const [splitQuantity, setSplitQuantity] = useState(1);
 
   const startEdit = (item) => {
     setEditingItem(item.id);
@@ -1647,6 +1650,55 @@ const WarehouseView = ({ inventory, selectedWarehouse, setSelectedWarehouse, upd
     setEditingItem(null);
     setEditFormData({});
   };
+
+  const handleSplit = (item) => {
+    if (item.numberOfBundles <= 1) {
+      alert('Cannot split items with 1 or fewer bundles');
+      return;
+    }
+    setSplitItemId(item.id);
+    setSplitQuantity(1);
+    setShowSplitModal(true);
+  };
+
+  const confirmSplit = () => {
+    const item = inventory.find(i => i.id === splitItemId);
+    if (splitQuantity >= item.numberOfBundles) {
+      alert('Split quantity must be less than current quantity');
+      return;
+    }
+    if (splitQuantity < 1) {
+      alert('Split quantity must be at least 1');
+      return;
+    }
+    
+    splitWarehouseItem(splitItemId, splitQuantity);
+    setShowSplitModal(false);
+    setSplitItemId(null);
+    setSplitQuantity(1);
+  };
+
+  // Calculate summary for selected warehouse
+  const calculateSummary = () => {
+    const filteredData = selectedWarehouse === 'All' ? allInventory : allInventory.filter(item => item.warehouse === selectedWarehouse);
+    
+    const summary = {};
+    PRODUCTS.forEach(product => {
+      TYPES.forEach(type => {
+        const key = `${product} ${type}s`;
+        const total = filteredData
+          .filter(item => item.product === product && item.type === type)
+          .reduce((sum, item) => sum + item.numberOfBundles, 0);
+        if (total > 0) {
+          summary[key] = total;
+        }
+      });
+    });
+    
+    return summary;
+  };
+
+  const summary = calculateSummary();
 
   return (
     <div>

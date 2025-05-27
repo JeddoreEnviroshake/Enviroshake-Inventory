@@ -586,7 +586,11 @@ const SettingsView = ({ settings, updateSettings }) => {
                 max="0.5"
                 step="0.05"
                 value={formData.lowStockAlertLevel}
-                onChange={(e) => setFormData({...formData, lowStockAlertLevel: parseFloat(e.target.value)})}
+                onChange={(e) => {
+                  const updatedFormData = {...formData, lowStockAlertLevel: parseFloat(e.target.value)};
+                  setFormData(updatedFormData);
+                  updateSettings(updatedFormData); // Immediate update to parent
+                }}
                 className="flex-1"
               />
               <span className="text-lg font-medium w-16">

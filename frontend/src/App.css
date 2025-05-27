@@ -338,6 +338,15 @@ tbody tr:hover {
   #emergent-badge {
     display: none !important;
   }
+
+  /* Show print-only labels during print */
+  .print-only-label {
+    display: block !important;
+  }
+
+  .print-only-label .zebra-label, .print-only-label .zebra-label * {
+    visibility: visible !important;
+  }
 }
 
 /* Screen display styles for label */

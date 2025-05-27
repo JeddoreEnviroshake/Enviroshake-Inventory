@@ -961,7 +961,7 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
               
               <div className="mt-6 text-center barcode-section">
                 <div className="bg-white p-3 border-2 border-black inline-block">
-                  {renderBarcodeSVG(generateCode128Barcode(generatedBarcode || 'BARCODE'), 250, 60)}
+                  {renderBarcodeSVG(generateCode39Barcode(generatedBarcode || 'BARCODE'), 250, 60)}
                   <div className="barcode-text font-mono text-sm font-bold mt-2">{generatedBarcode || 'BARCODE-PENDING'}</div>
                 </div>
               </div>

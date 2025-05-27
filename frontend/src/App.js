@@ -543,6 +543,7 @@ function App() {
           <RawMaterialsView 
             rawMaterials={rawMaterials} 
             updateRawMaterial={updateRawMaterial}
+            deleteRawMaterial={deleteRawMaterial}
             settings={settings}
           />
         )}

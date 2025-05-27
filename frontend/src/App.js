@@ -1504,7 +1504,7 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, settings }) => {
             
             <div className="mt-6 text-center barcode-section">
               <div className="bg-white p-3 border-2 border-black inline-block">
-                {renderBarcodeSVG(generateCode128Barcode(printingItem.barcode), 250, 60)}
+                {renderBarcodeSVG(generateCode39Barcode(printingItem.barcode), 250, 60)}
                 <div className="barcode-text font-mono text-sm font-bold mt-2">{printingItem.barcode}</div>
               </div>
             </div>

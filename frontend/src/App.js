@@ -1459,6 +1459,8 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, settings }) => {
                       )}
                     </td>
                   </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

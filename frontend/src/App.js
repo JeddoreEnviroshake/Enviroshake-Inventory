@@ -331,6 +331,10 @@ function App() {
             >
               🏭 Warehouse
             </button>
+          </div>
+
+          <div className="mt-6 px-6">
+            <h3 className="text-xs uppercase tracking-wide text-gray-400 mb-3">System</h3>
             
             <button
               onClick={() => setCurrentView('activity')}
@@ -340,10 +344,6 @@ function App() {
             >
               📋 Activity History
             </button>
-          </div>
-
-          <div className="mt-6 px-6">
-            <h3 className="text-xs uppercase tracking-wide text-gray-400 mb-3">System</h3>
             
             <button
               onClick={() => setCurrentView('settings')}

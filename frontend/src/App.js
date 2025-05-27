@@ -1,98 +1,195 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-// Mock data for Enviroshake products
-const initialInventory = [
-  // Enviroshake products
-  { id: 1, mainProduct: 'Enviroshake', color: 'Weathered Wood', materialLot: 'EWW-2024-001', sku: 'ES-WW-001', quantity: 150, location: 'A1-B3', lastUpdated: '2024-12-15', reorderLevel: 50 },
-  { id: 2, mainProduct: 'Enviroshake', color: 'Cedar Blend', materialLot: 'ECB-2024-002', sku: 'ES-CB-002', quantity: 200, location: 'A1-B4', lastUpdated: '2024-12-14', reorderLevel: 50 },
-  { id: 3, mainProduct: 'Enviroshake', color: 'Rustic Red', materialLot: 'ERR-2024-003', sku: 'ES-RR-003', quantity: 75, location: 'A2-C1', lastUpdated: '2024-12-13', reorderLevel: 50 },
-  { id: 4, mainProduct: 'Enviroshake', color: 'Storm Grey', materialLot: 'ESG-2024-004', sku: 'ES-SG-004', quantity: 30, location: 'A2-C2', lastUpdated: '2024-12-12', reorderLevel: 50 },
-  
-  // Enviroslate products
-  { id: 5, mainProduct: 'Enviroslate', color: 'Charcoal', materialLot: 'ELC-2024-005', sku: 'EL-CH-005', quantity: 120, location: 'B1-D2', lastUpdated: '2024-12-15', reorderLevel: 40 },
-  { id: 6, mainProduct: 'Enviroslate', color: 'Midnight Blue', materialLot: 'EMB-2024-006', sku: 'EL-MB-006', quantity: 85, location: 'B1-D3', lastUpdated: '2024-12-14', reorderLevel: 40 },
-  { id: 7, mainProduct: 'Enviroslate', color: 'Weathered Copper', materialLot: 'EWC-2024-007', sku: 'EL-WC-007', quantity: 25, location: 'B2-E1', lastUpdated: '2024-12-13', reorderLevel: 40 },
-  
-  // Enviroshingle products
-  { id: 8, mainProduct: 'Enviroshingle', color: 'Driftwood', materialLot: 'SHD-2024-008', sku: 'SH-DW-008', quantity: 180, location: 'C1-F2', lastUpdated: '2024-12-15', reorderLevel: 60 },
-  { id: 9, mainProduct: 'Enviroshingle', color: 'Sage Green', materialLot: 'SHG-2024-009', sku: 'SH-SG-009', quantity: 95, location: 'C1-F3', lastUpdated: '2024-12-14', reorderLevel: 60 },
-  { id: 10, mainProduct: 'Enviroshingle', color: 'Coastal Blue', materialLot: 'SCB-2024-010', sku: 'SH-CB-010', quantity: 40, location: 'C2-G1', lastUpdated: '2024-12-12', reorderLevel: 60 },
-  { id: 11, mainProduct: 'Enviroshingle', color: 'Autumn Bronze', materialLot: 'SAB-2024-011', sku: 'SH-AB-011', quantity: 220, location: 'C2-G2', lastUpdated: '2024-12-15', reorderLevel: 60 }
+// Raw Materials list
+const RAW_MATERIALS = [
+  'PP EFS', 'PP Clear Co-Polymer', 'PP White', 'PE EFS', 'PE Clear', 'PE White', 
+  'LXR', 'Rubber Crumb', 'Colour Masterbatch', 'PP EFS - HMF', 'Microingredients', 
+  'Wax', 'AC MB CR20050', 'SC MB CR20060', 'Carbon Black MB CB84002', 
+  'Cool Roof MB CSC 10030', 'TSL/CR CSC 10050', 'TSL MB CR20062', 
+  'Disney Brown MB CR20080', 'FR78070PP', 'PP Co-Polymer Virgin', 'Wood Fiber'
+];
+
+const VENDORS = ['EFS Plastics', 'SM Polymers', 'Kraton', 'CRM Canada', 'Polyten', 'AWF'];
+const PRODUCTS = ['Enviroshake', 'Enviroslate', 'Enviroshingle'];
+const WAREHOUSES = ['Dresden', 'BC', 'Buffalo'];
+const TYPES = ['Bundle', 'Cap'];
+
+// Mock initial data
+const initialRawMaterials = [
+  {
+    id: 1,
+    barcode: 'BAR001PO5691',
+    poNumber: '5691',
+    rawMaterial: 'PP EFS',
+    vendor: 'EFS Plastics',
+    bagsReceived: 6,
+    startingWeight: 9259,
+    currentWeight: 8100,
+    dateReceived: '2024-12-15',
+    bagsAvailable: 5
+  },
+  {
+    id: 2,
+    barcode: 'BAR002PO5692',
+    poNumber: '5692',
+    rawMaterial: 'Wood Fiber',
+    vendor: 'AWF',
+    bagsReceived: 4,
+    startingWeight: 3200,
+    currentWeight: 3200,
+    dateReceived: '2024-12-14',
+    bagsAvailable: 4
+  }
+];
+
+const initialWarehouseInventory = [
+  {
+    id: 1,
+    product: 'Enviroshake',
+    colour: 'Weathered Wood',
+    type: 'Bundle',
+    dateCreated: '2024-12-15',
+    numberOfBundles: 25,
+    warehouse: 'Dresden'
+  },
+  {
+    id: 2,
+    product: 'Enviroslate',
+    colour: 'Charcoal',
+    type: 'Bundle',
+    dateCreated: '2024-12-14',
+    numberOfBundles: 18,
+    warehouse: 'BC'
+  }
+];
+
+const initialActivityHistory = [
+  {
+    id: 1,
+    timestamp: '2024-12-15 14:30:25',
+    action: 'Raw Material Received',
+    details: 'PO: 5691, PP EFS, 6 bags, 9,259 lbs',
+    user: 'Purchasing Manager'
+  },
+  {
+    id: 2,
+    timestamp: '2024-12-15 15:45:12',
+    action: 'Material Used',
+    details: 'Barcode: BAR001PO5691, Used: 1159 lbs',
+    user: 'Lead Hand - John Smith'
+  }
 ];
 
 function App() {
-  const [inventory, setInventory] = useState(initialInventory);
-  const [filteredInventory, setFilteredInventory] = useState(initialInventory);
-  const [selectedProduct, setSelectedProduct] = useState('All');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showAddForm, setShowAddForm] = useState(false);
   const [currentView, setCurrentView] = useState('dashboard');
+  const [rawMaterials, setRawMaterials] = useState(initialRawMaterials);
+  const [warehouseInventory, setWarehouseInventory] = useState(initialWarehouseInventory);
+  const [activityHistory, setActivityHistory] = useState(initialActivityHistory);
+  const [selectedWarehouse, setSelectedWarehouse] = useState('All');
 
-  // Filter inventory based on selected product and search term
-  useEffect(() => {
-    let filtered = inventory;
-    
-    if (selectedProduct !== 'All') {
-      filtered = filtered.filter(item => item.mainProduct === selectedProduct);
-    }
-    
-    if (searchTerm) {
-      filtered = filtered.filter(item => 
-        item.color.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.materialLot.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.mainProduct.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    setFilteredInventory(filtered);
-  }, [inventory, selectedProduct, searchTerm]);
+  // Add activity log entry
+  const addActivity = (action, details, user = 'System') => {
+    const newActivity = {
+      id: Math.max(...activityHistory.map(a => a.id), 0) + 1,
+      timestamp: new Date().toLocaleString(),
+      action,
+      details,
+      user
+    };
+    setActivityHistory([newActivity, ...activityHistory]);
+  };
 
-  // Calculate dashboard stats
-  const calculateStats = () => {
-    const stats = {
-      Enviroshake: { total: 0, lowStock: 0, totalValue: 0 },
-      Enviroslate: { total: 0, lowStock: 0, totalValue: 0 },
-      Enviroshingle: { total: 0, lowStock: 0, totalValue: 0 }
+  // Generate barcode
+  const generateBarcode = (poNumber, rawMaterial) => {
+    const timestamp = Date.now().toString().slice(-4);
+    return `BAR${timestamp}PO${poNumber}`;
+  };
+
+  // Add raw material (Receiving)
+  const addRawMaterial = (materialData) => {
+    const barcode = generateBarcode(materialData.poNumber, materialData.rawMaterial);
+    const newMaterial = {
+      ...materialData,
+      id: Math.max(...rawMaterials.map(r => r.id), 0) + 1,
+      barcode,
+      currentWeight: materialData.startingWeight,
+      dateReceived: new Date().toISOString().split('T')[0],
+      bagsAvailable: materialData.bagsReceived
+    };
+    
+    setRawMaterials([...rawMaterials, newMaterial]);
+    addActivity(
+      'Raw Material Received',
+      `PO: ${materialData.poNumber}, ${materialData.rawMaterial}, ${materialData.bagsReceived} bags, ${materialData.startingWeight.toLocaleString()} lbs`,
+      'Purchasing Manager'
+    );
+    
+    return barcode;
+  };
+
+  // Use raw material
+  const useRawMaterial = (usageData) => {
+    const weightUsed = usageData.weightIn - usageData.weightOut - (usageData.estimatedSpillage || 0);
+    
+    setRawMaterials(materials => 
+      materials.map(material => {
+        if (material.barcode === usageData.barcode) {
+          const newWeight = Math.max(0, material.currentWeight - weightUsed);
+          const newBags = newWeight === 0 ? 0 : material.bagsAvailable - 1;
+          
+          return {
+            ...material,
+            currentWeight: newWeight,
+            bagsAvailable: Math.max(0, newBags)
+          };
+        }
+        return material;
+      })
+    );
+
+    addActivity(
+      'Material Used',
+      `Barcode: ${usageData.barcode}, Used: ${weightUsed.toFixed(1)} lbs, Spillage: ${usageData.estimatedSpillage || 0} lbs`,
+      `Lead Hand - ${usageData.leadHandName}`
+    );
+  };
+
+  // Add production (Lead Hand Log)
+  const addProduction = (productionData) => {
+    const newProduction = {
+      ...productionData,
+      id: Math.max(...warehouseInventory.map(w => w.id), 0) + 1,
+      dateCreated: new Date().toISOString().split('T')[0],
+      warehouse: 'Dresden' // All production starts in Dresden
     };
 
-    inventory.forEach(item => {
-      stats[item.mainProduct].total += item.quantity;
-      if (item.quantity <= item.reorderLevel) {
-        stats[item.mainProduct].lowStock++;
-      }
-    });
-
-    return stats;
+    setWarehouseInventory([...warehouseInventory, newProduction]);
+    addActivity(
+      'Production Added',
+      `${productionData.product} - ${productionData.colour} (${productionData.type}), ${productionData.numberOfBundles} bundles`,
+      'Lead Hand'
+    );
   };
 
-  const stats = calculateStats();
-
-  // Add new product function
-  const addProduct = (newProduct) => {
-    const product = {
-      ...newProduct,
-      id: Math.max(...inventory.map(p => p.id)) + 1,
-      lastUpdated: new Date().toISOString().split('T')[0]
-    };
-    setInventory([...inventory, product]);
-    setShowAddForm(false);
+  // Update warehouse inventory
+  const updateWarehouseItem = (id, updatedData) => {
+    setWarehouseInventory(inventory =>
+      inventory.map(item => 
+        item.id === id ? { ...item, ...updatedData } : item
+      )
+    );
+    addActivity(
+      'Warehouse Updated',
+      `Item ID: ${id} updated`,
+      'Warehouse Manager'
+    );
   };
 
-  // Update quantity function
-  const updateQuantity = (id, newQuantity) => {
-    setInventory(inventory.map(item => 
-      item.id === id 
-        ? { ...item, quantity: newQuantity, lastUpdated: new Date().toISOString().split('T')[0] }
-        : item
-    ));
-  };
-
-  // Delete product function
-  const deleteProduct = (id) => {
-    setInventory(inventory.filter(item => item.id !== id));
-  };
+  // Filter warehouse inventory by selected warehouse
+  const filteredWarehouseInventory = selectedWarehouse === 'All' 
+    ? warehouseInventory 
+    : warehouseInventory.filter(item => item.warehouse === selectedWarehouse);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -100,7 +197,7 @@ function App() {
       <div className="fixed inset-y-0 left-0 w-64 bg-slate-900 text-white">
         <div className="p-6">
           <h1 className="text-2xl font-bold text-blue-400">Enviroshake</h1>
-          <p className="text-sm text-gray-300 mt-1">Inventory Management</p>
+          <p className="text-sm text-gray-300 mt-1">Inventory Tracking System</p>
         </div>
         
         <nav className="mt-8">
@@ -112,31 +209,67 @@ function App() {
           >
             📊 Dashboard
           </button>
-          <button
-            onClick={() => setCurrentView('inventory')}
-            className={`w-full text-left px-6 py-3 hover:bg-slate-800 transition-colors ${
-              currentView === 'inventory' ? 'bg-slate-800 border-r-2 border-blue-400' : ''
-            }`}
-          >
-            📦 Inventory
-          </button>
           
           <div className="mt-6 px-6">
-            <h3 className="text-xs uppercase tracking-wide text-gray-400 mb-3">Product Lines</h3>
-            {['All', 'Enviroshake', 'Enviroslate', 'Enviroshingle'].map(product => (
-              <button
-                key={product}
-                onClick={() => {
-                  setSelectedProduct(product);
-                  setCurrentView('inventory');
-                }}
-                className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
-                  selectedProduct === product ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
-                }`}
-              >
-                {product}
-              </button>
-            ))}
+            <h3 className="text-xs uppercase tracking-wide text-gray-400 mb-3">Operations</h3>
+            
+            <button
+              onClick={() => setCurrentView('receiving')}
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
+                currentView === 'receiving' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              }`}
+            >
+              📦 Receiving
+            </button>
+            
+            <button
+              onClick={() => setCurrentView('using')}
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
+                currentView === 'using' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              }`}
+            >
+              🔧 Using
+            </button>
+            
+            <button
+              onClick={() => setCurrentView('production')}
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
+                currentView === 'production' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              }`}
+            >
+              📝 Lead Hand Log
+            </button>
+          </div>
+
+          <div className="mt-6 px-6">
+            <h3 className="text-xs uppercase tracking-wide text-gray-400 mb-3">Inventory</h3>
+            
+            <button
+              onClick={() => setCurrentView('rawMaterials')}
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
+                currentView === 'rawMaterials' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              }`}
+            >
+              🧱 Raw Materials
+            </button>
+            
+            <button
+              onClick={() => setCurrentView('warehouse')}
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
+                currentView === 'warehouse' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              }`}
+            >
+              🏭 Warehouse
+            </button>
+            
+            <button
+              onClick={() => setCurrentView('activity')}
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
+                currentView === 'activity' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              }`}
+            >
+              📋 Activity History
+            </button>
           </div>
         </nav>
       </div>
@@ -144,22 +277,41 @@ function App() {
       {/* Main Content */}
       <div className="ml-64 p-8">
         {currentView === 'dashboard' && (
-          <DashboardView stats={stats} inventory={inventory} setCurrentView={setCurrentView} setSelectedProduct={setSelectedProduct} />
+          <DashboardView 
+            rawMaterials={rawMaterials}
+            warehouseInventory={warehouseInventory}
+            activityHistory={activityHistory}
+            setCurrentView={setCurrentView}
+          />
         )}
         
-        {currentView === 'inventory' && (
-          <InventoryView 
-            filteredInventory={filteredInventory}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            selectedProduct={selectedProduct}
-            setSelectedProduct={setSelectedProduct}
-            showAddForm={showAddForm}
-            setShowAddForm={setShowAddForm}
-            addProduct={addProduct}
-            updateQuantity={updateQuantity}
-            deleteProduct={deleteProduct}
+        {currentView === 'receiving' && (
+          <ReceivingView addRawMaterial={addRawMaterial} />
+        )}
+        
+        {currentView === 'using' && (
+          <UsingView rawMaterials={rawMaterials} useRawMaterial={useRawMaterial} />
+        )}
+        
+        {currentView === 'production' && (
+          <ProductionView addProduction={addProduction} />
+        )}
+        
+        {currentView === 'rawMaterials' && (
+          <RawMaterialsView rawMaterials={rawMaterials} />
+        )}
+        
+        {currentView === 'warehouse' && (
+          <WarehouseView 
+            inventory={filteredWarehouseInventory}
+            selectedWarehouse={selectedWarehouse}
+            setSelectedWarehouse={setSelectedWarehouse}
+            updateWarehouseItem={updateWarehouseItem}
           />
+        )}
+        
+        {currentView === 'activity' && (
+          <ActivityView activityHistory={activityHistory} />
         )}
       </div>
     </div>
@@ -167,9 +319,11 @@ function App() {
 }
 
 // Dashboard View Component
-const DashboardView = ({ stats, inventory, setCurrentView, setSelectedProduct }) => {
-  const totalItems = inventory.reduce((sum, item) => sum + item.quantity, 0);
-  const lowStockItems = inventory.filter(item => item.quantity <= item.reorderLevel);
+const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, setCurrentView }) => {
+  const totalRawMaterialWeight = rawMaterials.reduce((sum, item) => sum + item.currentWeight, 0);
+  const lowStockRawMaterials = rawMaterials.filter(item => item.currentWeight < (item.startingWeight * 0.2));
+  const totalFinishedGoods = warehouseInventory.reduce((sum, item) => sum + item.numberOfBundles, 0);
+  const recentActivities = activityHistory.slice(0, 5);
 
   return (
     <div>
@@ -177,353 +331,779 @@ const DashboardView = ({ stats, inventory, setCurrentView, setSelectedProduct })
       
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-sm font-medium text-gray-500">Total Inventory</h3>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{totalItems.toLocaleString()}</p>
-          <p className="text-sm text-gray-600 mt-1">Units in stock</p>
+        <div className="bg-white p-6 rounded-lg shadow-sm border cursor-pointer hover:shadow-md transition-shadow"
+             onClick={() => setCurrentView('rawMaterials')}>
+          <h3 className="text-sm font-medium text-gray-500">Raw Materials</h3>
+          <p className="text-3xl font-bold text-gray-900 mt-2">{totalRawMaterialWeight.toLocaleString()}</p>
+          <p className="text-sm text-gray-600 mt-1">Total lbs available</p>
+        </div>
+        
+        <div className="bg-white p-6 rounded-lg shadow-sm border cursor-pointer hover:shadow-md transition-shadow"
+             onClick={() => setCurrentView('warehouse')}>
+          <h3 className="text-sm font-medium text-gray-500">Finished Goods</h3>
+          <p className="text-3xl font-bold text-gray-900 mt-2">{totalFinishedGoods.toLocaleString()}</p>
+          <p className="text-sm text-gray-600 mt-1">Total bundles</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <h3 className="text-sm font-medium text-gray-500">Low Stock Alerts</h3>
-          <p className="text-3xl font-bold text-red-600 mt-2">{lowStockItems.length}</p>
-          <p className="text-sm text-gray-600 mt-1">Items need reorder</p>
+          <p className="text-3xl font-bold text-red-600 mt-2">{lowStockRawMaterials.length}</p>
+          <p className="text-sm text-gray-600 mt-1">Materials need reorder</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-sm font-medium text-gray-500">Product Variants</h3>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{inventory.length}</p>
-          <p className="text-sm text-gray-600 mt-1">Active SKUs</p>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-sm font-medium text-gray-500">Product Lines</h3>
-          <p className="text-3xl font-bold text-blue-600 mt-2">3</p>
-          <p className="text-sm text-gray-600 mt-1">Active lines</p>
+          <h3 className="text-sm font-medium text-gray-500">Active Materials</h3>
+          <p className="text-3xl font-bold text-blue-600 mt-2">{rawMaterials.length}</p>
+          <p className="text-sm text-gray-600 mt-1">Different batches</p>
         </div>
       </div>
 
-      {/* Product Line Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {Object.entries(stats).map(([productLine, data]) => (
-          <div key={productLine} className="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow cursor-pointer"
-               onClick={() => { setSelectedProduct(productLine); setCurrentView('inventory'); }}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">{productLine}</h3>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                data.lowStock > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-              }`}>
-                {data.lowStock > 0 ? `${data.lowStock} Low Stock` : 'All Good'}
-              </span>
-            </div>
-            <p className="text-2xl font-bold text-gray-900 mb-2">{data.total.toLocaleString()}</p>
-            <p className="text-sm text-gray-600">Total units in stock</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Recent Low Stock Items */}
-      {lowStockItems.length > 0 && (
+      {/* Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white rounded-lg shadow-sm border">
           <div className="p-6 border-b">
-            <h3 className="text-lg font-semibold text-gray-900">Low Stock Alerts</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
           </div>
-          <div className="divide-y">
-            {lowStockItems.slice(0, 5).map(item => (
-              <div key={item.id} className="p-4 flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-900">{item.mainProduct} - {item.color}</p>
-                  <p className="text-sm text-gray-600">Lot: {item.materialLot}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-red-600">{item.quantity} units</p>
-                  <p className="text-xs text-gray-500">Reorder at {item.reorderLevel}</p>
+          <div className="divide-y max-h-80 overflow-y-auto">
+            {recentActivities.map(activity => (
+              <div key={activity.id} className="p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-medium text-gray-900">{activity.action}</p>
+                    <p className="text-sm text-gray-600 mt-1">{activity.details}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500">{activity.timestamp}</p>
+                    <p className="text-xs text-gray-400">{activity.user}</p>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
-      )}
+
+        {/* Low Stock Alert */}
+        {lowStockRawMaterials.length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm border">
+            <div className="p-6 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">Low Stock Materials</h3>
+            </div>
+            <div className="divide-y max-h-80 overflow-y-auto">
+              {lowStockRawMaterials.map(material => (
+                <div key={material.id} className="p-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-medium text-gray-900">{material.rawMaterial}</p>
+                      <p className="text-sm text-gray-600">PO: {material.poNumber}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-red-600">{material.currentWeight.toLocaleString()} lbs</p>
+                      <p className="text-xs text-gray-500">{((material.currentWeight / material.startingWeight) * 100).toFixed(1)}% remaining</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
-// Inventory View Component
-const InventoryView = ({ 
-  filteredInventory, 
-  searchTerm, 
-  setSearchTerm, 
-  selectedProduct, 
-  setSelectedProduct,
-  showAddForm,
-  setShowAddForm,
-  addProduct,
-  updateQuantity,
-  deleteProduct
-}) => {
+// Receiving View Component
+const ReceivingView = ({ addRawMaterial }) => {
+  const [formData, setFormData] = useState({
+    rawMaterial: '',
+    poNumber: '',
+    vendor: '',
+    bagsReceived: 0,
+    startingWeight: 0
+  });
+  const [showLabel, setShowLabel] = useState(false);
+  const [generatedBarcode, setGeneratedBarcode] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const barcode = addRawMaterial({
+      ...formData,
+      bagsReceived: parseInt(formData.bagsReceived),
+      startingWeight: parseFloat(formData.startingWeight)
+    });
+    setGeneratedBarcode(barcode);
+    setShowLabel(true);
+    
+    // Reset form
+    setFormData({
+      rawMaterial: '',
+      poNumber: '',
+      vendor: '',
+      bagsReceived: 0,
+      startingWeight: 0
+    });
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  return (
+    <div>
+      <h2 className="text-3xl font-bold text-gray-900 mb-8">Receiving</h2>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Form */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-6">Add Raw Material</h3>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Raw Material</label>
+              <select
+                value={formData.rawMaterial}
+                onChange={(e) => setFormData({...formData, rawMaterial: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="">Select Raw Material</option>
+                {RAW_MATERIALS.map(material => (
+                  <option key={material} value={material}>{material}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">PO Number</label>
+              <input
+                type="text"
+                value={formData.poNumber}
+                onChange={(e) => setFormData({...formData, poNumber: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 5691"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+              <select
+                value={formData.vendor}
+                onChange={(e) => setFormData({...formData, vendor: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="">Select Vendor</option>
+                {VENDORS.map(vendor => (
+                  <option key={vendor} value={vendor}>{vendor}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Bags Received</label>
+              <input
+                type="number"
+                value={formData.bagsReceived}
+                onChange={(e) => setFormData({...formData, bagsReceived: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                min="1"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Weight Received (lbs)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.startingWeight}
+                onChange={(e) => setFormData({...formData, startingWeight: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                min="0"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Submit & Generate Label
+            </button>
+          </form>
+        </div>
+
+        {/* Label Preview */}
+        {showLabel && (
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Label Preview</h3>
+              <button
+                onClick={handlePrint}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+              >
+                🖨️ Print Label
+              </button>
+            </div>
+            
+            <div className="print-label border-2 border-dashed border-gray-300 p-4 bg-gray-50">
+              <div className="text-center mb-3">
+                <h4 className="font-bold text-lg">ENVIROSHAKE</h4>
+                <p className="text-sm text-gray-600">Raw Material Label</p>
+              </div>
+              
+              <div className="space-y-2 text-sm">
+                <div><strong>Material:</strong> {formData.rawMaterial}</div>
+                <div><strong>Vendor:</strong> {formData.vendor}</div>
+                <div><strong>PO Number:</strong> {formData.poNumber}</div>
+                <div><strong>Date Received:</strong> {new Date().toLocaleDateString()}</div>
+                <div><strong>Bags:</strong> {formData.bagsReceived}</div>
+              </div>
+              
+              <div className="mt-4 text-center">
+                <div className="bg-white p-2 border">
+                  <div className="font-mono text-xs mb-1">||||| |||| ||||| ||||</div>
+                  <div className="font-mono text-xs">{generatedBarcode}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Using View Component
+const UsingView = ({ rawMaterials, useRawMaterial }) => {
+  const [formData, setFormData] = useState({
+    barcode: '',
+    leadHandName: '',
+    weightIn: 0,
+    weightOut: 0,
+    estimatedSpillage: 0,
+    notes: ''
+  });
+  const [scannedMaterial, setScannedMaterial] = useState(null);
+
+  const handleBarcodeChange = (e) => {
+    const barcode = e.target.value;
+    setFormData({...formData, barcode});
+    
+    // Find material by barcode
+    const material = rawMaterials.find(m => m.barcode === barcode);
+    setScannedMaterial(material);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!scannedMaterial) {
+      alert('Please scan a valid barcode');
+      return;
+    }
+
+    useRawMaterial({
+      ...formData,
+      weightIn: parseFloat(formData.weightIn),
+      weightOut: parseFloat(formData.weightOut),
+      estimatedSpillage: parseFloat(formData.estimatedSpillage) || 0
+    });
+
+    // Reset form
+    setFormData({
+      barcode: '',
+      leadHandName: '',
+      weightIn: 0,
+      weightOut: 0,
+      estimatedSpillage: 0,
+      notes: ''
+    });
+    setScannedMaterial(null);
+    
+    alert('Material usage recorded successfully!');
+  };
+
+  return (
+    <div>
+      <h2 className="text-3xl font-bold text-gray-900 mb-8">Using Raw Materials</h2>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Form */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-6">Record Material Usage</h3>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Scan Barcode</label>
+              <input
+                type="text"
+                value={formData.barcode}
+                onChange={handleBarcodeChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="Scan or enter barcode"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Lead Hand Name</label>
+              <input
+                type="text"
+                value={formData.leadHandName}
+                onChange={(e) => setFormData({...formData, leadHandName: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter your name"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Weight In (lbs)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.weightIn}
+                onChange={(e) => setFormData({...formData, weightIn: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Weight Out (lbs)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.weightOut}
+                onChange={(e) => setFormData({...formData, weightOut: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Estimated Spillage (lbs) - Optional</label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.estimatedSpillage}
+                onChange={(e) => setFormData({...formData, estimatedSpillage: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Notes - Optional</label>
+              <textarea
+                value={formData.notes}
+                onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                rows="3"
+                placeholder="Any additional notes..."
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              disabled={!scannedMaterial}
+            >
+              Submit Usage
+            </button>
+          </form>
+        </div>
+
+        {/* Material Info */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-6">Scanned Material Info</h3>
+          
+          {scannedMaterial ? (
+            <div className="space-y-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h4 className="font-medium text-green-800 mb-2">✓ Material Found</h4>
+                <div className="space-y-2 text-sm">
+                  <div><strong>Raw Material:</strong> {scannedMaterial.rawMaterial}</div>
+                  <div><strong>Vendor:</strong> {scannedMaterial.vendor}</div>
+                  <div><strong>PO Number:</strong> {scannedMaterial.poNumber}</div>
+                  <div><strong>Current Weight:</strong> {scannedMaterial.currentWeight.toLocaleString()} lbs</div>
+                  <div><strong>Bags Available:</strong> {scannedMaterial.bagsAvailable}</div>
+                </div>
+              </div>
+              
+              {formData.weightIn && formData.weightOut && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-800 mb-2">Usage Calculation</h4>
+                  <div className="space-y-1 text-sm">
+                    <div>Weight In: {formData.weightIn} lbs</div>
+                    <div>Weight Out: {formData.weightOut} lbs</div>
+                    <div>Spillage: {formData.estimatedSpillage || 0} lbs</div>
+                    <div className="font-medium pt-2 border-t">
+                      <strong>Material Used: {(parseFloat(formData.weightIn) - parseFloat(formData.weightOut) - parseFloat(formData.estimatedSpillage || 0)).toFixed(1)} lbs</strong>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              <div className="text-4xl mb-4">📷</div>
+              <p>Scan a barcode to view material information</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Production View Component (Lead Hand Log)
+const ProductionView = ({ addProduction }) => {
+  const [formData, setFormData] = useState({
+    product: '',
+    colour: '',
+    type: '',
+    numberOfBundles: 0
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    addProduction({
+      ...formData,
+      numberOfBundles: parseInt(formData.numberOfBundles)
+    });
+    
+    // Reset form
+    setFormData({
+      product: '',
+      colour: '',
+      type: '',
+      numberOfBundles: 0
+    });
+    
+    alert('Production logged successfully!');
+  };
+
+  return (
+    <div>
+      <h2 className="text-3xl font-bold text-gray-900 mb-8">Lead Hand Log Sheet</h2>
+      
+      <div className="max-w-md mx-auto">
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-6">Log Production</h3>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Product</label>
+              <select
+                value={formData.product}
+                onChange={(e) => setFormData({...formData, product: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="">Select Product</option>
+                {PRODUCTS.map(product => (
+                  <option key={product} value={product}>{product}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Colour</label>
+              <input
+                type="text"
+                value={formData.colour}
+                onChange={(e) => setFormData({...formData, colour: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter colour"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+              <select
+                value={formData.type}
+                onChange={(e) => setFormData({...formData, type: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="">Select Type</option>
+                {TYPES.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Number of Bundles</label>
+              <input
+                type="number"
+                value={formData.numberOfBundles}
+                onChange={(e) => setFormData({...formData, numberOfBundles: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                min="1"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Submit Production
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Raw Materials View Component
+const RawMaterialsView = ({ rawMaterials }) => {
+  return (
+    <div>
+      <h2 className="text-3xl font-bold text-gray-900 mb-8">Raw Material Inventory</h2>
+      
+      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barcode</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PO Number</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Raw Material</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Starting Weight</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Weight</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bags Available</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {rawMaterials.map(material => (
+                <tr key={material.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <span className="font-mono text-sm">{material.barcode}</span>
+                  </td>
+                  <td className="px-6 py-4 text-gray-900">{material.poNumber}</td>
+                  <td className="px-6 py-4 font-medium text-gray-900">{material.rawMaterial}</td>
+                  <td className="px-6 py-4 text-gray-900">{material.vendor}</td>
+                  <td className="px-6 py-4 text-gray-900">{material.startingWeight.toLocaleString()} lbs</td>
+                  <td className="px-6 py-4 text-gray-900">{material.currentWeight.toLocaleString()} lbs</td>
+                  <td className="px-6 py-4 text-gray-900">{material.bagsAvailable}</td>
+                  <td className="px-6 py-4">
+                    {material.currentWeight < (material.startingWeight * 0.2) ? (
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Low Stock</span>
+                    ) : material.currentWeight < (material.startingWeight * 0.5) ? (
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Medium</span>
+                    ) : (
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Good</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Warehouse View Component
+const WarehouseView = ({ inventory, selectedWarehouse, setSelectedWarehouse, updateWarehouseItem }) => {
+  const [editingItem, setEditingItem] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
+
+  const startEdit = (item) => {
+    setEditingItem(item.id);
+    setEditFormData(item);
+  };
+
+  const saveEdit = () => {
+    updateWarehouseItem(editingItem, editFormData);
+    setEditingItem(null);
+    setEditFormData({});
+  };
+
+  const cancelEdit = () => {
+    setEditingItem(null);
+    setEditFormData({});
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">Inventory Management</h2>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        <h2 className="text-3xl font-bold text-gray-900">Warehouse Inventory</h2>
+        
+        <select
+          value={selectedWarehouse}
+          onChange={(e) => setSelectedWarehouse(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
-          + Add Product
-        </button>
+          <option value="All">All Warehouses</option>
+          {WAREHOUSES.map(warehouse => (
+            <option key={warehouse} value={warehouse}>{warehouse}</option>
+          ))}
+        </select>
       </div>
-
-      {/* Filters */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
-        <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-64">
-            <input
-              type="text"
-              placeholder="Search by color, lot number, SKU, or product..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          
-          <select
-            value={selectedProduct}
-            onChange={(e) => setSelectedProduct(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="All">All Products</option>
-            <option value="Enviroshake">Enviroshake</option>
-            <option value="Enviroslate">Enviroslate</option>
-            <option value="Enviroshingle">Enviroshingle</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Inventory Table */}
+      
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Color</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Material Lot</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Colour</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Created</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number of Bundles</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warehouse</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredInventory.map(item => (
-                <InventoryRow 
-                  key={item.id} 
-                  item={item} 
-                  updateQuantity={updateQuantity}
-                  deleteProduct={deleteProduct}
-                />
+              {inventory.map(item => (
+                <tr key={item.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    {editingItem === item.id ? (
+                      <select
+                        value={editFormData.product}
+                        onChange={(e) => setEditFormData({...editFormData, product: e.target.value})}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                      >
+                        {PRODUCTS.map(product => (
+                          <option key={product} value={product}>{product}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="font-medium text-gray-900">{item.product}</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    {editingItem === item.id ? (
+                      <input
+                        type="text"
+                        value={editFormData.colour}
+                        onChange={(e) => setEditFormData({...editFormData, colour: e.target.value})}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                      />
+                    ) : (
+                      <span className="text-gray-900">{item.colour}</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    {editingItem === item.id ? (
+                      <select
+                        value={editFormData.type}
+                        onChange={(e) => setEditFormData({...editFormData, type: e.target.value})}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                      >
+                        {TYPES.map(type => (
+                          <option key={type} value={type}>{type}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="text-gray-900">{item.type}</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-gray-900">{item.dateCreated}</td>
+                  <td className="px-6 py-4">
+                    {editingItem === item.id ? (
+                      <input
+                        type="number"
+                        value={editFormData.numberOfBundles}
+                        onChange={(e) => setEditFormData({...editFormData, numberOfBundles: parseInt(e.target.value)})}
+                        className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                      />
+                    ) : (
+                      <span className="font-medium">{item.numberOfBundles}</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    {editingItem === item.id ? (
+                      <select
+                        value={editFormData.warehouse}
+                        onChange={(e) => setEditFormData({...editFormData, warehouse: e.target.value})}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                      >
+                        {WAREHOUSES.map(warehouse => (
+                          <option key={warehouse} value={warehouse}>{warehouse}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="text-gray-900">{item.warehouse}</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    {editingItem === item.id ? (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={saveEdit}
+                          className="text-green-600 hover:text-green-800 text-sm"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={cancelEdit}
+                          className="text-red-600 hover:text-red-800 text-sm"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => startEdit(item)}
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
-
-      {/* Add Product Modal */}
-      {showAddForm && (
-        <AddProductModal 
-          onClose={() => setShowAddForm(false)} 
-          onAdd={addProduct}
-        />
-      )}
     </div>
   );
 };
 
-// Inventory Row Component
-const InventoryRow = ({ item, updateQuantity, deleteProduct }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [newQuantity, setNewQuantity] = useState(item.quantity);
-
-  const handleUpdate = () => {
-    updateQuantity(item.id, parseInt(newQuantity));
-    setIsEditing(false);
-  };
-
-  const getStatusBadge = () => {
-    if (item.quantity <= item.reorderLevel) {
-      return <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Low Stock</span>;
-    } else if (item.quantity <= item.reorderLevel * 1.5) {
-      return <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Medium</span>;
-    } else {
-      return <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">In Stock</span>;
-    }
-  };
-
+// Activity View Component
+const ActivityView = ({ activityHistory }) => {
   return (
-    <tr className="hover:bg-gray-50">
-      <td className="px-6 py-4">
-        <div className="font-medium text-gray-900">{item.mainProduct}</div>
-      </td>
-      <td className="px-6 py-4 text-gray-900">{item.color}</td>
-      <td className="px-6 py-4">
-        <span className="font-mono text-sm text-gray-600">{item.materialLot}</span>
-      </td>
-      <td className="px-6 py-4">
-        <span className="font-mono text-sm text-gray-900">{item.sku}</span>
-      </td>
-      <td className="px-6 py-4">
-        {isEditing ? (
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              value={newQuantity}
-              onChange={(e) => setNewQuantity(e.target.value)}
-              className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-            />
-            <button onClick={handleUpdate} className="text-green-600 hover:text-green-800">✓</button>
-            <button onClick={() => setIsEditing(false)} className="text-red-600 hover:text-red-800">✗</button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{item.quantity}</span>
-            <button onClick={() => setIsEditing(true)} className="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
-          </div>
-        )}
-      </td>
-      <td className="px-6 py-4 text-gray-600">{item.location}</td>
-      <td className="px-6 py-4">{getStatusBadge()}</td>
-      <td className="px-6 py-4">
-        <button
-          onClick={() => deleteProduct(item.id)}
-          className="text-red-600 hover:text-red-800 text-sm"
-        >
-          Delete
-        </button>
-      </td>
-    </tr>
-  );
-};
-
-// Add Product Modal Component
-const AddProductModal = ({ onClose, onAdd }) => {
-  const [formData, setFormData] = useState({
-    mainProduct: 'Enviroshake',
-    color: '',
-    materialLot: '',
-    sku: '',
-    quantity: 0,
-    location: '',
-    reorderLevel: 50
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onAdd(formData);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 w-full max-w-md">
-        <h3 className="text-lg font-semibold mb-6">Add New Product</h3>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Product Line</label>
-            <select
-              value={formData.mainProduct}
-              onChange={(e) => setFormData({...formData, mainProduct: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="Enviroshake">Enviroshake</option>
-              <option value="Enviroslate">Enviroslate</option>
-              <option value="Enviroshingle">Enviroshingle</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
-            <input
-              type="text"
-              value={formData.color}
-              onChange={(e) => setFormData({...formData, color: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Material Lot Number</label>
-            <input
-              type="text"
-              value={formData.materialLot}
-              onChange={(e) => setFormData({...formData, materialLot: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-            <input
-              type="text"
-              value={formData.sku}
-              onChange={(e) => setFormData({...formData, sku: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-            <input
-              type="number"
-              value={formData.quantity}
-              onChange={(e) => setFormData({...formData, quantity: parseInt(e.target.value)})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-            <input
-              type="text"
-              value={formData.location}
-              onChange={(e) => setFormData({...formData, location: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g., A1-B3"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Reorder Level</label>
-            <input
-              type="number"
-              value={formData.reorderLevel}
-              onChange={(e) => setFormData({...formData, reorderLevel: parseInt(e.target.value)})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Add Product
-            </button>
-          </div>
-        </form>
+    <div>
+      <h2 className="text-3xl font-bold text-gray-900 mb-8">Activity History</h2>
+      
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {activityHistory.map(activity => (
+                <tr key={activity.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 text-sm text-gray-900">{activity.timestamp}</td>
+                  <td className="px-6 py-4">
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {activity.action}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{activity.details}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{activity.user}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

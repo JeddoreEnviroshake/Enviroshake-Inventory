@@ -305,8 +305,58 @@ function App() {
     );
   };
 
-  // Add production (Lead Hand Log)
-  const addProduction = (productionData) => {
+  // Delete raw material
+  const deleteRawMaterial = (id) => {
+    const material = rawMaterials.find(r => r.id === id);
+    setRawMaterials(rawMaterials.filter(r => r.id !== id));
+    addActivity(
+      'Raw Material Deleted',
+      `Barcode: ${material.barcode}, ${material.rawMaterial}, PO: ${material.poNumber}`,
+      'Inventory Manager'
+    );
+  };
+
+  // Delete warehouse item
+  const deleteWarehouseItem = (id) => {
+    const item = warehouseInventory.find(w => w.id === id);
+    setWarehouseInventory(warehouseInventory.filter(w => w.id !== id));
+    addActivity(
+      'Warehouse Item Deleted',
+      `Product ID: ${item.productId}, ${item.product} - ${item.colour} (${item.type}), ${item.numberOfBundles} bundles`,
+      'Warehouse Manager'
+    );
+  };
+
+  // Split warehouse item
+  const splitWarehouseItem = (id, splitQuantity) => {
+    const originalItem = warehouseInventory.find(w => w.id === id);
+    const remainingQuantity = originalItem.numberOfBundles - splitQuantity;
+
+    // Update original item
+    const updatedOriginal = {
+      ...originalItem,
+      numberOfBundles: remainingQuantity
+    };
+
+    // Create new split item
+    const newSplitItem = {
+      ...originalItem,
+      id: Math.max(...warehouseInventory.map(w => w.id), 0) + 1,
+      numberOfBundles: splitQuantity
+      // Product ID remains the same
+    };
+
+    // Update inventory
+    setWarehouseInventory(inventory =>
+      inventory.map(item => item.id === id ? updatedOriginal : item).concat(newSplitItem)
+    );
+
+    addActivity(
+      'Warehouse Item Split',
+      `Product ID: ${originalItem.productId}, Split ${splitQuantity} bundles from ${originalItem.numberOfBundles} total`,
+      'Warehouse Manager'
+    );
+  };
     const productId = generateProductId();
     const newProduction = {
       ...productionData,

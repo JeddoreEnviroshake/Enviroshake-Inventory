@@ -169,17 +169,30 @@ tbody tr:hover {
 }
 
 /* Print styles for Zebra 4" x 6" thermal labels */
+@page {
+  size: 4in 6in;
+  margin: 0;
+}
+
 @media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  @page {
+    size: 4in 6in;
+    margin: 0;
+  }
+
   .no-print {
     display: none !important;
   }
   
-  .sidebar {
-    display: none !important;
-  }
-  
-  .main-content {
-    margin-left: 0 !important;
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
   }
   
   /* Hide everything except the label */
@@ -192,108 +205,128 @@ tbody tr:hover {
   }
   
   .zebra-label {
-    position: absolute;
-    left: 0;
-    top: 0;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
     width: 4in !important;
     height: 6in !important;
     margin: 0 !important;
-    padding: 0.25in !important;
+    padding: 0.2in !important;
     background: white !important;
     border: none !important;
     font-family: Arial, sans-serif !important;
-    font-size: 12pt !important;
-    page-break-after: always;
-    box-sizing: border-box;
+    font-size: 11pt !important;
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
+    page-break-inside: avoid !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
   }
   
   .zebra-label h4 {
-    font-size: 16pt !important;
+    font-size: 14pt !important;
     font-weight: bold !important;
-    margin: 0 0 8pt 0 !important;
+    margin: 0 0 6pt 0 !important;
     text-align: center !important;
     color: black !important;
+    page-break-inside: avoid !important;
   }
   
   .zebra-label p {
-    font-size: 10pt !important;
-    margin: 0 0 12pt 0 !important;
+    font-size: 9pt !important;
+    margin: 0 0 8pt 0 !important;
     text-align: center !important;
     color: black !important;
+    page-break-inside: avoid !important;
   }
   
   .label-content {
-    margin: 16pt 0 !important;
+    margin: 10pt 0 !important;
+    page-break-inside: avoid !important;
   }
   
   .label-content > div {
-    margin-bottom: 8pt !important;
+    margin-bottom: 6pt !important;
+    page-break-inside: avoid !important;
   }
   
   .label-content strong {
-    font-size: 10pt !important;
+    font-size: 9pt !important;
     font-weight: bold !important;
     color: black !important;
   }
   
   .label-content span {
-    font-size: 11pt !important;
+    font-size: 10pt !important;
     font-weight: normal !important;
     color: black !important;
     display: block !important;
-    margin-top: 2pt !important;
+    margin-top: 1pt !important;
   }
   
   .material-name, .vendor-name, .po-number {
     font-weight: bold !important;
-    font-size: 12pt !important;
+    font-size: 11pt !important;
   }
   
   .barcode-section {
-    margin-top: 20pt !important;
+    margin-top: 12pt !important;
     text-align: center !important;
+    page-break-inside: avoid !important;
   }
   
   .barcode-section > div {
     display: inline-block !important;
-    padding: 8pt !important;
-    border: 2pt solid black !important;
+    padding: 6pt !important;
+    border: 1pt solid black !important;
     background: white !important;
   }
   
   .barcode-lines {
     font-family: 'Courier New', monospace !important;
-    font-size: 18pt !important;
+    font-size: 14pt !important;
     font-weight: bold !important;
-    letter-spacing: 2pt !important;
+    letter-spacing: 1pt !important;
     color: black !important;
-    margin-bottom: 4pt !important;
+    margin-bottom: 2pt !important;
   }
   
   .barcode-text {
     font-family: 'Courier New', monospace !important;
-    font-size: 10pt !important;
+    font-size: 8pt !important;
     font-weight: bold !important;
     color: black !important;
-    letter-spacing: 1pt !important;
+    letter-spacing: 0.5pt !important;
   }
   
   /* Grid layout for print */
   .zebra-label .grid {
     display: table !important;
     width: 100% !important;
-    margin-bottom: 8pt !important;
+    margin-bottom: 6pt !important;
+    page-break-inside: avoid !important;
   }
   
   .zebra-label .grid > div {
     display: table-cell !important;
     width: 50% !important;
     vertical-align: top !important;
-    padding-right: 8pt !important;
+    padding-right: 6pt !important;
   }
   
   .zebra-label .grid > div:last-child {
     padding-right: 0 !important;
+  }
+
+  /* Force single page */
+  html, body {
+    height: 6in !important;
+    overflow: hidden !important;
+  }
+
+  /* Hide browser headers and footers */
+  @page {
+    margin: 0 !important;
   }
 }
 

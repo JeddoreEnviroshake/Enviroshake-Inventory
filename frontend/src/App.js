@@ -855,7 +855,7 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
             
             <div className="zebra-label border-2 border-dashed border-gray-300 p-4 bg-gray-50">
               <div className="text-center mb-4">
-                <h4 className="font-bold text-xl">ENVIROSHAKE INC.</h4>
+                <h4 className="font-bold text-xl">Enviroshake</h4>
                 <p className="text-sm text-gray-700">Raw Material Inventory Label</p>
               </div>
               

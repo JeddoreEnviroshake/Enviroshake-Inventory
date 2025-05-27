@@ -719,11 +719,24 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Store label data before form reset
+    const currentLabelData = {
+      rawMaterial: formData.rawMaterial,
+      vendor: formData.vendor,
+      poNumber: formData.poNumber,
+      bagsReceived: formData.bagsReceived,
+      startingWeight: formData.startingWeight,
+      dateReceived: new Date().toLocaleDateString()
+    };
+    
     const barcode = addRawMaterial({
       ...formData,
       bagsReceived: parseInt(formData.bagsReceived),
       startingWeight: parseFloat(formData.startingWeight)
     });
+    
+    setLabelData(currentLabelData);
     setGeneratedBarcode(barcode);
     setShowLabel(true);
     

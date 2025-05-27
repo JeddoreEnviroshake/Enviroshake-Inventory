@@ -523,10 +523,12 @@ const SettingsView = ({ settings, updateSettings }) => {
 
   const addRawMaterial = () => {
     if (newRawMaterial.trim() && !formData.rawMaterials.includes(newRawMaterial.trim())) {
-      setFormData({
+      const updatedFormData = {
         ...formData,
         rawMaterials: [...formData.rawMaterials, newRawMaterial.trim()]
-      });
+      };
+      setFormData(updatedFormData);
+      updateSettings(updatedFormData); // Immediate update to parent
       setNewRawMaterial('');
     } else if (formData.rawMaterials.includes(newRawMaterial.trim())) {
       alert('This raw material already exists!');
@@ -534,18 +536,22 @@ const SettingsView = ({ settings, updateSettings }) => {
   };
 
   const removeRawMaterial = (material) => {
-    setFormData({
+    const updatedFormData = {
       ...formData,
       rawMaterials: formData.rawMaterials.filter(m => m !== material)
-    });
+    };
+    setFormData(updatedFormData);
+    updateSettings(updatedFormData); // Immediate update to parent
   };
 
   const addVendor = () => {
     if (newVendor.trim() && !formData.vendors.includes(newVendor.trim())) {
-      setFormData({
+      const updatedFormData = {
         ...formData,
         vendors: [...formData.vendors, newVendor.trim()]
-      });
+      };
+      setFormData(updatedFormData);
+      updateSettings(updatedFormData); // Immediate update to parent
       setNewVendor('');
     } else if (formData.vendors.includes(newVendor.trim())) {
       alert('This vendor already exists!');
@@ -553,10 +559,12 @@ const SettingsView = ({ settings, updateSettings }) => {
   };
 
   const removeVendor = (vendor) => {
-    setFormData({
+    const updatedFormData = {
       ...formData,
       vendors: formData.vendors.filter(v => v !== vendor)
-    });
+    };
+    setFormData(updatedFormData);
+    updateSettings(updatedFormData); // Immediate update to parent
   };
 
   return (

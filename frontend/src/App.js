@@ -1331,12 +1331,12 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
 };
 
 // Production View Component (Lead Hand Log)
-const ProductionView = ({ addProduction }) => {
+const ProductionView = ({ addProduction, settings }) => {
   const [formData, setFormData] = useState({
     product: '',
     colour: '',
     type: '',
-    numberOfBundles: 0
+    numberOfBundles: ''
   });
 
   const handleSubmit = (e) => {

@@ -1,46 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-// Code 128 Barcode Generator
-const generateCode128Barcode = (text) => {
-  // Code 128 character set
-  const code128 = {
-    ' ': '11011001100', '!': '11001101100', '"': '11001100110', '#': '10010011000',
-    '$': '10010001100', '%': '10001001100', '&': '10011001000', "'": '10011000100',
-    '(': '10001100100', ')': '11001001000', '*': '11001000100', '+': '11000100100',
-    ',': '10110011100', '-': '10011011100', '.': '10011001110', '/': '10111001100',
-    '0': '10011101100', '1': '10011100110', '2': '11001110010', '3': '11001011100',
-    '4': '11001001110', '5': '11011100100', '6': '11001110100', '7': '11101101110',
-    '8': '11101001100', '9': '11100101100', ':': '11100100110', ';': '11101100100',
-    '<': '11100110100', '=': '11100110010', '>': '11011011000', '?': '11011000110',
-    '@': '11000110110', 'A': '10100011000', 'B': '10001011000', 'C': '10001000110',
-    'D': '10110001000', 'E': '10001101000', 'F': '10001100010', 'G': '11010001000',
-    'H': '11000101000', 'I': '11000100010', 'J': '10110111000', 'K': '10110001110',
-    'L': '10001101110', 'M': '10111011000', 'N': '10111000110', 'O': '10001110110',
-    'P': '11101110110', 'Q': '11010001110', 'R': '11000101110', 'S': '11011101000',
-    'T': '11011100010', 'U': '11011101110', 'V': '11101011000', 'W': '11101000110',
-    'X': '11100010110', 'Y': '11101101000', 'Z': '11101100010'
+// Code 39 Barcode Generator (replacing Code 128)
+const generateCode39Barcode = (text) => {
+  // Code 39 character encoding (bar patterns)
+  const code39 = {
+    '0': '101001101101', '1': '110100101011', '2': '101100101011', '3': '110110010101',
+    '4': '101001101011', '5': '110100110101', '6': '101100110101', '7': '101001011011',
+    '8': '110100101101', '9': '101100101101', 'A': '110101001011', 'B': '101101001011',
+    'C': '110110100101', 'D': '101011001011', 'E': '110101100101', 'F': '101101100101',
+    'G': '101010011011', 'H': '110101001101', 'I': '101101001101', 'J': '101010110101',
+    'K': '110101010011', 'L': '101101010011', 'M': '110110101001', 'N': '101011010011',
+    'O': '110101101001', 'P': '101101101001', 'Q': '101010100111', 'R': '110101010101',
+    'S': '101101010101', 'T': '101010110101', 'U': '110010101011', 'V': '100110101011',
+    'W': '110011010101', 'X': '100101101011', 'Y': '110010110101', 'Z': '100110110101',
+    '-': '100101011011', '.': '110010101101', ' ': '100110101101', '*': '100101101101'
   };
   
-  let barcode = '11010000100'; // Start code B
-  let checksum = 104; // Start code B value
+  // Code 39 always starts and ends with * (asterisk)
+  let barcode = code39['*']; // Start character
   
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    if (code128[char]) {
-      barcode += code128[char];
-      checksum += (i + 1) * (char.charCodeAt(0) - 32);
+  // Convert text to uppercase and encode each character
+  const upperText = text.toUpperCase();
+  for (let i = 0; i < upperText.length; i++) {
+    const char = upperText[i];
+    if (code39[char]) {
+      barcode += code39[char];
+    } else {
+      // For unsupported characters, use a placeholder
+      barcode += code39[' '];
     }
   }
   
-  // Add checksum
-  checksum = checksum % 103;
-  const checksumChar = String.fromCharCode(checksum + 32);
-  if (code128[checksumChar]) {
-    barcode += code128[checksumChar];
-  }
-  
-  barcode += '1100011101011'; // Stop code
+  barcode += code39['*']; // End character
   
   return barcode;
 };
@@ -54,24 +46,24 @@ const renderBarcodeSVG = (binaryCode, width = 200, height = 50) => {
   for (let i = 0; i < binaryCode.length; i++) {
     if (binaryCode[i] === '1') {
       bars.push(
-        <rect
-          key={i}
-          x={xPos}
-          y={0}
-          width={barWidth}
-          height={height}
-          fill="black"
-        />
+        React.createElement('rect', {
+          key: i,
+          x: xPos,
+          y: 0,
+          width: barWidth,
+          height: height,
+          fill: 'black'
+        })
       );
     }
     xPos += barWidth;
   }
   
-  return (
-    <svg width={width} height={height} className="barcode-svg">
-      {bars}
-    </svg>
-  );
+  return React.createElement('svg', {
+    width: width,
+    height: height,
+    className: 'barcode-svg'
+  }, bars);
 };
 
 // Initial configuration values
@@ -84,12 +76,34 @@ const initialSettings = {
     'Cool Roof MB CSC 10030', 'TSL/CR CSC 10050', 'TSL MB CR20062', 
     'Disney Brown MB CR20080', 'FR78070PP', 'PP Co-Polymer Virgin', 'Wood Fiber'
   ],
-  vendors: ['EFS Plastics', 'SM Polymers', 'Kraton', 'CRM Canada', 'Polyten', 'AWF']
+  vendors: ['EFS Plastics', 'SM Polymers', 'Kraton', 'CRM Canada', 'Polyten', 'AWF'],
+  emailAddresses: ['jeddore.mcdonald@enviroshake.com'],
+  colors: ['Weathered Wood', 'Cedar Blend', 'Rustic Red', 'Storm Grey', 'Charcoal', 'Midnight Blue', 'Weathered Copper', 'Driftwood', 'Sage Green', 'Coastal Blue', 'Autumn Bronze']
 };
 
 const PRODUCTS = ['Enviroshake', 'Enviroslate', 'Enviroshingle'];
 const WAREHOUSES = ['Dresden', 'BC', 'Buffalo'];
 const TYPES = ['Bundle', 'Cap'];
+const STAGES = ['Available', 'Open', 'Released', 'Staged', 'Shipped', 'Transfer'];
+
+// Local Storage functions for data persistence
+const saveToLocalStorage = (key, data) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+  }
+};
+
+const loadFromLocalStorage = (key, defaultValue) => {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (error) {
+    console.error('Error loading from localStorage:', error);
+    return defaultValue;
+  }
+};
 
 // Generate unique product ID
 const generateProductId = () => {
@@ -108,6 +122,8 @@ const initialRawMaterials = [
     startingWeight: 9259,
     currentWeight: 8100,
     dateReceived: '2024-12-15',
+    dateCreated: '2024-12-15',
+    lastUsed: '2024-12-15',
     bagsAvailable: 5
   },
   {
@@ -120,6 +136,8 @@ const initialRawMaterials = [
     startingWeight: 3200,
     currentWeight: 3200,
     dateReceived: '2024-12-14',
+    dateCreated: '2024-12-14',
+    lastUsed: null,
     bagsAvailable: 4
   }
 ];
@@ -133,7 +151,8 @@ const initialWarehouseInventory = [
     type: 'Bundle',
     dateCreated: '2024-12-15',
     numberOfBundles: 25,
-    warehouse: 'Dresden'
+    warehouse: 'Dresden',
+    stage: 'Available'
   },
   {
     id: 2,
@@ -143,7 +162,8 @@ const initialWarehouseInventory = [
     type: 'Bundle',
     dateCreated: '2024-12-14',
     numberOfBundles: 18,
-    warehouse: 'BC'
+    warehouse: 'BC',
+    stage: 'Available'
   }
 ];
 
@@ -166,11 +186,37 @@ const initialActivityHistory = [
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
-  const [settings, setSettings] = useState(initialSettings);
-  const [rawMaterials, setRawMaterials] = useState(initialRawMaterials);
-  const [warehouseInventory, setWarehouseInventory] = useState(initialWarehouseInventory);
-  const [activityHistory, setActivityHistory] = useState(initialActivityHistory);
+  const [settings, setSettings] = useState(() => loadFromLocalStorage('enviroshake_settings', initialSettings));
+  const [rawMaterials, setRawMaterials] = useState(() => loadFromLocalStorage('enviroshake_rawMaterials', initialRawMaterials));
+  const [warehouseInventory, setWarehouseInventory] = useState(() => loadFromLocalStorage('enviroshake_warehouseInventory', initialWarehouseInventory));
+  const [activityHistory, setActivityHistory] = useState(() => loadFromLocalStorage('enviroshake_activityHistory', initialActivityHistory));
   const [selectedWarehouse, setSelectedWarehouse] = useState('All');
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    saveToLocalStorage('enviroshake_settings', settings);
+  }, [settings]);
+
+  useEffect(() => {
+    saveToLocalStorage('enviroshake_rawMaterials', rawMaterials);
+  }, [rawMaterials]);
+
+  useEffect(() => {
+    saveToLocalStorage('enviroshake_warehouseInventory', warehouseInventory);
+  }, [warehouseInventory]);
+
+  useEffect(() => {
+    saveToLocalStorage('enviroshake_activityHistory', activityHistory);
+  }, [activityHistory]);
+
+  // Email function (simulated for demo)
+  const sendEmail = (to, subject, body) => {
+    // In a real application, this would integrate with an email service
+    console.log('Email sent to:', to);
+    console.log('Subject:', subject);
+    console.log('Body:', body);
+    alert(`Email would be sent to: ${to.join(', ')}\nSubject: ${subject}\nBody: ${body}`);
+  };
 
   // Add activity log entry with enhanced details
   const addActivity = (action, details, user = 'System') => {
@@ -202,12 +248,15 @@ function App() {
   // Add raw material (Receiving)
   const addRawMaterial = (materialData) => {
     const barcode = generateBarcode(materialData.poNumber, materialData.rawMaterial);
+    const currentDate = new Date().toISOString().split('T')[0];
     const newMaterial = {
       ...materialData,
       id: Math.max(...rawMaterials.map(r => r.id), 0) + 1,
       barcode,
       currentWeight: materialData.startingWeight,
-      dateReceived: new Date().toISOString().split('T')[0],
+      dateReceived: currentDate,
+      dateCreated: currentDate,
+      lastUsed: null,
       bagsAvailable: materialData.bagsReceived
     };
     
@@ -250,27 +299,96 @@ function App() {
   // Use raw material
   const useRawMaterial = (usageData) => {
     const weightUsed = usageData.weightIn - usageData.weightOut - (usageData.estimatedSpillage || 0);
+    const currentDate = new Date().toISOString().split('T')[0];
     
     setRawMaterials(materials => 
       materials.map(material => {
         if (material.barcode === usageData.barcode) {
           const newWeight = Math.max(0, material.currentWeight - weightUsed);
-          const newBags = newWeight === 0 ? 0 : material.bagsAvailable - 1;
+          let newBags = material.bagsAvailable;
+          
+          // If finished bag is Yes, subtract a bag
+          if (usageData.finishedBag === 'Yes') {
+            newBags = Math.max(0, material.bagsAvailable - 1);
+          }
           
           return {
             ...material,
             currentWeight: newWeight,
-            bagsAvailable: Math.max(0, newBags)
+            bagsAvailable: newBags,
+            lastUsed: currentDate
           };
         }
         return material;
       })
     );
 
+    // Send email if notes are provided
+    if (usageData.notes && usageData.notes.trim()) {
+      sendEmail(
+        settings.emailAddresses, 
+        'Note added by lead hand', 
+        `Note: ${usageData.notes}`
+      );
+    }
+
     addActivity(
       'Material Used',
-      `Barcode: ${usageData.barcode}, Used: ${weightUsed.toFixed(1)} lbs, Spillage: ${usageData.estimatedSpillage || 0} lbs`,
+      `Barcode: ${usageData.barcode}, Used: ${weightUsed.toFixed(1)} lbs, Spillage: ${usageData.estimatedSpillage || 0} lbs, Finished Bag: ${usageData.finishedBag || 'No'}${usageData.notes ? `, Notes: ${usageData.notes}` : ''}`,
       `Lead Hand - ${usageData.leadHandName}`
+    );
+  };
+
+  // Delete raw material
+  const deleteRawMaterial = (id) => {
+    const material = rawMaterials.find(r => r.id === id);
+    setRawMaterials(rawMaterials.filter(r => r.id !== id));
+    addActivity(
+      'Raw Material Deleted',
+      `Barcode: ${material.barcode}, ${material.rawMaterial}, PO: ${material.poNumber}`,
+      'Inventory Manager'
+    );
+  };
+
+  // Delete warehouse item
+  const deleteWarehouseItem = (id) => {
+    const item = warehouseInventory.find(w => w.id === id);
+    setWarehouseInventory(warehouseInventory.filter(w => w.id !== id));
+    addActivity(
+      'Warehouse Item Deleted',
+      `Product ID: ${item.productId}, ${item.product} - ${item.colour} (${item.type}), ${item.numberOfBundles} bundles`,
+      'Warehouse Manager'
+    );
+  };
+
+  // Split warehouse item
+  const splitWarehouseItem = (id, splitQuantity) => {
+    const originalItem = warehouseInventory.find(w => w.id === id);
+    const remainingQuantity = originalItem.numberOfBundles - splitQuantity;
+
+    // Update original item
+    const updatedOriginal = {
+      ...originalItem,
+      numberOfBundles: remainingQuantity
+    };
+
+    // Create new split item
+    const newSplitItem = {
+      ...originalItem,
+      id: Math.max(...warehouseInventory.map(w => w.id), 0) + 1,
+      numberOfBundles: splitQuantity
+      // Product ID remains the same
+    };
+
+    // Update inventory
+    setWarehouseInventory(inventory =>
+      inventory.map(item => item.id === id ? updatedOriginal : item).concat(newSplitItem)
+    );
+
+    addActivity(
+      'Warehouse Item Split',
+      `Product ID: ${originalItem.productId}, Split ${splitQuantity} bundles from ${originalItem.numberOfBundles} total`,
+      'Warehouse Manager'
     );
   };
 
@@ -282,7 +400,8 @@ function App() {
       id: Math.max(...warehouseInventory.map(w => w.id), 0) + 1,
       productId,
       dateCreated: new Date().toISOString().split('T')[0],
-      warehouse: 'Dresden' // All production starts in Dresden
+      warehouse: 'Dresden', // All production starts in Dresden
+      stage: 'Available' // Default stage
     };
 
     setWarehouseInventory([...warehouseInventory, newProduction]);
@@ -426,6 +545,15 @@ function App() {
             >
               ⚙️ Settings
             </button>
+            
+            <button
+              onClick={() => setCurrentView('reports')}
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
+                currentView === 'reports' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              }`}
+            >
+              📊 Reports
+            </button>
           </div>
         </nav>
       </div>
@@ -451,13 +579,14 @@ function App() {
         )}
         
         {currentView === 'production' && (
-          <ProductionView addProduction={addProduction} />
+          <ProductionView addProduction={addProduction} settings={settings} />
         )}
         
         {currentView === 'rawMaterials' && (
           <RawMaterialsView 
             rawMaterials={rawMaterials} 
             updateRawMaterial={updateRawMaterial}
+            deleteRawMaterial={deleteRawMaterial}
             settings={settings}
           />
         )}
@@ -465,9 +594,12 @@ function App() {
         {currentView === 'warehouse' && (
           <WarehouseView 
             inventory={filteredWarehouseInventory}
+            allInventory={warehouseInventory}
             selectedWarehouse={selectedWarehouse}
             setSelectedWarehouse={setSelectedWarehouse}
             updateWarehouseItem={updateWarehouseItem}
+            deleteWarehouseItem={deleteWarehouseItem}
+            splitWarehouseItem={splitWarehouseItem}
           />
         )}
         
@@ -477,6 +609,14 @@ function App() {
 
         {currentView === 'settings' && (
           <SettingsView settings={settings} updateSettings={updateSettings} />
+        )}
+
+        {currentView === 'reports' && (
+          <ReportsView 
+            rawMaterials={rawMaterials}
+            warehouseInventory={warehouseInventory}
+            activityHistory={activityHistory}
+          />
         )}
       </div>
     </div>
@@ -578,197 +718,14 @@ const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, sett
   );
 };
 
-// Settings View Component
-const SettingsView = ({ settings, updateSettings }) => {
-  const [formData, setFormData] = useState(settings);
-  const [newRawMaterial, setNewRawMaterial] = useState('');
-  const [newVendor, setNewVendor] = useState('');
-
-  // Update formData when settings prop changes
-  useEffect(() => {
-    setFormData(settings);
-  }, [settings]);
-
-  const handleSave = () => {
-    updateSettings(formData);
-    alert('Settings saved successfully! Changes will be available immediately.');
-  };
-
-  const addRawMaterial = () => {
-    if (newRawMaterial.trim() && !formData.rawMaterials.includes(newRawMaterial.trim())) {
-      const updatedFormData = {
-        ...formData,
-        rawMaterials: [...formData.rawMaterials, newRawMaterial.trim()]
-      };
-      setFormData(updatedFormData);
-      updateSettings(updatedFormData); // Immediate update to parent
-      setNewRawMaterial('');
-    } else if (formData.rawMaterials.includes(newRawMaterial.trim())) {
-      alert('This raw material already exists!');
-    }
-  };
-
-  const removeRawMaterial = (material) => {
-    const updatedFormData = {
-      ...formData,
-      rawMaterials: formData.rawMaterials.filter(m => m !== material)
-    };
-    setFormData(updatedFormData);
-    updateSettings(updatedFormData); // Immediate update to parent
-  };
-
-  const addVendor = () => {
-    if (newVendor.trim() && !formData.vendors.includes(newVendor.trim())) {
-      const updatedFormData = {
-        ...formData,
-        vendors: [...formData.vendors, newVendor.trim()]
-      };
-      setFormData(updatedFormData);
-      updateSettings(updatedFormData); // Immediate update to parent
-      setNewVendor('');
-    } else if (formData.vendors.includes(newVendor.trim())) {
-      alert('This vendor already exists!');
-    }
-  };
-
-  const removeVendor = (vendor) => {
-    const updatedFormData = {
-      ...formData,
-      vendors: formData.vendors.filter(v => v !== vendor)
-    };
-    setFormData(updatedFormData);
-    updateSettings(updatedFormData); // Immediate update to parent
-  };
-
-  return (
-    <div>
-      <h2 className="text-3xl font-bold text-gray-900 mb-8">Settings</h2>
-      
-      <div className="space-y-8">
-        {/* Low Stock Alert Level */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold mb-4">Low Stock Alert Level</h3>
-          <div className="max-w-md">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Alert when raw material drops below this percentage of starting weight
-            </label>
-            <div className="flex items-center gap-4">
-              <input
-                type="range"
-                min="0.1"
-                max="0.5"
-                step="0.05"
-                value={formData.lowStockAlertLevel}
-                onChange={(e) => {
-                  const updatedFormData = {...formData, lowStockAlertLevel: parseFloat(e.target.value)};
-                  setFormData(updatedFormData);
-                  updateSettings(updatedFormData); // Immediate update to parent
-                }}
-                className="flex-1"
-              />
-              <span className="text-lg font-medium w-16">
-                {(formData.lowStockAlertLevel * 100).toFixed(0)}%
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Raw Materials Management */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold mb-4">Raw Materials</h3>
-          
-          <div className="mb-4">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newRawMaterial}
-                onChange={(e) => setNewRawMaterial(e.target.value)}
-                placeholder="Add new raw material"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                onClick={addRawMaterial}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto">
-            {formData.rawMaterials.map((material, index) => (
-              <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                <span className="text-sm">{material}</span>
-                <button
-                  onClick={() => removeRawMaterial(material)}
-                  className="text-red-600 hover:text-red-800 text-sm"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Vendors Management */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold mb-4">Vendors</h3>
-          
-          <div className="mb-4">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newVendor}
-                onChange={(e) => setNewVendor(e.target.value)}
-                placeholder="Add new vendor"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                onClick={addVendor}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-            {formData.vendors.map((vendor, index) => (
-              <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                <span className="text-sm">{vendor}</span>
-                <button
-                  onClick={() => removeVendor(vendor)}
-                  className="text-red-600 hover:text-red-800 text-sm"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Save Button */}
-        <div className="flex justify-end">
-          <button
-            onClick={handleSave}
-            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
-          >
-            Save Settings
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 // Receiving View Component
 const ReceivingView = ({ addRawMaterial, settings }) => {
   const [formData, setFormData] = useState({
     rawMaterial: '',
     poNumber: '',
     vendor: '',
-    bagsReceived: 0,
-    startingWeight: 0
+    bagsReceived: '',
+    startingWeight: ''
   });
   const [showLabel, setShowLabel] = useState(false);
   const [generatedBarcode, setGeneratedBarcode] = useState('');
@@ -792,6 +749,13 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validate form data
+    if (!formData.rawMaterial || !formData.poNumber || !formData.vendor || 
+        !formData.bagsReceived || !formData.startingWeight) {
+      alert('Please fill in all required fields');
+      return;
+    }
     
     // Store label data before form reset
     const currentLabelData = {
@@ -818,8 +782,8 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
       rawMaterial: '',
       poNumber: '',
       vendor: '',
-      bagsReceived: 0,
-      startingWeight: 0
+      bagsReceived: '',
+      startingWeight: ''
     });
   };
 
@@ -886,6 +850,7 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
                 value={formData.bagsReceived}
                 onChange={(e) => setFormData({...formData, bagsReceived: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 6"
                 min="1"
                 required
               />
@@ -899,6 +864,7 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
                 value={formData.startingWeight}
                 onChange={(e) => setFormData({...formData, startingWeight: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 9259"
                 min="0"
                 required
               />
@@ -969,7 +935,7 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
               
               <div className="mt-6 text-center barcode-section">
                 <div className="bg-white p-3 border-2 border-black inline-block">
-                  {renderBarcodeSVG(generateCode128Barcode(generatedBarcode || 'BARCODE'), 250, 60)}
+                  {renderBarcodeSVG(generateCode39Barcode(generatedBarcode || 'BARCODE'), 250, 60)}
                   <div className="barcode-text font-mono text-sm font-bold mt-2">{generatedBarcode || 'BARCODE-PENDING'}</div>
                 </div>
               </div>
@@ -990,9 +956,10 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
   const [formData, setFormData] = useState({
     barcode: '',
     leadHandName: '',
-    weightIn: 0,
-    weightOut: 0,
-    estimatedSpillage: 0,
+    weightIn: '',
+    weightOut: '',
+    estimatedSpillage: '',
+    finishedBag: 'No',
     notes: ''
   });
   const [scannedMaterial, setScannedMaterial] = useState(null);
@@ -1024,9 +991,10 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
     setFormData({
       barcode: '',
       leadHandName: '',
-      weightIn: 0,
-      weightOut: 0,
-      estimatedSpillage: 0,
+      weightIn: '',
+      weightOut: '',
+      estimatedSpillage: '',
+      finishedBag: 'No',
       notes: ''
     });
     setScannedMaterial(null);
@@ -1076,6 +1044,7 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
                 value={formData.weightIn}
                 onChange={(e) => setFormData({...formData, weightIn: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 1500.5"
                 required
               />
             </div>
@@ -1088,6 +1057,7 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
                 value={formData.weightOut}
                 onChange={(e) => setFormData({...formData, weightOut: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 15.2"
                 required
               />
             </div>
@@ -1100,7 +1070,24 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
                 value={formData.estimatedSpillage}
                 onChange={(e) => setFormData({...formData, estimatedSpillage: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 2.5"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Finished Bag?</label>
+              <select
+                value={formData.finishedBag}
+                onChange={(e) => setFormData({...formData, finishedBag: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+              <p className="text-sm text-gray-600 mt-1">
+                If Yes, a bag will be subtracted from inventory
+              </p>
             </div>
 
             <div>
@@ -1168,12 +1155,12 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
 };
 
 // Production View Component (Lead Hand Log)
-const ProductionView = ({ addProduction }) => {
+const ProductionView = ({ addProduction, settings }) => {
   const [formData, setFormData] = useState({
     product: '',
     colour: '',
     type: '',
-    numberOfBundles: 0
+    numberOfBundles: ''
   });
 
   const handleSubmit = (e) => {
@@ -1188,7 +1175,7 @@ const ProductionView = ({ addProduction }) => {
       product: '',
       colour: '',
       type: '',
-      numberOfBundles: 0
+      numberOfBundles: ''
     });
     
     alert('Production logged successfully!');
@@ -1220,14 +1207,17 @@ const ProductionView = ({ addProduction }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Colour</label>
-              <input
-                type="text"
+              <select
                 value={formData.colour}
                 onChange={(e) => setFormData({...formData, colour: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter colour"
                 required
-              />
+              >
+                <option value="">Select Colour</option>
+                {(settings?.colors || []).map(color => (
+                  <option key={color} value={color}>{color}</option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -1252,6 +1242,7 @@ const ProductionView = ({ addProduction }) => {
                 value={formData.numberOfBundles}
                 onChange={(e) => setFormData({...formData, numberOfBundles: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 25"
                 min="1"
                 required
               />
@@ -1271,7 +1262,7 @@ const ProductionView = ({ addProduction }) => {
 };
 
 // Enhanced Raw Materials View Component with editing and printing
-const RawMaterialsView = ({ rawMaterials, updateRawMaterial, settings }) => {
+const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, settings }) => {
   const [editingItem, setEditingItem] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [printingItem, setPrintingItem] = useState(null);
@@ -1328,6 +1319,8 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, settings }) => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Starting Weight</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Weight</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bags Available</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Created</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Used</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
@@ -1455,6 +1448,16 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, settings }) => {
                           >
                             Print
                           </button>
+                          <button
+                            onClick={() => {
+                              if (window.confirm('Are you sure you want to delete this raw material?')) {
+                                deleteRawMaterial(material.id);
+                              }
+                            }}
+                            className="text-red-600 hover:text-red-800 text-sm"
+                          >
+                            Delete
+                          </button>
                         </div>
                       )}
                     </td>
@@ -1512,7 +1515,7 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, settings }) => {
             
             <div className="mt-6 text-center barcode-section">
               <div className="bg-white p-3 border-2 border-black inline-block">
-                {renderBarcodeSVG(generateCode128Barcode(printingItem.barcode), 250, 60)}
+                {renderBarcodeSVG(generateCode39Barcode(printingItem.barcode), 250, 60)}
                 <div className="barcode-text font-mono text-sm font-bold mt-2">{printingItem.barcode}</div>
               </div>
             </div>
@@ -1527,10 +1530,13 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, settings }) => {
   );
 };
 
-// Enhanced Warehouse View Component with Product ID
-const WarehouseView = ({ inventory, selectedWarehouse, setSelectedWarehouse, updateWarehouseItem }) => {
+// Enhanced Warehouse View Component with Product ID, Split, Delete, and Summary
+const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelectedWarehouse, updateWarehouseItem, deleteWarehouseItem, splitWarehouseItem }) => {
   const [editingItem, setEditingItem] = useState(null);
   const [editFormData, setEditFormData] = useState({});
+  const [showSplitModal, setShowSplitModal] = useState(false);
+  const [splitItemId, setSplitItemId] = useState(null);
+  const [splitQuantity, setSplitQuantity] = useState(1);
 
   const startEdit = (item) => {
     setEditingItem(item.id);
@@ -1549,6 +1555,55 @@ const WarehouseView = ({ inventory, selectedWarehouse, setSelectedWarehouse, upd
     setEditFormData({});
   };
 
+  const handleSplit = (item) => {
+    if (item.numberOfBundles <= 1) {
+      alert('Cannot split items with 1 or fewer bundles');
+      return;
+    }
+    setSplitItemId(item.id);
+    setSplitQuantity(1);
+    setShowSplitModal(true);
+  };
+
+  const confirmSplit = () => {
+    const item = inventory.find(i => i.id === splitItemId);
+    if (splitQuantity >= item.numberOfBundles) {
+      alert('Split quantity must be less than current quantity');
+      return;
+    }
+    if (splitQuantity < 1) {
+      alert('Split quantity must be at least 1');
+      return;
+    }
+    
+    splitWarehouseItem(splitItemId, splitQuantity);
+    setShowSplitModal(false);
+    setSplitItemId(null);
+    setSplitQuantity(1);
+  };
+
+  // Calculate summary for selected warehouse
+  const calculateSummary = () => {
+    const filteredData = selectedWarehouse === 'All' ? allInventory : allInventory.filter(item => item.warehouse === selectedWarehouse);
+    
+    const summary = {};
+    PRODUCTS.forEach(product => {
+      TYPES.forEach(type => {
+        const key = `${product} ${type}s`;
+        const total = filteredData
+          .filter(item => item.product === product && item.type === type)
+          .reduce((sum, item) => sum + item.numberOfBundles, 0);
+        if (total > 0) {
+          summary[key] = total;
+        }
+      });
+    });
+    
+    return summary;
+  };
+
+  const summary = calculateSummary();
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -1565,6 +1620,23 @@ const WarehouseView = ({ inventory, selectedWarehouse, setSelectedWarehouse, upd
           ))}
         </select>
       </div>
+
+      {/* Summary Section */}
+      {Object.keys(summary).length > 0 && (
+        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            {selectedWarehouse === 'All' ? 'All Warehouses' : selectedWarehouse} Summary
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {Object.entries(summary).map(([key, value]) => (
+              <div key={key} className="text-center">
+                <p className="text-2xl font-bold text-blue-600">{value.toLocaleString()}</p>
+                <p className="text-sm text-gray-600">{key}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
         <div className="overflow-x-auto">
@@ -1575,6 +1647,7 @@ const WarehouseView = ({ inventory, selectedWarehouse, setSelectedWarehouse, upd
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Colour</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stage</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Created</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number of Bundles</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warehouse</th>
@@ -1629,6 +1702,29 @@ const WarehouseView = ({ inventory, selectedWarehouse, setSelectedWarehouse, upd
                       <span className="text-gray-900">{item.type}</span>
                     )}
                   </td>
+                  <td className="px-6 py-4">
+                    {editingItem === item.id ? (
+                      <select
+                        value={editFormData.stage}
+                        onChange={(e) => setEditFormData({...editFormData, stage: e.target.value})}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                      >
+                        {STAGES.map(stage => (
+                          <option key={stage} value={stage}>{stage}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        item.stage === 'Available' ? 'bg-green-100 text-green-800' :
+                        item.stage === 'Open' ? 'bg-blue-100 text-blue-800' :
+                        item.stage === 'Released' ? 'bg-yellow-100 text-yellow-800' :
+                        item.stage === 'Staged' ? 'bg-purple-100 text-purple-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {item.stage}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-6 py-4 text-gray-900">{item.dateCreated}</td>
                   <td className="px-6 py-4">
                     {editingItem === item.id ? (
@@ -1674,12 +1770,31 @@ const WarehouseView = ({ inventory, selectedWarehouse, setSelectedWarehouse, upd
                         </button>
                       </div>
                     ) : (
-                      <button
-                        onClick={() => startEdit(item)}
-                        className="text-blue-600 hover:text-blue-800 text-sm"
-                      >
-                        Edit
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => startEdit(item)}
+                          className="text-blue-600 hover:text-blue-800 text-sm"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleSplit(item)}
+                          className="text-purple-600 hover:text-purple-800 text-sm"
+                          disabled={item.numberOfBundles <= 1}
+                        >
+                          Split
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm('Are you sure you want to delete this inventory item?')) {
+                              deleteWarehouseItem(item.id);
+                            }
+                          }}
+                          className="text-red-600 hover:text-red-800 text-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -1688,11 +1803,503 @@ const WarehouseView = ({ inventory, selectedWarehouse, setSelectedWarehouse, upd
           </table>
         </div>
       </div>
+
+      {/* Split Modal */}
+      {showSplitModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-6">Split Inventory Item</h3>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                How many bundles do you want to split off?
+              </label>
+              <input
+                type="number"
+                min="1"
+                max={inventory.find(i => i.id === splitItemId)?.numberOfBundles - 1 || 1}
+                value={splitQuantity}
+                onChange={(e) => setSplitQuantity(parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="text-sm text-gray-600 mt-1">
+                Current quantity: {inventory.find(i => i.id === splitItemId)?.numberOfBundles} bundles
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowSplitModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmSplit}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Split
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-// Activity View Component
+// Reports View Component
+const ReportsView = ({ rawMaterials, warehouseInventory, activityHistory }) => {
+  const [dateRange, setDateRange] = useState({
+    startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days ago
+    endDate: new Date().toISOString().split('T')[0] // Today
+  });
+
+  // CSV Export function
+  const exportToCSV = (data, filename, headers) => {
+    const csvContent = [
+      headers.join(','),
+      ...data.map(row => headers.map(header => {
+        const value = row[header] || '';
+        return `"${String(value).replace(/"/g, '""')}"`;
+      }).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', filename);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  // Filter activities by date range and type
+  const getFilteredActivities = (type) => {
+    return activityHistory.filter(activity => {
+      const activityDate = activity.timestamp.split(' ')[0];
+      const activityDateTime = new Date(activityDate);
+      const startDateTime = new Date(dateRange.startDate);
+      const endDateTime = new Date(dateRange.endDate);
+      
+      const isInDateRange = activityDateTime >= startDateTime && activityDateTime <= endDateTime;
+      
+      switch(type) {
+        case 'Receiving':
+          return isInDateRange && activity.action === 'Raw Material Received';
+        case 'Using':
+          return isInDateRange && activity.action === 'Material Used';
+        case 'Lead Hand Log':
+          return isInDateRange && activity.action === 'Production Added';
+        default:
+          return isInDateRange;
+      }
+    });
+  };
+
+  return (
+    <div>
+      <h2 className="text-3xl font-bold text-gray-900 mb-8">Reports</h2>
+      
+      {/* Date Range Selector */}
+      <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Date Range</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+            <input
+              type="date"
+              value={dateRange.startDate}
+              onChange={(e) => setDateRange({...dateRange, startDate: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+            <input
+              type="date"
+              value={dateRange.endDate}
+              onChange={(e) => setDateRange({...dateRange, endDate: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* CSV Export Section */}
+      <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Export Data</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button
+            onClick={() => exportToCSV(
+              rawMaterials,
+              'raw_materials.csv',
+              ['barcode', 'poNumber', 'rawMaterial', 'vendor', 'startingWeight', 'currentWeight', 'bagsAvailable', 'dateCreated', 'lastUsed']
+            )}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+          >
+            📊 Export Raw Materials
+          </button>
+          <button
+            onClick={() => exportToCSV(
+              warehouseInventory,
+              'warehouse_inventory.csv',
+              ['productId', 'product', 'colour', 'type', 'stage', 'numberOfBundles', 'warehouse', 'dateCreated']
+            )}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            🏭 Export Warehouse
+          </button>
+          <button
+            onClick={() => exportToCSV(
+              activityHistory,
+              'activity_history.csv',
+              ['timestamp', 'action', 'details', 'user']
+            )}
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+          >
+            📋 Export Activity
+          </button>
+        </div>
+      </div>
+
+      {/* Activity Summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {['Receiving', 'Using', 'Lead Hand Log'].map(type => {
+          const activities = getFilteredActivities(type);
+          return (
+            <div key={type} className="bg-white rounded-lg shadow-sm border p-6">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">{type} Summary</h4>
+              <p className="text-3xl font-bold text-blue-600 mb-2">{activities.length}</p>
+              <p className="text-sm text-gray-600 mb-4">Total activities in date range</p>
+              
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {activities.slice(0, 5).map(activity => (
+                  <div key={activity.id} className="text-sm">
+                    <div className="font-medium text-gray-900">{activity.timestamp.split(' ')[0]}</div>
+                    <div className="text-gray-600 truncate">{activity.details}</div>
+                  </div>
+                ))}
+                {activities.length > 5 && (
+                  <div className="text-sm text-gray-500">...and {activities.length - 5} more</div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// Enhanced Settings View Component
+const SettingsView = ({ settings, updateSettings }) => {
+  const [formData, setFormData] = useState(settings);
+  const [newRawMaterial, setNewRawMaterial] = useState('');
+  const [newVendor, setNewVendor] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newColor, setNewColor] = useState('');
+
+  // Update formData when settings prop changes
+  useEffect(() => {
+    setFormData(settings);
+  }, [settings]);
+
+  const handleSave = () => {
+    updateSettings(formData);
+    alert('Settings saved successfully! Changes will be available immediately.');
+  };
+
+  const addRawMaterial = () => {
+    if (newRawMaterial.trim() && !formData.rawMaterials.includes(newRawMaterial.trim())) {
+      const updatedFormData = {
+        ...formData,
+        rawMaterials: [...formData.rawMaterials, newRawMaterial.trim()]
+      };
+      setFormData(updatedFormData);
+      updateSettings(updatedFormData);
+      setNewRawMaterial('');
+    } else if (formData.rawMaterials.includes(newRawMaterial.trim())) {
+      alert('This raw material already exists!');
+    }
+  };
+
+  const removeRawMaterial = (material) => {
+    const updatedFormData = {
+      ...formData,
+      rawMaterials: formData.rawMaterials.filter(m => m !== material)
+    };
+    setFormData(updatedFormData);
+    updateSettings(updatedFormData);
+  };
+
+  const addVendor = () => {
+    if (newVendor.trim() && !formData.vendors.includes(newVendor.trim())) {
+      const updatedFormData = {
+        ...formData,
+        vendors: [...formData.vendors, newVendor.trim()]
+      };
+      setFormData(updatedFormData);
+      updateSettings(updatedFormData);
+      setNewVendor('');
+    } else if (formData.vendors.includes(newVendor.trim())) {
+      alert('This vendor already exists!');
+    }
+  };
+
+  const removeVendor = (vendor) => {
+    const updatedFormData = {
+      ...formData,
+      vendors: formData.vendors.filter(v => v !== vendor)
+    };
+    setFormData(updatedFormData);
+    updateSettings(updatedFormData);
+  };
+
+  const addEmail = () => {
+    if (newEmail.trim() && !formData.emailAddresses.includes(newEmail.trim())) {
+      const updatedFormData = {
+        ...formData,
+        emailAddresses: [...formData.emailAddresses, newEmail.trim()]
+      };
+      setFormData(updatedFormData);
+      updateSettings(updatedFormData);
+      setNewEmail('');
+    } else if (formData.emailAddresses.includes(newEmail.trim())) {
+      alert('This email address already exists!');
+    }
+  };
+
+  const removeEmail = (email) => {
+    const updatedFormData = {
+      ...formData,
+      emailAddresses: formData.emailAddresses.filter(e => e !== email)
+    };
+    setFormData(updatedFormData);
+    updateSettings(updatedFormData);
+  };
+
+  const addColor = () => {
+    if (newColor.trim() && !formData.colors.includes(newColor.trim())) {
+      const updatedFormData = {
+        ...formData,
+        colors: [...formData.colors, newColor.trim()]
+      };
+      setFormData(updatedFormData);
+      updateSettings(updatedFormData);
+      setNewColor('');
+    } else if (formData.colors.includes(newColor.trim())) {
+      alert('This color already exists!');
+    }
+  };
+
+  const removeColor = (color) => {
+    const updatedFormData = {
+      ...formData,
+      colors: formData.colors.filter(c => c !== color)
+    };
+    setFormData(updatedFormData);
+    updateSettings(updatedFormData);
+  };
+
+  return (
+    <div>
+      <h2 className="text-3xl font-bold text-gray-900 mb-8">Settings</h2>
+      
+      <div className="space-y-8">
+        {/* Low Stock Alert Level */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Low Stock Alert Level</h3>
+          <div className="max-w-md">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Alert when raw material drops below this percentage of starting weight
+            </label>
+            <div className="flex items-center gap-4">
+              <input
+                type="range"
+                min="0.1"
+                max="0.5"
+                step="0.05"
+                value={formData.lowStockAlertLevel}
+                onChange={(e) => {
+                  const updatedFormData = {...formData, lowStockAlertLevel: parseFloat(e.target.value)};
+                  setFormData(updatedFormData);
+                  updateSettings(updatedFormData);
+                }}
+                className="flex-1"
+              />
+              <span className="text-lg font-medium w-16">
+                {(formData.lowStockAlertLevel * 100).toFixed(0)}%
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Email Addresses Management */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Email Addresses</h3>
+          <p className="text-sm text-gray-600 mb-4">Email addresses that will receive notifications when lead hands add notes.</p>
+          
+          <div className="mb-4">
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="Add new email address"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={addEmail}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {formData.emailAddresses.map((email, index) => (
+              <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                <span className="text-sm">{email}</span>
+                <button
+                  onClick={() => removeEmail(email)}
+                  className="text-red-600 hover:text-red-800 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Colors Management */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Colors</h3>
+          <p className="text-sm text-gray-600 mb-4">Available colors for Lead Hand Log production entries.</p>
+          
+          <div className="mb-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newColor}
+                onChange={(e) => setNewColor(e.target.value)}
+                placeholder="Add new color"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={addColor}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto">
+            {formData.colors.map((color, index) => (
+              <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                <span className="text-sm">{color}</span>
+                <button
+                  onClick={() => removeColor(color)}
+                  className="text-red-600 hover:text-red-800 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Raw Materials Management */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Raw Materials</h3>
+          
+          <div className="mb-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newRawMaterial}
+                onChange={(e) => setNewRawMaterial(e.target.value)}
+                placeholder="Add new raw material"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={addRawMaterial}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto">
+            {formData.rawMaterials.map((material, index) => (
+              <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                <span className="text-sm">{material}</span>
+                <button
+                  onClick={() => removeRawMaterial(material)}
+                  className="text-red-600 hover:text-red-800 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Vendors Management */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Vendors</h3>
+          
+          <div className="mb-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newVendor}
+                onChange={(e) => setNewVendor(e.target.value)}
+                placeholder="Add new vendor"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={addVendor}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            {formData.vendors.map((vendor, index) => (
+              <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                <span className="text-sm">{vendor}</span>
+                <button
+                  onClick={() => removeVendor(vendor)}
+                  className="text-red-600 hover:text-red-800 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={handleSave}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
+          >
+            Save Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 const ActivityView = ({ activityHistory }) => {
   return (
     <div>

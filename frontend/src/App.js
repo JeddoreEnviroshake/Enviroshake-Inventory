@@ -750,6 +750,13 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // Validate form data
+    if (!formData.rawMaterial || !formData.poNumber || !formData.vendor || 
+        !formData.bagsReceived || !formData.startingWeight) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
     // Store label data before form reset
     const currentLabelData = {
       rawMaterial: formData.rawMaterial,

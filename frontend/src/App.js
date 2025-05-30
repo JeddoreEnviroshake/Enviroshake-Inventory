@@ -1383,14 +1383,17 @@ const ProductionView = ({ addProduction, settings }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Colour</label>
-              <input
-                type="text"
+              <select
                 value={formData.colour}
                 onChange={(e) => setFormData({...formData, colour: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter colour"
                 required
-              />
+              >
+                <option value="">Select Colour</option>
+                {settings.colors.map(color => (
+                  <option key={color} value={color}>{color}</option>
+                ))}
+              </select>
             </div>
 
             <div>

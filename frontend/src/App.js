@@ -46,24 +46,24 @@ const renderBarcodeSVG = (binaryCode, width = 200, height = 50) => {
   for (let i = 0; i < binaryCode.length; i++) {
     if (binaryCode[i] === '1') {
       bars.push(
-        <rect
-          key={i}
-          x={xPos}
-          y={0}
-          width={barWidth}
-          height={height}
-          fill="black"
-        />
+        React.createElement('rect', {
+          key: i,
+          x: xPos,
+          y: 0,
+          width: barWidth,
+          height: height,
+          fill: 'black'
+        })
       );
     }
     xPos += barWidth;
   }
   
-  return (
-    <svg width={width} height={height} className="barcode-svg">
-      {bars}
-    </svg>
-  );
+  return React.createElement('svg', {
+    width: width,
+    height: height,
+    className: 'barcode-svg'
+  }, bars);
 };
 
 // Initial configuration values

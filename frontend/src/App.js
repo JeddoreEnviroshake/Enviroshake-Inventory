@@ -517,6 +517,15 @@ function App() {
             >
               ⚙️ Settings
             </button>
+            
+            <button
+              onClick={() => setCurrentView('reports')}
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
+                currentView === 'reports' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              }`}
+            >
+              📊 Reports
+            </button>
           </div>
         </nav>
       </div>

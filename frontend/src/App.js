@@ -299,26 +299,42 @@ function App() {
   // Use raw material
   const useRawMaterial = (usageData) => {
     const weightUsed = usageData.weightIn - usageData.weightOut - (usageData.estimatedSpillage || 0);
+    const currentDate = new Date().toISOString().split('T')[0];
     
     setRawMaterials(materials => 
       materials.map(material => {
         if (material.barcode === usageData.barcode) {
           const newWeight = Math.max(0, material.currentWeight - weightUsed);
-          const newBags = newWeight === 0 ? 0 : material.bagsAvailable - 1;
+          let newBags = material.bagsAvailable;
+          
+          // If finished bag is Yes, subtract a bag
+          if (usageData.finishedBag === 'Yes') {
+            newBags = Math.max(0, material.bagsAvailable - 1);
+          }
           
           return {
             ...material,
             currentWeight: newWeight,
-            bagsAvailable: Math.max(0, newBags)
+            bagsAvailable: newBags,
+            lastUsed: currentDate
           };
         }
         return material;
       })
     );
 
+    // Send email if notes are provided
+    if (usageData.notes && usageData.notes.trim()) {
+      sendEmail(
+        settings.emailAddresses, 
+        'Note added by lead hand', 
+        `Note: ${usageData.notes}`
+      );
+    }
+
     addActivity(
       'Material Used',
-      `Barcode: ${usageData.barcode}, Used: ${weightUsed.toFixed(1)} lbs, Spillage: ${usageData.estimatedSpillage || 0} lbs`,
+      `Barcode: ${usageData.barcode}, Used: ${weightUsed.toFixed(1)} lbs, Spillage: ${usageData.estimatedSpillage || 0} lbs, Finished Bag: ${usageData.finishedBag || 'No'}${usageData.notes ? `, Notes: ${usageData.notes}` : ''}`,
       `Lead Hand - ${usageData.leadHandName}`
     );
   };

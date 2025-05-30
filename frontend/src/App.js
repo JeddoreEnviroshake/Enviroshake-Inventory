@@ -1026,6 +1026,7 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
                 value={formData.bagsReceived}
                 onChange={(e) => setFormData({...formData, bagsReceived: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 6"
                 min="1"
                 required
               />
@@ -1039,6 +1040,7 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
                 value={formData.startingWeight}
                 onChange={(e) => setFormData({...formData, startingWeight: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 9259"
                 min="0"
                 required
               />

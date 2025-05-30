@@ -1132,9 +1132,10 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
   const [formData, setFormData] = useState({
     barcode: '',
     leadHandName: '',
-    weightIn: 0,
-    weightOut: 0,
-    estimatedSpillage: 0,
+    weightIn: '',
+    weightOut: '',
+    estimatedSpillage: '',
+    finishedBag: 'No',
     notes: ''
   });
   const [scannedMaterial, setScannedMaterial] = useState(null);

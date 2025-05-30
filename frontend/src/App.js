@@ -248,12 +248,15 @@ function App() {
   // Add raw material (Receiving)
   const addRawMaterial = (materialData) => {
     const barcode = generateBarcode(materialData.poNumber, materialData.rawMaterial);
+    const currentDate = new Date().toISOString().split('T')[0];
     const newMaterial = {
       ...materialData,
       id: Math.max(...rawMaterials.map(r => r.id), 0) + 1,
       barcode,
       currentWeight: materialData.startingWeight,
-      dateReceived: new Date().toISOString().split('T')[0],
+      dateReceived: currentDate,
+      dateCreated: currentDate,
+      lastUsed: null,
       bagsAvailable: materialData.bagsReceived
     };
     

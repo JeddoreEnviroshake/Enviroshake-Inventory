@@ -1214,7 +1214,7 @@ const ProductionView = ({ addProduction, settings }) => {
                 required
               >
                 <option value="">Select Colour</option>
-                {settings.colors.map(color => (
+                {(settings?.colors || []).map(color => (
                   <option key={color} value={color}>{color}</option>
                 ))}
               </select>

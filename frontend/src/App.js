@@ -1351,7 +1351,7 @@ const ProductionView = ({ addProduction, settings }) => {
       product: '',
       colour: '',
       type: '',
-      numberOfBundles: 0
+      numberOfBundles: ''
     });
     
     alert('Production logged successfully!');

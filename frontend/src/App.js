@@ -579,7 +579,7 @@ function App() {
         )}
         
         {currentView === 'production' && (
-          <ProductionView addProduction={addProduction} />
+          <ProductionView addProduction={addProduction} settings={settings} />
         )}
         
         {currentView === 'rawMaterials' && (

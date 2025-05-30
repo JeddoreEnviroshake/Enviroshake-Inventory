@@ -122,6 +122,8 @@ const initialRawMaterials = [
     startingWeight: 9259,
     currentWeight: 8100,
     dateReceived: '2024-12-15',
+    dateCreated: '2024-12-15',
+    lastUsed: '2024-12-15',
     bagsAvailable: 5
   },
   {
@@ -134,6 +136,8 @@ const initialRawMaterials = [
     startingWeight: 3200,
     currentWeight: 3200,
     dateReceived: '2024-12-14',
+    dateCreated: '2024-12-14',
+    lastUsed: null,
     bagsAvailable: 4
   }
 ];

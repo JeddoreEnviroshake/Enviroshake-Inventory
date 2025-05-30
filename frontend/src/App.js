@@ -907,8 +907,8 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
     rawMaterial: '',
     poNumber: '',
     vendor: '',
-    bagsReceived: 0,
-    startingWeight: 0
+    bagsReceived: '',
+    startingWeight: ''
   });
   const [showLabel, setShowLabel] = useState(false);
   const [generatedBarcode, setGeneratedBarcode] = useState('');

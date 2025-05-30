@@ -82,7 +82,7 @@ const initialSettings = {
 const PRODUCTS = ['Enviroshake', 'Enviroslate', 'Enviroshingle'];
 const WAREHOUSES = ['Dresden', 'BC', 'Buffalo'];
 const TYPES = ['Bundle', 'Cap'];
-const STAGES = ['Available', 'Open', 'Released', 'Staged', 'Shipped'];
+const STAGES = ['Available', 'Open', 'Released', 'Staged', 'Shipped', 'Transfer'];
 
 // Local Storage functions for data persistence
 const saveToLocalStorage = (key, data) => {

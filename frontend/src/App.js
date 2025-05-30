@@ -209,6 +209,15 @@ function App() {
     saveToLocalStorage('enviroshake_activityHistory', activityHistory);
   }, [activityHistory]);
 
+  // Email function (simulated for demo)
+  const sendEmail = (to, subject, body) => {
+    // In a real application, this would integrate with an email service
+    console.log('Email sent to:', to);
+    console.log('Subject:', subject);
+    console.log('Body:', body);
+    alert(`Email would be sent to: ${to.join(', ')}\nSubject: ${subject}\nBody: ${body}`);
+  };
+
   // Add activity log entry with enhanced details
   const addActivity = (action, details, user = 'System') => {
     const newActivity = {

@@ -610,6 +610,14 @@ function App() {
         {currentView === 'settings' && (
           <SettingsView settings={settings} updateSettings={updateSettings} />
         )}
+
+        {currentView === 'reports' && (
+          <ReportsView 
+            rawMaterials={rawMaterials}
+            warehouseInventory={warehouseInventory}
+            activityHistory={activityHistory}
+          />
+        )}
       </div>
     </div>
   );

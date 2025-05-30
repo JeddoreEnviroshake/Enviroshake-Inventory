@@ -2024,7 +2024,458 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
   );
 };
 
-// Activity View Component
+// Reports View Component
+const ReportsView = ({ rawMaterials, warehouseInventory, activityHistory }) => {
+  const [dateRange, setDateRange] = useState({
+    startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days ago
+    endDate: new Date().toISOString().split('T')[0] // Today
+  });
+
+  // CSV Export function
+  const exportToCSV = (data, filename, headers) => {
+    const csvContent = [
+      headers.join(','),
+      ...data.map(row => headers.map(header => {
+        const value = row[header] || '';
+        return `"${String(value).replace(/"/g, '""')}"`;
+      }).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', filename);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  // Filter activities by date range and type
+  const getFilteredActivities = (type) => {
+    return activityHistory.filter(activity => {
+      const activityDate = activity.timestamp.split(' ')[0];
+      const activityDateTime = new Date(activityDate);
+      const startDateTime = new Date(dateRange.startDate);
+      const endDateTime = new Date(dateRange.endDate);
+      
+      const isInDateRange = activityDateTime >= startDateTime && activityDateTime <= endDateTime;
+      
+      switch(type) {
+        case 'Receiving':
+          return isInDateRange && activity.action === 'Raw Material Received';
+        case 'Using':
+          return isInDateRange && activity.action === 'Material Used';
+        case 'Lead Hand Log':
+          return isInDateRange && activity.action === 'Production Added';
+        default:
+          return isInDateRange;
+      }
+    });
+  };
+
+  return (
+    <div>
+      <h2 className="text-3xl font-bold text-gray-900 mb-8">Reports</h2>
+      
+      {/* Date Range Selector */}
+      <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Date Range</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+            <input
+              type="date"
+              value={dateRange.startDate}
+              onChange={(e) => setDateRange({...dateRange, startDate: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+            <input
+              type="date"
+              value={dateRange.endDate}
+              onChange={(e) => setDateRange({...dateRange, endDate: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* CSV Export Section */}
+      <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Export Data</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button
+            onClick={() => exportToCSV(
+              rawMaterials,
+              'raw_materials.csv',
+              ['barcode', 'poNumber', 'rawMaterial', 'vendor', 'startingWeight', 'currentWeight', 'bagsAvailable', 'dateCreated', 'lastUsed']
+            )}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+          >
+            📊 Export Raw Materials
+          </button>
+          <button
+            onClick={() => exportToCSV(
+              warehouseInventory,
+              'warehouse_inventory.csv',
+              ['productId', 'product', 'colour', 'type', 'stage', 'numberOfBundles', 'warehouse', 'dateCreated']
+            )}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            🏭 Export Warehouse
+          </button>
+          <button
+            onClick={() => exportToCSV(
+              activityHistory,
+              'activity_history.csv',
+              ['timestamp', 'action', 'details', 'user']
+            )}
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+          >
+            📋 Export Activity
+          </button>
+        </div>
+      </div>
+
+      {/* Activity Summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {['Receiving', 'Using', 'Lead Hand Log'].map(type => {
+          const activities = getFilteredActivities(type);
+          return (
+            <div key={type} className="bg-white rounded-lg shadow-sm border p-6">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">{type} Summary</h4>
+              <p className="text-3xl font-bold text-blue-600 mb-2">{activities.length}</p>
+              <p className="text-sm text-gray-600 mb-4">Total activities in date range</p>
+              
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {activities.slice(0, 5).map(activity => (
+                  <div key={activity.id} className="text-sm">
+                    <div className="font-medium text-gray-900">{activity.timestamp.split(' ')[0]}</div>
+                    <div className="text-gray-600 truncate">{activity.details}</div>
+                  </div>
+                ))}
+                {activities.length > 5 && (
+                  <div className="text-sm text-gray-500">...and {activities.length - 5} more</div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// Enhanced Settings View Component
+const SettingsView = ({ settings, updateSettings }) => {
+  const [formData, setFormData] = useState(settings);
+  const [newRawMaterial, setNewRawMaterial] = useState('');
+  const [newVendor, setNewVendor] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newColor, setNewColor] = useState('');
+
+  // Update formData when settings prop changes
+  useEffect(() => {
+    setFormData(settings);
+  }, [settings]);
+
+  const handleSave = () => {
+    updateSettings(formData);
+    alert('Settings saved successfully! Changes will be available immediately.');
+  };
+
+  const addRawMaterial = () => {
+    if (newRawMaterial.trim() && !formData.rawMaterials.includes(newRawMaterial.trim())) {
+      const updatedFormData = {
+        ...formData,
+        rawMaterials: [...formData.rawMaterials, newRawMaterial.trim()]
+      };
+      setFormData(updatedFormData);
+      updateSettings(updatedFormData);
+      setNewRawMaterial('');
+    } else if (formData.rawMaterials.includes(newRawMaterial.trim())) {
+      alert('This raw material already exists!');
+    }
+  };
+
+  const removeRawMaterial = (material) => {
+    const updatedFormData = {
+      ...formData,
+      rawMaterials: formData.rawMaterials.filter(m => m !== material)
+    };
+    setFormData(updatedFormData);
+    updateSettings(updatedFormData);
+  };
+
+  const addVendor = () => {
+    if (newVendor.trim() && !formData.vendors.includes(newVendor.trim())) {
+      const updatedFormData = {
+        ...formData,
+        vendors: [...formData.vendors, newVendor.trim()]
+      };
+      setFormData(updatedFormData);
+      updateSettings(updatedFormData);
+      setNewVendor('');
+    } else if (formData.vendors.includes(newVendor.trim())) {
+      alert('This vendor already exists!');
+    }
+  };
+
+  const removeVendor = (vendor) => {
+    const updatedFormData = {
+      ...formData,
+      vendors: formData.vendors.filter(v => v !== vendor)
+    };
+    setFormData(updatedFormData);
+    updateSettings(updatedFormData);
+  };
+
+  const addEmail = () => {
+    if (newEmail.trim() && !formData.emailAddresses.includes(newEmail.trim())) {
+      const updatedFormData = {
+        ...formData,
+        emailAddresses: [...formData.emailAddresses, newEmail.trim()]
+      };
+      setFormData(updatedFormData);
+      updateSettings(updatedFormData);
+      setNewEmail('');
+    } else if (formData.emailAddresses.includes(newEmail.trim())) {
+      alert('This email address already exists!');
+    }
+  };
+
+  const removeEmail = (email) => {
+    const updatedFormData = {
+      ...formData,
+      emailAddresses: formData.emailAddresses.filter(e => e !== email)
+    };
+    setFormData(updatedFormData);
+    updateSettings(updatedFormData);
+  };
+
+  const addColor = () => {
+    if (newColor.trim() && !formData.colors.includes(newColor.trim())) {
+      const updatedFormData = {
+        ...formData,
+        colors: [...formData.colors, newColor.trim()]
+      };
+      setFormData(updatedFormData);
+      updateSettings(updatedFormData);
+      setNewColor('');
+    } else if (formData.colors.includes(newColor.trim())) {
+      alert('This color already exists!');
+    }
+  };
+
+  const removeColor = (color) => {
+    const updatedFormData = {
+      ...formData,
+      colors: formData.colors.filter(c => c !== color)
+    };
+    setFormData(updatedFormData);
+    updateSettings(updatedFormData);
+  };
+
+  return (
+    <div>
+      <h2 className="text-3xl font-bold text-gray-900 mb-8">Settings</h2>
+      
+      <div className="space-y-8">
+        {/* Low Stock Alert Level */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Low Stock Alert Level</h3>
+          <div className="max-w-md">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Alert when raw material drops below this percentage of starting weight
+            </label>
+            <div className="flex items-center gap-4">
+              <input
+                type="range"
+                min="0.1"
+                max="0.5"
+                step="0.05"
+                value={formData.lowStockAlertLevel}
+                onChange={(e) => {
+                  const updatedFormData = {...formData, lowStockAlertLevel: parseFloat(e.target.value)};
+                  setFormData(updatedFormData);
+                  updateSettings(updatedFormData);
+                }}
+                className="flex-1"
+              />
+              <span className="text-lg font-medium w-16">
+                {(formData.lowStockAlertLevel * 100).toFixed(0)}%
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Email Addresses Management */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Email Addresses</h3>
+          <p className="text-sm text-gray-600 mb-4">Email addresses that will receive notifications when lead hands add notes.</p>
+          
+          <div className="mb-4">
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="Add new email address"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={addEmail}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {formData.emailAddresses.map((email, index) => (
+              <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                <span className="text-sm">{email}</span>
+                <button
+                  onClick={() => removeEmail(email)}
+                  className="text-red-600 hover:text-red-800 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Colors Management */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Colors</h3>
+          <p className="text-sm text-gray-600 mb-4">Available colors for Lead Hand Log production entries.</p>
+          
+          <div className="mb-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newColor}
+                onChange={(e) => setNewColor(e.target.value)}
+                placeholder="Add new color"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={addColor}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto">
+            {formData.colors.map((color, index) => (
+              <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                <span className="text-sm">{color}</span>
+                <button
+                  onClick={() => removeColor(color)}
+                  className="text-red-600 hover:text-red-800 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Raw Materials Management */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Raw Materials</h3>
+          
+          <div className="mb-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newRawMaterial}
+                onChange={(e) => setNewRawMaterial(e.target.value)}
+                placeholder="Add new raw material"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={addRawMaterial}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto">
+            {formData.rawMaterials.map((material, index) => (
+              <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                <span className="text-sm">{material}</span>
+                <button
+                  onClick={() => removeRawMaterial(material)}
+                  className="text-red-600 hover:text-red-800 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Vendors Management */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Vendors</h3>
+          
+          <div className="mb-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newVendor}
+                onChange={(e) => setNewVendor(e.target.value)}
+                placeholder="Add new vendor"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={addVendor}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            {formData.vendors.map((vendor, index) => (
+              <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                <span className="text-sm">{vendor}</span>
+                <button
+                  onClick={() => removeVendor(vendor)}
+                  className="text-red-600 hover:text-red-800 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={handleSave}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
+          >
+            Save Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 const ActivityView = ({ activityHistory }) => {
   return (
     <div>

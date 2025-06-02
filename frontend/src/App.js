@@ -1895,6 +1895,51 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
           </div>
         </div>
       )}
+
+      {/* Transfer Modal */}
+      {showTransferModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-6">Transfer Inventory</h3>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-700 mb-4">
+                You are changing the warehouse location. How many bundles would you like to transfer to {targetWarehouse}?
+              </p>
+              
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Number of bundles to transfer:
+              </label>
+              <input
+                type="number"
+                min="1"
+                max={editFormData.numberOfBundles || 1}
+                value={transferQuantity}
+                onChange={(e) => setTransferQuantity(parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="text-sm text-gray-600 mt-1">
+                Current quantity: {editFormData.numberOfBundles} bundles
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={cancelTransfer}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmTransfer}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Transfer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

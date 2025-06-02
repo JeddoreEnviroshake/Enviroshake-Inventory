@@ -1592,32 +1592,31 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
       };
       updateWarehouseItem(editingItem, updatedData, originalData);
     } else {
-      // Split logic: First split the item, then update the new split item's warehouse
+      // Split and transfer logic: Similar to split function but with warehouse change
+      const remainingQuantity = originalData.numberOfBundles - transferQuantity;
       
-      // Step 1: Split the item (this creates a new item with transferQuantity and reduces original)
-      splitWarehouseItem(editingItem, transferQuantity);
+      // Step 1: Update original item to have remaining quantity at original warehouse
+      const updatedOriginal = {
+        ...originalData,
+        numberOfBundles: remainingQuantity,
+        warehouse: originalWarehouse  // Keep original warehouse
+      };
       
-      // Step 2: We need to find and update the newly created split item's warehouse
-      // The split function creates a new item with the highest ID + 1
-      setTimeout(() => {
-        // Get the updated inventory after split
-        const currentInventory = allInventory;
-        const newSplitItem = currentInventory.find(item => 
-          item.productId === originalData.productId && 
-          item.numberOfBundles === transferQuantity &&
-          item.warehouse === originalData.warehouse &&
-          item.id !== editingItem
-        );
-        
-        if (newSplitItem) {
-          // Update the new split item's warehouse
-          const updatedSplitItem = {
-            ...newSplitItem,
-            warehouse: targetWarehouse
-          };
-          updateWarehouseItem(newSplitItem.id, updatedSplitItem, newSplitItem);
-        }
-      }, 100); // Small delay to ensure split operation completes
+      // Step 2: Create new item with transfer quantity at target warehouse
+      const maxId = Math.max(...allInventory.map(w => w.id), 0);
+      const newTransferItem = {
+        ...originalData,
+        id: maxId + 1,
+        numberOfBundles: transferQuantity,
+        warehouse: targetWarehouse
+      };
+      
+      // Step 3: Update the original item first
+      updateWarehouseItem(editingItem, updatedOriginal, originalData);
+      
+      // Step 4: Add the new item by calling updateWarehouseItem with a non-existent ID
+      // This will trigger the creation of a new item
+      updateWarehouseItem(newTransferItem.id, newTransferItem, null);
     }
     
     // Close modal and reset

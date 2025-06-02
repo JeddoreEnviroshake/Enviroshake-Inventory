@@ -362,6 +362,7 @@ function App() {
   };
 
   // Split warehouse item
+  // Split and transfer functions
   const splitWarehouseItem = (id, splitQuantity) => {
     const originalItem = warehouseInventory.find(w => w.id === id);
     const remainingQuantity = originalItem.numberOfBundles - splitQuantity;
@@ -388,6 +389,51 @@ function App() {
     addActivity(
       'Warehouse Item Split',
       `Product ID: ${originalItem.productId}, Split ${splitQuantity} bundles from ${originalItem.numberOfBundles} total`,
+      'Warehouse Manager'
+    );
+  };
+
+  // Transfer function that handles split and warehouse change
+  const transferWarehouseItem = (id, quantity, targetWarehouse) => {
+    const originalItem = warehouseInventory.find(w => w.id === id);
+    if (!originalItem) return;
+    
+    if (quantity === originalItem.numberOfBundles) {
+      // Full transfer - just update warehouse
+      const updatedItem = {
+        ...originalItem,
+        warehouse: targetWarehouse
+      };
+      setWarehouseInventory(inventory =>
+        inventory.map(item => item.id === id ? updatedItem : item)
+      );
+    } else {
+      // Partial transfer - split and change warehouse
+      const remainingQuantity = originalItem.numberOfBundles - quantity;
+      
+      // Update original item to have remaining quantity at original warehouse
+      const updatedOriginal = {
+        ...originalItem,
+        numberOfBundles: remainingQuantity
+      };
+      
+      // Create new item with transfer quantity at target warehouse
+      const newTransferItem = {
+        ...originalItem,
+        id: Math.max(...warehouseInventory.map(w => w.id), 0) + 1,
+        numberOfBundles: quantity,
+        warehouse: targetWarehouse
+      };
+      
+      // Update inventory with both items
+      setWarehouseInventory(inventory =>
+        inventory.map(item => item.id === id ? updatedOriginal : item).concat(newTransferItem)
+      );
+    }
+    
+    addActivity(
+      'Warehouse Transfer',
+      `Product ID: ${originalItem.productId}, Transferred ${quantity} bundles to ${targetWarehouse}`,
       'Warehouse Manager'
     );
   };
@@ -600,6 +646,7 @@ function App() {
             updateWarehouseItem={updateWarehouseItem}
             deleteWarehouseItem={deleteWarehouseItem}
             splitWarehouseItem={splitWarehouseItem}
+            transferWarehouseItem={transferWarehouseItem}
           />
         )}
         
@@ -959,7 +1006,7 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
     weightIn: '',
     weightOut: '',
     estimatedSpillage: '',
-    finishedBag: 'No',
+    finishedBag: 'Yes',
     notes: ''
   });
   const [scannedMaterial, setScannedMaterial] = useState(null);
@@ -994,7 +1041,7 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
       weightIn: '',
       weightOut: '',
       estimatedSpillage: '',
-      finishedBag: 'No',
+      finishedBag: 'Yes',
       notes: ''
     });
     setScannedMaterial(null);
@@ -1085,9 +1132,6 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
-              <p className="text-sm text-gray-600 mt-1">
-                If Yes, a bag will be subtracted from inventory
-              </p>
             </div>
 
             <div>
@@ -1413,6 +1457,8 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
                         <span className="text-gray-900">{material.bagsAvailable}</span>
                       )}
                     </td>
+                    <td className="px-6 py-4 text-gray-900">{material.dateCreated}</td>
+                    <td className="px-6 py-4 text-gray-900">{material.lastUsed || 'Never'}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
                         {statusInfo.status}
@@ -1531,20 +1577,34 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
 };
 
 // Enhanced Warehouse View Component with Product ID, Split, Delete, and Summary
-const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelectedWarehouse, updateWarehouseItem, deleteWarehouseItem, splitWarehouseItem }) => {
+const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelectedWarehouse, updateWarehouseItem, deleteWarehouseItem, splitWarehouseItem, transferWarehouseItem }) => {
   const [editingItem, setEditingItem] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [splitItemId, setSplitItemId] = useState(null);
   const [splitQuantity, setSplitQuantity] = useState(1);
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [transferQuantity, setTransferQuantity] = useState(1);
+  const [originalWarehouse, setOriginalWarehouse] = useState('');
+  const [targetWarehouse, setTargetWarehouse] = useState('');
 
   const startEdit = (item) => {
     setEditingItem(item.id);
     setEditFormData(item);
+    setOriginalWarehouse(item.warehouse);
   };
 
   const saveEdit = () => {
     const originalData = inventory.find(i => i.id === editingItem);
+    
+    // Check if warehouse was changed
+    if (editFormData.warehouse !== originalWarehouse) {
+      setTargetWarehouse(editFormData.warehouse);
+      setTransferQuantity(editFormData.numberOfBundles);
+      setShowTransferModal(true);
+      return;
+    }
+    
     updateWarehouseItem(editingItem, editFormData, originalData);
     setEditingItem(null);
     setEditFormData({});
@@ -1553,6 +1613,39 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
   const cancelEdit = () => {
     setEditingItem(null);
     setEditFormData({});
+  };
+
+  const confirmTransfer = () => {
+    const originalData = inventory.find(i => i.id === editingItem);
+    
+    // Validation: Check if trying to transfer more than available
+    if (transferQuantity > originalData.numberOfBundles) {
+      alert(`Cannot move more bundles than available. Current quantity: ${originalData.numberOfBundles} bundles`);
+      return;
+    }
+    
+    // Validation: Check minimum transfer
+    if (transferQuantity < 1) {
+      alert('Transfer quantity must be at least 1');
+      return;
+    }
+    
+    // Use the new transferWarehouseItem function to handle both full and partial transfers
+    transferWarehouseItem(editingItem, transferQuantity, targetWarehouse);
+    
+    // Close modal and reset
+    setShowTransferModal(false);
+    setEditingItem(null);
+    setEditFormData({});
+    setTransferQuantity(1);
+    setOriginalWarehouse('');
+    setTargetWarehouse('');
+  };
+
+  const cancelTransfer = () => {
+    setShowTransferModal(false);
+    // Reset warehouse to original
+    setEditFormData({...editFormData, warehouse: originalWarehouse});
   };
 
   const handleSplit = (item) => {
@@ -1725,7 +1818,18 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{item.dateCreated}</td>
+                  <td className="px-6 py-4">
+                    {editingItem === item.id ? (
+                      <input
+                        type="date"
+                        value={editFormData.dateCreated}
+                        onChange={(e) => setEditFormData({...editFormData, dateCreated: e.target.value})}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                      />
+                    ) : (
+                      <span className="text-gray-900">{item.dateCreated}</span>
+                    )}
+                  </td>
                   <td className="px-6 py-4">
                     {editingItem === item.id ? (
                       <input
@@ -1839,6 +1943,55 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               >
                 Split
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Transfer Modal */}
+      {showTransferModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-6">Transfer Inventory</h3>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-700 mb-4">
+                You are changing the warehouse location from <strong>{originalWarehouse}</strong> to <strong>{targetWarehouse}</strong>. 
+                {transferQuantity < editFormData.numberOfBundles ? 
+                  ` ${transferQuantity} bundles will be transferred to ${targetWarehouse}, and ${editFormData.numberOfBundles - transferQuantity} bundles will remain in ${originalWarehouse}.` :
+                  ` All bundles will be moved to ${targetWarehouse}.`
+                }
+              </p>
+              
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Number of bundles to transfer:
+              </label>
+              <input
+                type="number"
+                min="1"
+                max={editFormData.numberOfBundles || 1}
+                value={transferQuantity}
+                onChange={(e) => setTransferQuantity(parseInt(e.target.value) || 1)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="text-sm text-gray-600 mt-1">
+                Current quantity: {editFormData.numberOfBundles} bundles (Maximum transferable)
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={cancelTransfer}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmTransfer}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Transfer
               </button>
             </div>
           </div>

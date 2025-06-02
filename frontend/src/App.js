@@ -1615,10 +1615,9 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
         .map(item => item.id === editingItem ? updatedOriginal : item)
         .concat(newTransferItem);
       
-      // Update the inventory state (assuming we have access to setWarehouseInventory)
-      if (typeof setWarehouseInventory === 'function') {
-        setWarehouseInventory(updatedInventory);
-      }
+      // Update both items using updateWarehouseItem
+      updateWarehouseItem(editingItem, updatedOriginal, originalData);
+      updateWarehouseItem(newTransferItem.id, newTransferItem, null);
       
       // Add activity log
       addActivity(

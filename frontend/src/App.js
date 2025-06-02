@@ -1592,53 +1592,37 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
       };
       updateWarehouseItem(editingItem, updatedData, originalData);
     } else {
-      // Split and transfer logic: Implement directly like splitWarehouseItem but with warehouse change
+      // Create a custom split-and-transfer function
       const remainingQuantity = originalData.numberOfBundles - transferQuantity;
       
-      // Update original item to have remaining quantity at original warehouse
+      // Update original item to remain at original warehouse with remaining quantity
       const updatedOriginal = {
         ...originalData,
-        numberOfBundles: remainingQuantity,
-        warehouse: originalWarehouse  // Keep at original warehouse
+        numberOfBundles: remainingQuantity
       };
       
-      // Create new split item with transfer quantity at target warehouse
+      // Create new item at target warehouse with transfer quantity
       const newTransferItem = {
         ...originalData,
-        id: Math.max(...inventory.map(w => w.id), 0) + 1,
+        id: Math.max(...allInventory.map(w => w.id), 0) + 1,
         numberOfBundles: transferQuantity,
-        warehouse: targetWarehouse  // Set to target warehouse
-        // Product ID remains the same
+        warehouse: targetWarehouse
       };
       
-      // Update inventory directly using setWarehouseInventory (similar to splitWarehouseItem)
-      const parentComponent = window.parentComponent || {};
-      if (typeof parentComponent.setWarehouseInventory === 'function') {
-        parentComponent.setWarehouseInventory(currentInventory =>
-          currentInventory.map(item => item.id === editingItem ? updatedOriginal : item).concat(newTransferItem)
-        );
-      } else {
-        // Fallback: try to use the inventory prop update mechanism
-        // Update the inventory state by finding the parent state setter
-        const currentInventory = [...allInventory];
-        const updatedInventory = currentInventory
-          .map(item => item.id === editingItem ? updatedOriginal : item)
-          .concat(newTransferItem);
-        
-        // This approach directly manipulates the localStorage like other functions do
-        localStorage.setItem('warehouseInventory', JSON.stringify(updatedInventory));
-        // Trigger a storage event to update other components
-        window.dispatchEvent(new Event('storage'));
-      }
+      // Use the updateWarehouseItem function to update the original item
+      updateWarehouseItem(editingItem, updatedOriginal, originalData);
       
-      // Add activity log for the transfer
-      if (typeof addActivity === 'function') {
-        addActivity(
-          'Warehouse Transfer',
-          `Product ID: ${originalData.productId}, Transferred ${transferQuantity} bundles from ${originalWarehouse} to ${targetWarehouse}`,
-          'Warehouse Manager'
-        );
-      }
+      // Directly add the new item to localStorage and trigger a storage event
+      // This mimics what other functions do when creating new items
+      const currentInventory = JSON.parse(localStorage.getItem('enviroshake_warehouseInventory') || '[]');
+      const updatedInventory = [...currentInventory, newTransferItem];
+      localStorage.setItem('enviroshake_warehouseInventory', JSON.stringify(updatedInventory));
+      
+      // Trigger storage event to update all components
+      window.dispatchEvent(new Event('storage'));
+      
+      // Force a page reload to ensure state consistency
+      window.location.reload();
     }
     
     // Close modal and reset

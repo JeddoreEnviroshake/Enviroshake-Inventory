@@ -1724,7 +1724,18 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{item.dateCreated}</td>
+                  <td className="px-6 py-4">
+                    {editingItem === item.id ? (
+                      <input
+                        type="date"
+                        value={editFormData.dateCreated}
+                        onChange={(e) => setEditFormData({...editFormData, dateCreated: e.target.value})}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                      />
+                    ) : (
+                      <span className="text-gray-900">{item.dateCreated}</span>
+                    )}
+                  </td>
                   <td className="px-6 py-4">
                     {editingItem === item.id ? (
                       <input

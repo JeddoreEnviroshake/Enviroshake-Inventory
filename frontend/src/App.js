@@ -1536,6 +1536,10 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [splitItemId, setSplitItemId] = useState(null);
   const [splitQuantity, setSplitQuantity] = useState(1);
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [transferQuantity, setTransferQuantity] = useState(1);
+  const [originalWarehouse, setOriginalWarehouse] = useState('');
+  const [targetWarehouse, setTargetWarehouse] = useState('');
 
   const startEdit = (item) => {
     setEditingItem(item.id);

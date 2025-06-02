@@ -101,3 +101,61 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Test the Enviroshake Inventory Management System backend after implementing UI fixes"
+
+backend:
+  - task: "Basic FastAPI Server"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "The FastAPI server is running correctly. Root endpoint (/api/) returns the expected 'Hello World' message with a 200 status code."
+
+  - task: "MongoDB Connection"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "MongoDB connection is stable. Successfully created and retrieved status check entries from the database."
+
+  - task: "Status Check API Endpoints"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Both POST /api/status and GET /api/status endpoints are working correctly. Successfully created a new status check entry and retrieved all entries."
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Basic FastAPI Server"
+    - "MongoDB Connection"
+    - "Status Check API Endpoints"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "testing"
+    message: "Completed backend testing. All API endpoints are working correctly. The FastAPI server is running properly and the MongoDB connection is stable. Created a backend_test.py file to test all endpoints."

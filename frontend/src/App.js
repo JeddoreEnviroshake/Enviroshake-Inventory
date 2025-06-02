@@ -1587,6 +1587,7 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
   const [transferQuantity, setTransferQuantity] = useState(1);
   const [originalWarehouse, setOriginalWarehouse] = useState('');
   const [targetWarehouse, setTargetWarehouse] = useState('');
+  const [expanded, setExpanded] = useState({});
 
   const startEdit = (item) => {
     setEditingItem(item.id);
@@ -1675,6 +1676,19 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
     setSplitQuantity(1);
   };
 
+  // Group inventory by product then colour
+  const grouped = inventory.reduce((acc, item) => {
+    if (!acc[item.product]) acc[item.product] = {};
+    if (!acc[item.product][item.colour]) acc[item.product][item.colour] = [];
+    acc[item.product][item.colour].push(item);
+    return acc;
+  }, {});
+
+  const toggleColour = (product, colour) => {
+    const key = `${product}-${colour}`;
+    setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
   // Calculate summary for selected warehouse
   const calculateSummary = () => {
     const filteredData = selectedWarehouse === 'All' ? allInventory : allInventory.filter(item => item.warehouse === selectedWarehouse);
@@ -1747,9 +1761,22 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
-              {inventory.map(item => (
-                <tr key={item.id} className="hover:bg-gray-50">
+              <tbody className="divide-y divide-gray-200">
+                {Object.entries(grouped).map(([product, colours]) => (
+                  <React.Fragment key={product}>
+                    <tr className="bg-gray-100">
+                      <th colSpan="9" className="text-left p-4">{product}</th>
+                    </tr>
+                    {Object.entries(colours).map(([colour, rows]) => (
+                      <React.Fragment key={colour}>
+                        <tr
+                          onClick={() => toggleColour(product, colour)}
+                          className="cursor-pointer hover:bg-gray-200"
+                        >
+                          <td colSpan="9" className="p-3 font-medium">{colour}</td>
+                        </tr>
+                        {expanded[`${product}-${colour}`] && rows.map(item => (
+                          <tr key={item.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <span className="font-mono text-sm text-blue-600">{item.productId}</span>
                   </td>
@@ -1900,10 +1927,14 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
                         </button>
                       </div>
                     )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                          </td>
+                        </tr>
+                      ))}
+                    </React.Fragment>
+                  ))}
+                  </React.Fragment>
+                ))}
+              </tbody>
           </table>
         </div>
       </div>

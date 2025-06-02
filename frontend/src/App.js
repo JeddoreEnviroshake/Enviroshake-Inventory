@@ -646,6 +646,7 @@ function App() {
             updateWarehouseItem={updateWarehouseItem}
             deleteWarehouseItem={deleteWarehouseItem}
             splitWarehouseItem={splitWarehouseItem}
+            transferWarehouseItem={transferWarehouseItem}
           />
         )}
         

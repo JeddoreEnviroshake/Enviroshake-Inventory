@@ -1619,12 +1619,7 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
       updateWarehouseItem(editingItem, updatedOriginal, originalData);
       updateWarehouseItem(newTransferItem.id, newTransferItem, null);
       
-      // Add activity log
-      addActivity(
-        'Warehouse Transfer',
-        `Product ID: ${originalData.productId}, Transferred ${transferQuantity} bundles from ${originalWarehouse} to ${targetWarehouse}`,
-        'Warehouse'
-      );
+
     }
     
     // Close modal and reset

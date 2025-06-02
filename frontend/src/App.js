@@ -1677,12 +1677,18 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
   };
 
   // Group inventory by product then colour
-  const grouped = inventory.reduce((acc, item) => {
-    if (!acc[item.product]) acc[item.product] = {};
-    if (!acc[item.product][item.colour]) acc[item.product][item.colour] = [];
-    acc[item.product][item.colour].push(item);
+  const groupedByProduct = PRODUCTS.reduce((acc, p) => {
+    acc[p] = {};
     return acc;
   }, {});
+
+  inventory.forEach(item => {
+    if (!groupedByProduct[item.product]) groupedByProduct[item.product] = {};
+    if (!groupedByProduct[item.product][item.colour]) {
+      groupedByProduct[item.product][item.colour] = [];
+    }
+    groupedByProduct[item.product][item.colour].push(item);
+  });
 
   const toggleColour = (product, colour) => {
     const key = `${product}-${colour}`;
@@ -1745,41 +1751,42 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
         </div>
       )}
       
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Colour</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stage</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Created</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number of Bundles</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warehouse</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-              <tbody className="divide-y divide-gray-200">
-                {Object.entries(grouped).map(([product, colours]) => (
-                  <React.Fragment key={product}>
-                    <tr className="bg-gray-100">
-                      <th colSpan="9" className="text-left p-4">{product}</th>
-                    </tr>
-                    {Object.entries(colours).map(([colour, rows]) => (
-                      <React.Fragment key={colour}>
-                        <tr
-                          onClick={() => toggleColour(product, colour)}
-                          className="cursor-pointer hover:bg-gray-200"
-                        >
-                          <td colSpan="9" className="p-3 font-medium">{colour}</td>
-                        </tr>
-                        {expanded[`${product}-${colour}`] && rows.map(item => (
-                          <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <span className="font-mono text-sm text-blue-600">{item.productId}</span>
-                  </td>
+      {PRODUCTS.map(product => {
+        const colours = groupedByProduct[product] || {};
+        const hasRows = Object.values(colours).some(r => r.length > 0);
+        if (!hasRows) return null;
+        return (
+          <div key={product} className="bg-white rounded-lg shadow-sm border overflow-hidden mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 p-4 border-b bg-gray-50">{product}</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Colour</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stage</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Created</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number of Bundles</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warehouse</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {Object.entries(colours).map(([colour, rows]) => (
+                    <React.Fragment key={colour}>
+                      <tr
+                        onClick={() => toggleColour(product, colour)}
+                        className="cursor-pointer hover:bg-gray-200"
+                      >
+                        <td colSpan="9" className="p-3 font-medium">{colour}</td>
+                      </tr>
+                      {expanded[`${product}-${colour}`] && rows.map(item => (
+                        <tr key={item.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <span className="font-mono text-sm text-blue-600">{item.productId}</span>
+                          </td>
                   <td className="px-6 py-4">
                     {editingItem === item.id ? (
                       <select
@@ -1932,12 +1939,12 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
                       ))}
                     </React.Fragment>
                   ))}
-                  </React.Fragment>
-                ))}
-              </tbody>
-          </table>
-        </div>
-      </div>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })}
 
       {/* Split Modal */}
       {showSplitModal && (

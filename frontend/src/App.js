@@ -1085,9 +1085,6 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
-              <p className="text-sm text-gray-600 mt-1">
-                If Yes, a bag will be subtracted from inventory
-              </p>
             </div>
 
             <div>

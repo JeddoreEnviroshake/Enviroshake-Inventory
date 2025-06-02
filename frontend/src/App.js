@@ -362,32 +362,47 @@ function App() {
   };
 
   // Split warehouse item
-  const splitWarehouseItem = (id, splitQuantity) => {
+  // Transfer function that handles split and warehouse change
+  const transferWarehouseItem = (id, quantity, targetWarehouse) => {
     const originalItem = warehouseInventory.find(w => w.id === id);
-    const remainingQuantity = originalItem.numberOfBundles - splitQuantity;
-
-    // Update original item
-    const updatedOriginal = {
-      ...originalItem,
-      numberOfBundles: remainingQuantity
-    };
-
-    // Create new split item
-    const newSplitItem = {
-      ...originalItem,
-      id: Math.max(...warehouseInventory.map(w => w.id), 0) + 1,
-      numberOfBundles: splitQuantity
-      // Product ID remains the same
-    };
-
-    // Update inventory
-    setWarehouseInventory(inventory =>
-      inventory.map(item => item.id === id ? updatedOriginal : item).concat(newSplitItem)
-    );
-
+    if (!originalItem) return;
+    
+    if (quantity === originalItem.numberOfBundles) {
+      // Full transfer - just update warehouse
+      const updatedItem = {
+        ...originalItem,
+        warehouse: targetWarehouse
+      };
+      setWarehouseInventory(inventory =>
+        inventory.map(item => item.id === id ? updatedItem : item)
+      );
+    } else {
+      // Partial transfer - split and change warehouse
+      const remainingQuantity = originalItem.numberOfBundles - quantity;
+      
+      // Update original item to have remaining quantity at original warehouse
+      const updatedOriginal = {
+        ...originalItem,
+        numberOfBundles: remainingQuantity
+      };
+      
+      // Create new item with transfer quantity at target warehouse
+      const newTransferItem = {
+        ...originalItem,
+        id: Math.max(...warehouseInventory.map(w => w.id), 0) + 1,
+        numberOfBundles: quantity,
+        warehouse: targetWarehouse
+      };
+      
+      // Update inventory with both items
+      setWarehouseInventory(inventory =>
+        inventory.map(item => item.id === id ? updatedOriginal : item).concat(newTransferItem)
+      );
+    }
+    
     addActivity(
-      'Warehouse Item Split',
-      `Product ID: ${originalItem.productId}, Split ${splitQuantity} bundles from ${originalItem.numberOfBundles} total`,
+      'Warehouse Transfer',
+      `Product ID: ${originalItem.productId}, Transferred ${quantity} bundles to ${targetWarehouse}`,
       'Warehouse Manager'
     );
   };

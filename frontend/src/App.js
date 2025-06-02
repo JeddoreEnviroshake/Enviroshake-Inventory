@@ -994,7 +994,7 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
       weightIn: '',
       weightOut: '',
       estimatedSpillage: '',
-      finishedBag: 'No',
+      finishedBag: 'Yes',
       notes: ''
     });
     setScannedMaterial(null);

@@ -1630,47 +1630,8 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
       return;
     }
     
-    // If transferring all bundles, just update the warehouse
-    if (transferQuantity === originalData.numberOfBundles) {
-      const updatedData = {
-        ...editFormData,
-        warehouse: targetWarehouse,
-        numberOfBundles: transferQuantity
-      };
-      updateWarehouseItem(editingItem, updatedData, originalData);
-    } else {
-      // Create a custom split-and-transfer function
-      const remainingQuantity = originalData.numberOfBundles - transferQuantity;
-      
-      // Update original item to remain at original warehouse with remaining quantity
-      const updatedOriginal = {
-        ...originalData,
-        numberOfBundles: remainingQuantity
-      };
-      
-      // Create new item at target warehouse with transfer quantity
-      const newTransferItem = {
-        ...originalData,
-        id: Math.max(...allInventory.map(w => w.id), 0) + 1,
-        numberOfBundles: transferQuantity,
-        warehouse: targetWarehouse
-      };
-      
-      // Use the updateWarehouseItem function to update the original item
-      updateWarehouseItem(editingItem, updatedOriginal, originalData);
-      
-      // Directly add the new item to localStorage and trigger a storage event
-      // This mimics what other functions do when creating new items
-      const currentInventory = JSON.parse(localStorage.getItem('enviroshake_warehouseInventory') || '[]');
-      const updatedInventory = [...currentInventory, newTransferItem];
-      localStorage.setItem('enviroshake_warehouseInventory', JSON.stringify(updatedInventory));
-      
-      // Trigger storage event to update all components
-      window.dispatchEvent(new Event('storage'));
-      
-      // Force a page reload to ensure state consistency
-      window.location.reload();
-    }
+    // Use the new transferWarehouseItem function to handle both full and partial transfers
+    transferWarehouseItem(editingItem, transferQuantity, targetWarehouse);
     
     // Close modal and reset
     setShowTransferModal(false);

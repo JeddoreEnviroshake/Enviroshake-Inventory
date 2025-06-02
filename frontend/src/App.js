@@ -1592,37 +1592,53 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
       };
       updateWarehouseItem(editingItem, updatedData, originalData);
     } else {
-      // For partial transfer, use split function then update the new item
-      // First, call the split function which creates a new item with transferQuantity
-      splitWarehouseItem(editingItem, transferQuantity);
+      // Split and transfer logic: Implement directly like splitWarehouseItem but with warehouse change
+      const remainingQuantity = originalData.numberOfBundles - transferQuantity;
       
-      // The split function creates a new item with the same warehouse as original
-      // We need to update that new item's warehouse to the target
-      // We'll use a callback approach by modifying the split function result
+      // Update original item to have remaining quantity at original warehouse
+      const updatedOriginal = {
+        ...originalData,
+        numberOfBundles: remainingQuantity,
+        warehouse: originalWarehouse  // Keep at original warehouse
+      };
       
-      // Since we can't directly access the new item ID from split function,
-      // we'll trigger a delayed update to find and modify the new split item
-      setTimeout(() => {
-        // Find the newest item with matching criteria (the split item)
-        const allCurrentItems = [...allInventory];
-        const splitItem = allCurrentItems
-          .filter(item => 
-            item.productId === originalData.productId && 
-            item.numberOfBundles === transferQuantity &&
-            item.warehouse === originalWarehouse &&
-            item.id !== editingItem
-          )
-          .sort((a, b) => b.id - a.id)[0]; // Get the newest one (highest ID)
+      // Create new split item with transfer quantity at target warehouse
+      const newTransferItem = {
+        ...originalData,
+        id: Math.max(...inventory.map(w => w.id), 0) + 1,
+        numberOfBundles: transferQuantity,
+        warehouse: targetWarehouse  // Set to target warehouse
+        // Product ID remains the same
+      };
+      
+      // Update inventory directly using setWarehouseInventory (similar to splitWarehouseItem)
+      const parentComponent = window.parentComponent || {};
+      if (typeof parentComponent.setWarehouseInventory === 'function') {
+        parentComponent.setWarehouseInventory(currentInventory =>
+          currentInventory.map(item => item.id === editingItem ? updatedOriginal : item).concat(newTransferItem)
+        );
+      } else {
+        // Fallback: try to use the inventory prop update mechanism
+        // Update the inventory state by finding the parent state setter
+        const currentInventory = [...allInventory];
+        const updatedInventory = currentInventory
+          .map(item => item.id === editingItem ? updatedOriginal : item)
+          .concat(newTransferItem);
         
-        if (splitItem) {
-          // Update the split item's warehouse to target warehouse
-          const updatedSplitData = {
-            ...splitItem,
-            warehouse: targetWarehouse
-          };
-          updateWarehouseItem(splitItem.id, updatedSplitData, splitItem);
-        }
-      }, 50);
+        // This approach directly manipulates the localStorage like other functions do
+        localStorage.setItem('warehouseInventory', JSON.stringify(updatedInventory));
+        // Trigger a storage event to update other components
+        window.dispatchEvent(new Event('storage'));
+      }
+      
+      // Add activity log for the transfer
+      if (typeof addActivity === 'function') {
+        addActivity(
+          'Warehouse Transfer',
+          `Product ID: ${originalData.productId}, Transferred ${transferQuantity} bundles from ${originalWarehouse} to ${targetWarehouse}`,
+          'Warehouse Manager'
+        );
+      }
     }
     
     // Close modal and reset

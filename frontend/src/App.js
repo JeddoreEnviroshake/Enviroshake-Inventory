@@ -1592,31 +1592,37 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
       };
       updateWarehouseItem(editingItem, updatedData, originalData);
     } else {
-      // Split and transfer logic: Similar to split function but with warehouse change
-      const remainingQuantity = originalData.numberOfBundles - transferQuantity;
+      // For partial transfer, use split function then update the new item
+      // First, call the split function which creates a new item with transferQuantity
+      splitWarehouseItem(editingItem, transferQuantity);
       
-      // Step 1: Update original item to have remaining quantity at original warehouse
-      const updatedOriginal = {
-        ...originalData,
-        numberOfBundles: remainingQuantity,
-        warehouse: originalWarehouse  // Keep original warehouse
-      };
+      // The split function creates a new item with the same warehouse as original
+      // We need to update that new item's warehouse to the target
+      // We'll use a callback approach by modifying the split function result
       
-      // Step 2: Create new item with transfer quantity at target warehouse
-      const maxId = Math.max(...allInventory.map(w => w.id), 0);
-      const newTransferItem = {
-        ...originalData,
-        id: maxId + 1,
-        numberOfBundles: transferQuantity,
-        warehouse: targetWarehouse
-      };
-      
-      // Step 3: Update the original item first
-      updateWarehouseItem(editingItem, updatedOriginal, originalData);
-      
-      // Step 4: Add the new item by calling updateWarehouseItem with a non-existent ID
-      // This will trigger the creation of a new item
-      updateWarehouseItem(newTransferItem.id, newTransferItem, null);
+      // Since we can't directly access the new item ID from split function,
+      // we'll trigger a delayed update to find and modify the new split item
+      setTimeout(() => {
+        // Find the newest item with matching criteria (the split item)
+        const allCurrentItems = [...allInventory];
+        const splitItem = allCurrentItems
+          .filter(item => 
+            item.productId === originalData.productId && 
+            item.numberOfBundles === transferQuantity &&
+            item.warehouse === originalWarehouse &&
+            item.id !== editingItem
+          )
+          .sort((a, b) => b.id - a.id)[0]; // Get the newest one (highest ID)
+        
+        if (splitItem) {
+          // Update the split item's warehouse to target warehouse
+          const updatedSplitData = {
+            ...splitItem,
+            warehouse: targetWarehouse
+          };
+          updateWarehouseItem(splitItem.id, updatedSplitData, splitItem);
+        }
+      }, 50);
     }
     
     // Close modal and reset

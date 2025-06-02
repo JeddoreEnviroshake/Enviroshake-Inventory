@@ -638,7 +638,7 @@ function App() {
         )}
         
         {currentView === 'warehouse' && (
-          <WarehouseView 
+          <WarehouseView
             inventory={filteredWarehouseInventory}
             allInventory={warehouseInventory}
             selectedWarehouse={selectedWarehouse}
@@ -647,6 +647,7 @@ function App() {
             deleteWarehouseItem={deleteWarehouseItem}
             splitWarehouseItem={splitWarehouseItem}
             transferWarehouseItem={transferWarehouseItem}
+            settings={settings}
           />
         )}
         
@@ -1577,7 +1578,7 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
 };
 
 // Enhanced Warehouse View Component with Product ID, Split, Delete, and Summary
-const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelectedWarehouse, updateWarehouseItem, deleteWarehouseItem, splitWarehouseItem, transferWarehouseItem }) => {
+const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelectedWarehouse, updateWarehouseItem, deleteWarehouseItem, splitWarehouseItem, transferWarehouseItem, settings }) => {
   const [editingItem, setEditingItem] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [showSplitModal, setShowSplitModal] = useState(false);
@@ -1842,7 +1843,7 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
                   }
                   className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                 >
-                  {Object.keys(colours).map(c => (
+                  {(settings?.colors || []).map(c => (
                     <option key={c} value={c}>
                       {c}
                     </option>

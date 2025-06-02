@@ -1544,10 +1544,20 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
   const startEdit = (item) => {
     setEditingItem(item.id);
     setEditFormData(item);
+    setOriginalWarehouse(item.warehouse);
   };
 
   const saveEdit = () => {
     const originalData = inventory.find(i => i.id === editingItem);
+    
+    // Check if warehouse was changed
+    if (editFormData.warehouse !== originalWarehouse) {
+      setTargetWarehouse(editFormData.warehouse);
+      setTransferQuantity(editFormData.numberOfBundles);
+      setShowTransferModal(true);
+      return;
+    }
+    
     updateWarehouseItem(editingItem, editFormData, originalData);
     setEditingItem(null);
     setEditFormData({});

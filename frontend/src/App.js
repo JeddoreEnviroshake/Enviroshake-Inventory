@@ -1949,7 +1949,11 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
             
             <div className="mb-4">
               <p className="text-sm text-gray-700 mb-4">
-                You are changing the warehouse location. How many bundles would you like to transfer to {targetWarehouse}?
+                You are changing the warehouse location from <strong>{originalWarehouse}</strong> to <strong>{targetWarehouse}</strong>. 
+                {transferQuantity < editFormData.numberOfBundles ? 
+                  ` ${transferQuantity} bundles will be transferred to ${targetWarehouse}, and ${editFormData.numberOfBundles - transferQuantity} bundles will remain in ${originalWarehouse}.` :
+                  ` All bundles will be moved to ${targetWarehouse}.`
+                }
               </p>
               
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1960,11 +1964,11 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
                 min="1"
                 max={editFormData.numberOfBundles || 1}
                 value={transferQuantity}
-                onChange={(e) => setTransferQuantity(parseInt(e.target.value))}
+                onChange={(e) => setTransferQuantity(parseInt(e.target.value) || 1)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
               <p className="text-sm text-gray-600 mt-1">
-                Current quantity: {editFormData.numberOfBundles} bundles
+                Current quantity: {editFormData.numberOfBundles} bundles (Maximum transferable)
               </p>
             </div>
 

@@ -1571,14 +1571,62 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
   const confirmTransfer = () => {
     const originalData = inventory.find(i => i.id === editingItem);
     
-    // Update the warehouse with the specified quantity transfer
-    const updatedData = {
-      ...editFormData,
-      warehouse: targetWarehouse,
-      numberOfBundles: transferQuantity
-    };
+    // Validation: Check if trying to transfer more than available
+    if (transferQuantity > originalData.numberOfBundles) {
+      alert(`Cannot move more bundles than available. Current quantity: ${originalData.numberOfBundles} bundles`);
+      return;
+    }
     
-    updateWarehouseItem(editingItem, updatedData, originalData);
+    // Validation: Check minimum transfer
+    if (transferQuantity < 1) {
+      alert('Transfer quantity must be at least 1');
+      return;
+    }
+    
+    // If transferring all bundles, just update the warehouse
+    if (transferQuantity === originalData.numberOfBundles) {
+      const updatedData = {
+        ...editFormData,
+        warehouse: targetWarehouse,
+        numberOfBundles: transferQuantity
+      };
+      updateWarehouseItem(editingItem, updatedData, originalData);
+    } else {
+      // Split logic: Create new item at target warehouse, update original at source warehouse
+      const remainingQuantity = originalData.numberOfBundles - transferQuantity;
+      
+      // Update original item to have remaining quantity at original warehouse
+      const updatedOriginal = {
+        ...originalData,
+        numberOfBundles: remainingQuantity,
+        warehouse: originalWarehouse
+      };
+      
+      // Create new item with transfer quantity at target warehouse
+      const newTransferItem = {
+        ...originalData,
+        id: Math.max(...inventory.map(w => w.id), 0) + 1,
+        numberOfBundles: transferQuantity,
+        warehouse: targetWarehouse
+      };
+      
+      // Update inventory with both items
+      const updatedInventory = inventory
+        .map(item => item.id === editingItem ? updatedOriginal : item)
+        .concat(newTransferItem);
+      
+      // Update the inventory state (assuming we have access to setWarehouseInventory)
+      if (typeof setWarehouseInventory === 'function') {
+        setWarehouseInventory(updatedInventory);
+      }
+      
+      // Add activity log
+      addActivity(
+        'Warehouse Transfer',
+        `Product ID: ${originalData.productId}, Transferred ${transferQuantity} bundles from ${originalWarehouse} to ${targetWarehouse}`,
+        'Warehouse'
+      );
+    }
     
     // Close modal and reset
     setShowTransferModal(false);

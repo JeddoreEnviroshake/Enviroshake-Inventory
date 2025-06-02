@@ -1568,6 +1568,33 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
     setEditFormData({});
   };
 
+  const confirmTransfer = () => {
+    const originalData = inventory.find(i => i.id === editingItem);
+    
+    // Update the warehouse with the specified quantity transfer
+    const updatedData = {
+      ...editFormData,
+      warehouse: targetWarehouse,
+      numberOfBundles: transferQuantity
+    };
+    
+    updateWarehouseItem(editingItem, updatedData, originalData);
+    
+    // Close modal and reset
+    setShowTransferModal(false);
+    setEditingItem(null);
+    setEditFormData({});
+    setTransferQuantity(1);
+    setOriginalWarehouse('');
+    setTargetWarehouse('');
+  };
+
+  const cancelTransfer = () => {
+    setShowTransferModal(false);
+    // Reset warehouse to original
+    setEditFormData({...editFormData, warehouse: originalWarehouse});
+  };
+
   const handleSplit = (item) => {
     if (item.numberOfBundles <= 1) {
       alert('Cannot split items with 1 or fewer bundles');

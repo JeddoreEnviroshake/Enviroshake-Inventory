@@ -1592,34 +1592,32 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
       };
       updateWarehouseItem(editingItem, updatedData, originalData);
     } else {
-      // Split logic: Create new item at target warehouse, update original at source warehouse
-      const remainingQuantity = originalData.numberOfBundles - transferQuantity;
+      // Split logic: First split the item, then update the new split item's warehouse
       
-      // Update original item to have remaining quantity at original warehouse
-      const updatedOriginal = {
-        ...originalData,
-        numberOfBundles: remainingQuantity,
-        warehouse: originalWarehouse
-      };
+      // Step 1: Split the item (this creates a new item with transferQuantity and reduces original)
+      splitWarehouseItem(editingItem, transferQuantity);
       
-      // Create new item with transfer quantity at target warehouse
-      const newTransferItem = {
-        ...originalData,
-        id: Math.max(...inventory.map(w => w.id), 0) + 1,
-        numberOfBundles: transferQuantity,
-        warehouse: targetWarehouse
-      };
-      
-      // Update inventory with both items
-      const updatedInventory = inventory
-        .map(item => item.id === editingItem ? updatedOriginal : item)
-        .concat(newTransferItem);
-      
-      // Update both items using updateWarehouseItem
-      updateWarehouseItem(editingItem, updatedOriginal, originalData);
-      updateWarehouseItem(newTransferItem.id, newTransferItem, null);
-      
-
+      // Step 2: We need to find and update the newly created split item's warehouse
+      // The split function creates a new item with the highest ID + 1
+      setTimeout(() => {
+        // Get the updated inventory after split
+        const currentInventory = allInventory;
+        const newSplitItem = currentInventory.find(item => 
+          item.productId === originalData.productId && 
+          item.numberOfBundles === transferQuantity &&
+          item.warehouse === originalData.warehouse &&
+          item.id !== editingItem
+        );
+        
+        if (newSplitItem) {
+          // Update the new split item's warehouse
+          const updatedSplitItem = {
+            ...newSplitItem,
+            warehouse: targetWarehouse
+          };
+          updateWarehouseItem(newSplitItem.id, updatedSplitItem, newSplitItem);
+        }
+      }, 100); // Small delay to ensure split operation completes
     }
     
     // Close modal and reset

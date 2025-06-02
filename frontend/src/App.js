@@ -1410,6 +1410,8 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
                         <span className="text-gray-900">{material.bagsAvailable}</span>
                       )}
                     </td>
+                    <td className="px-6 py-4 text-gray-900">{material.dateCreated}</td>
+                    <td className="px-6 py-4 text-gray-900">{material.lastUsed || 'Never'}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
                         {statusInfo.status}

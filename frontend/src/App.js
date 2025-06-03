@@ -1798,10 +1798,10 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Product ID
+                      Colour
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Colour
+                      Product ID
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Type
@@ -1824,7 +1824,9 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
                   </tr>
                 </thead>
 <tbody className="divide-y divide-gray-200">
-  {Object.entries(colours).map(([colour, rows]) => (
+  {Object.entries(colours)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([colour, rows]) => (
     <React.Fragment key={`${product}-${colour}`}>
       {/* “Colour” grouping row */}
       <tr
@@ -1839,13 +1841,11 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
 
       {/* Expandable detail rows for just this product + this colour */}
       {expanded[`${product}-${colour}`] &&
-        rows.map(item => (
+        rows
+          .slice()
+          .sort((a, b) => TYPES.indexOf(a.type) - TYPES.indexOf(b.type))
+          .map(item => (
           <tr key={item.id} className="hover:bg-gray-50">
-            <td className="px-6 py-4">
-              <span className="font-mono text-sm text-blue-600">
-                {item.productId}
-              </span>
-            </td>
             <td className="px-6 py-4">
               {editingItem === item.id ? (
                 <select
@@ -1864,6 +1864,11 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
               ) : (
                 <span className="text-gray-900">{item.colour}</span>
               )}
+            </td>
+            <td className="px-6 py-4">
+              <span className="font-mono text-sm text-blue-600">
+                {item.productId}
+              </span>
             </td>
             <td className="px-6 py-4">
               {editingItem === item.id ? (

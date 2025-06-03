@@ -136,7 +136,8 @@ const initialRawMaterials = [
     dateReceived: '2024-12-15',
     dateCreated: '2024-12-15',
     lastUsed: '2024-12-15',
-    bagsAvailable: 5
+    bagsAvailable: 5,
+    shift: 'First'
   },
   {
     id: 2,
@@ -150,7 +151,8 @@ const initialRawMaterials = [
     dateReceived: '2024-12-14',
     dateCreated: '2024-12-14',
     lastUsed: null,
-    bagsAvailable: 4
+    bagsAvailable: 4,
+    shift: 'Second'
   }
 ];
 
@@ -164,7 +166,8 @@ const initialWarehouseInventory = [
     dateCreated: '2024-12-15',
     numberOfBundles: 25,
     warehouse: 'Dresden',
-    stage: 'Available'
+    stage: 'Available',
+    shift: 'First'
   },
   {
     id: 2,
@@ -175,7 +178,8 @@ const initialWarehouseInventory = [
     dateCreated: '2024-12-14',
     numberOfBundles: 18,
     warehouse: 'BC',
-    stage: 'Available'
+    stage: 'Available',
+    shift: 'Second'
   }
 ];
 
@@ -459,13 +463,14 @@ function App() {
       productId,
       dateCreated: new Date().toISOString().split('T')[0],
       warehouse: 'Dresden', // All production starts in Dresden
-      stage: 'Available' // Default stage
+      stage: 'Available', // Default stage
+      shift: productionData.shift
     };
 
     setWarehouseInventory([...warehouseInventory, newProduction]);
     addActivity(
       'Production Added',
-      `Product ID: ${productId}, ${productionData.product} - ${productionData.colour} (${productionData.type}), ${productionData.numberOfBundles} bundles`,
+      `Product ID: ${productId}, ${productionData.product} - ${productionData.colour} (${productionData.type}), ${productionData.numberOfBundles} bundles, ${productionData.shift} Shift`,
       'Lead Hand'
     );
   };
@@ -650,7 +655,7 @@ function App() {
         )}
         
         {currentView === 'warehouse' && (
-          <WarehouseView 
+          <WarehouseView
             inventory={filteredWarehouseInventory}
             allInventory={warehouseInventory}
             selectedWarehouse={selectedWarehouse}
@@ -659,6 +664,7 @@ function App() {
             deleteWarehouseItem={deleteWarehouseItem}
             splitWarehouseItem={splitWarehouseItem}
             transferWarehouseItem={transferWarehouseItem}
+            settings={settings}
           />
         )}
         
@@ -1216,6 +1222,7 @@ const ProductionView = ({ addProduction, settings }) => {
     product: '',
     colour: '',
     type: '',
+    shift: 'First',
     numberOfBundles: ''
   });
 
@@ -1223,7 +1230,8 @@ const ProductionView = ({ addProduction, settings }) => {
     e.preventDefault();
     addProduction({
       ...formData,
-      numberOfBundles: parseInt(formData.numberOfBundles)
+      numberOfBundles: parseInt(formData.numberOfBundles),
+      shift: formData.shift
     });
     
     // Reset form
@@ -1231,6 +1239,7 @@ const ProductionView = ({ addProduction, settings }) => {
       product: '',
       colour: '',
       type: '',
+      shift: 'First',
       numberOfBundles: ''
     });
     
@@ -1288,6 +1297,20 @@ const ProductionView = ({ addProduction, settings }) => {
                 {TYPES.map(type => (
                   <option key={type} value={type}>{type}</option>
                 ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Shift</label>
+              <select
+                value={formData.shift}
+                onChange={(e) => setFormData({...formData, shift: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="First">First</option>
+                <option value="Second">Second</option>
+                <option value="Third">Third</option>
               </select>
             </div>
 
@@ -1589,7 +1612,7 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
 };
 
 // Enhanced Warehouse View Component with Product ID, Split, Delete, and Summary
-const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelectedWarehouse, updateWarehouseItem, deleteWarehouseItem, splitWarehouseItem, transferWarehouseItem }) => {
+const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelectedWarehouse, updateWarehouseItem, deleteWarehouseItem, splitWarehouseItem, transferWarehouseItem, settings }) => {
   const [editingItem, setEditingItem] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [showSplitModal, setShowSplitModal] = useState(false);
@@ -1599,6 +1622,7 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
   const [transferQuantity, setTransferQuantity] = useState(1);
   const [originalWarehouse, setOriginalWarehouse] = useState('');
   const [targetWarehouse, setTargetWarehouse] = useState('');
+  const [expanded, setExpanded] = useState({});
 
   const startEdit = (item) => {
     setEditingItem(item.id);
@@ -1687,6 +1711,25 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
     setSplitQuantity(1);
   };
 
+  // Group inventory by product then colour
+  const groupedByProduct = PRODUCTS.reduce((acc, p) => {
+    acc[p] = {};
+    return acc;
+  }, {});
+
+  inventory.forEach(item => {
+    if (!groupedByProduct[item.product]) groupedByProduct[item.product] = {};
+    if (!groupedByProduct[item.product][item.colour]) {
+      groupedByProduct[item.product][item.colour] = [];
+    }
+    groupedByProduct[item.product][item.colour].push(item);
+  });
+
+  const toggleColour = (product, colour) => {
+    const key = `${product}-${colour}`;
+    setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
   // Calculate summary for selected warehouse
   const calculateSummary = () => {
     const filteredData = selectedWarehouse === 'All' ? allInventory : allInventory.filter(item => item.warehouse === selectedWarehouse);
@@ -1743,182 +1786,253 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
         </div>
       )}
       
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Colour</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stage</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Created</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number of Bundles</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warehouse</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {inventory.map(item => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <span className="font-mono text-sm text-blue-600">{item.productId}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    {editingItem === item.id ? (
-                      <select
-                        value={editFormData.product}
-                        onChange={(e) => setEditFormData({...editFormData, product: e.target.value})}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                      >
-                        {PRODUCTS.map(product => (
-                          <option key={product} value={product}>{product}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <span className="font-medium text-gray-900">{item.product}</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    {editingItem === item.id ? (
-                      <input
-                        type="text"
-                        value={editFormData.colour}
-                        onChange={(e) => setEditFormData({...editFormData, colour: e.target.value})}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                      />
-                    ) : (
-                      <span className="text-gray-900">{item.colour}</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    {editingItem === item.id ? (
-                      <select
-                        value={editFormData.type}
-                        onChange={(e) => setEditFormData({...editFormData, type: e.target.value})}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                      >
-                        {TYPES.map(type => (
-                          <option key={type} value={type}>{type}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <span className="text-gray-900">{item.type}</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    {editingItem === item.id ? (
-                      <select
-                        value={editFormData.stage}
-                        onChange={(e) => setEditFormData({...editFormData, stage: e.target.value})}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                      >
-                        {STAGES.map(stage => (
-                          <option key={stage} value={stage}>{stage}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        item.stage === 'Available' ? 'bg-green-100 text-green-800' :
-                        item.stage === 'Open' ? 'bg-blue-100 text-blue-800' :
-                        item.stage === 'Released' ? 'bg-yellow-100 text-yellow-800' :
-                        item.stage === 'Staged' ? 'bg-purple-100 text-purple-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {item.stage}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    {editingItem === item.id ? (
-                      <input
-                        type="date"
-                        value={editFormData.dateCreated}
-                        onChange={(e) => setEditFormData({...editFormData, dateCreated: e.target.value})}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                      />
-                    ) : (
-                      <span className="text-gray-900">{item.dateCreated}</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    {editingItem === item.id ? (
-                      <input
-                        type="number"
-                        value={editFormData.numberOfBundles}
-                        onChange={(e) => setEditFormData({...editFormData, numberOfBundles: parseInt(e.target.value)})}
-                        className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                      />
-                    ) : (
-                      <span className="font-medium">{item.numberOfBundles}</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    {editingItem === item.id ? (
-                      <select
-                        value={editFormData.warehouse}
-                        onChange={(e) => setEditFormData({...editFormData, warehouse: e.target.value})}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                      >
-                        {WAREHOUSES.map(warehouse => (
-                          <option key={warehouse} value={warehouse}>{warehouse}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <span className="text-gray-900">{item.warehouse}</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    {editingItem === item.id ? (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={saveEdit}
-                          className="text-green-600 hover:text-green-800 text-sm"
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={cancelEdit}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => startEdit(item)}
-                          className="text-blue-600 hover:text-blue-800 text-sm"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleSplit(item)}
-                          className="text-purple-600 hover:text-purple-800 text-sm"
-                          disabled={item.numberOfBundles <= 1}
-                        >
-                          Split
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (window.confirm('Are you sure you want to delete this inventory item?')) {
-                              deleteWarehouseItem(item.id);
-                            }
-                          }}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {PRODUCTS.map(product => {
+        const colours = groupedByProduct[product] || {};
+        const hasRows = Object.values(colours).some(r => r.length > 0);
+        if (!hasRows) return null;
+        return (
+          <div key={product} className="bg-white rounded-lg shadow-sm border overflow-hidden mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 p-4 border-b bg-gray-50">{product}</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Colour
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Product ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Stage
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date Created
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Number of Bundles
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Warehouse
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+<tbody className="divide-y divide-gray-200">
+  {Object.entries(colours)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([colour, rows]) => (
+    <React.Fragment key={`${product}-${colour}`}>
+      {/* “Colour” grouping row */}
+      <tr
+        onClick={() => toggleColour(product, colour)}
+        className="cursor-pointer hover:bg-gray-200"
+      >
+        {/* colspan = number of <th> = 8 */}
+        <td colSpan="8" className="p-3 font-medium">
+          {colour}
+        </td>
+      </tr>
+
+      {/* Expandable detail rows for just this product + this colour */}
+      {expanded[`${product}-${colour}`] &&
+        rows
+          .slice()
+          .sort((a, b) => TYPES.indexOf(a.type) - TYPES.indexOf(b.type))
+          .map(item => (
+          <tr key={item.id} className="hover:bg-gray-50">
+            <td className="px-6 py-4">
+              {editingItem === item.id ? (
+                <select
+                  value={editFormData.colour}
+                  onChange={e =>
+                    setEditFormData({ ...editFormData, colour: e.target.value })
+                  }
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                >
+                  {settings.colors.map(c => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className="text-gray-900">{item.colour}</span>
+              )}
+            </td>
+            <td className="px-6 py-4">
+              <span className="font-mono text-sm text-blue-600">
+                {item.productId}
+              </span>
+            </td>
+            <td className="px-6 py-4">
+              {editingItem === item.id ? (
+                <select
+                  value={editFormData.type}
+                  onChange={e =>
+                    setEditFormData({ ...editFormData, type: e.target.value })
+                  }
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                >
+                  {TYPES.map(t => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className="text-gray-900">{item.type}</span>
+              )}
+            </td>
+            <td className="px-6 py-4">
+              {editingItem === item.id ? (
+                <select
+                  value={editFormData.stage}
+                  onChange={e =>
+                    setEditFormData({ ...editFormData, stage: e.target.value })
+                  }
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                >
+                  {STAGES.map(s => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    item.stage === 'Available'
+                      ? 'bg-green-100 text-green-800'
+                      : item.stage === 'Open'
+                      ? 'bg-blue-100 text-blue-800'
+                      : item.stage === 'Released'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : item.stage === 'Staged'
+                      ? 'bg-purple-100 text-purple-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}
+                >
+                  {item.stage}
+                </span>
+              )}
+            </td>
+            <td className="px-6 py-4">
+              {editingItem === item.id ? (
+                <input
+                  type="date"
+                  value={editFormData.dateCreated}
+                  onChange={e =>
+                    setEditFormData({ ...editFormData, dateCreated: e.target.value })
+                  }
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+              ) : (
+                <span className="text-gray-900">{item.dateCreated}</span>
+              )}
+            </td>
+            <td className="px-6 py-4">
+              {editingItem === item.id ? (
+                <input
+                  type="number"
+                  value={editFormData.numberOfBundles}
+                  onChange={e =>
+                    setEditFormData({
+                      ...editFormData,
+                      numberOfBundles: parseInt(e.target.value, 10),
+                    })
+                  }
+                  className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+              ) : (
+                <span className="font-medium">{item.numberOfBundles}</span>
+              )}
+            </td>
+            <td className="px-6 py-4">
+              {editingItem === item.id ? (
+                <select
+                  value={editFormData.warehouse}
+                  onChange={e =>
+                    setEditFormData({ ...editFormData, warehouse: e.target.value })
+                  }
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                >
+                  {WAREHOUSES.map(w => (
+                    <option key={w} value={w}>
+                      {w}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className="text-gray-900">{item.warehouse}</span>
+              )}
+            </td>
+            <td className="px-6 py-4">
+              {editingItem === item.id ? (
+                <div className="flex gap-2">
+                  <button
+                    onClick={saveEdit}
+                    className="text-green-600 hover:text-green-800 text-sm"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingItem(null);
+                      setEditFormData({});
+                    }}
+                    className="text-red-600 hover:text-red-800 text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => startEdit(item)}
+                    className="text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleSplit(item)}
+                    className="text-purple-600 hover:text-purple-800 text-sm"
+                    disabled={item.numberOfBundles <= 1}
+                  >
+                    Split
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          'Are you sure you want to delete this inventory item?'
+                        )
+                      ) {
+                        deleteWarehouseItem(item.id);
+                      }
+                    }}
+                    className="text-red-600 hover:text-red-800 text-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </td>
+          </tr>
+        ))}
+    </React.Fragment>
+  ))}
+</tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })}
 
       {/* Split Modal */}
       {showSplitModal && (

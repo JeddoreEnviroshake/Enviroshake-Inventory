@@ -1801,6 +1801,9 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
                       Product ID
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Colour
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Type
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -1828,8 +1831,8 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
         onClick={() => toggleColour(product, colour)}
         className="cursor-pointer hover:bg-gray-200"
       >
-        {/* colspan = number of <th> = 7 */}
-        <td colSpan="7" className="p-3 font-medium">
+        {/* colspan = number of <th> = 8 */}
+        <td colSpan="8" className="p-3 font-medium">
           {colour}
         </td>
       </tr>
@@ -1842,6 +1845,25 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
               <span className="font-mono text-sm text-blue-600">
                 {item.productId}
               </span>
+            </td>
+            <td className="px-6 py-4">
+              {editingItem === item.id ? (
+                <select
+                  value={editFormData.colour}
+                  onChange={e =>
+                    setEditFormData({ ...editFormData, colour: e.target.value })
+                  }
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                >
+                  {settings.colors.map(c => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className="text-gray-900">{item.colour}</span>
+              )}
             </td>
             <td className="px-6 py-4">
               {editingItem === item.id ? (
@@ -1967,11 +1989,7 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
               ) : (
                 <div className="flex gap-2">
                   <button
-                    onClick={() => {
-                      setEditingItem(item.id);
-                      setEditFormData(item);
-                      setOriginalWarehouse(item.warehouse);
-                    }}
+                    onClick={() => startEdit(item)}
                     className="text-blue-600 hover:text-blue-800 text-sm"
                   >
                     Edit

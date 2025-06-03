@@ -1383,7 +1383,6 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PO Number</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Raw Material</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shift</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Starting Weight</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Weight</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bags Available</th>
@@ -1441,21 +1440,6 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
                         </select>
                       ) : (
                         <span className="text-gray-900">{material.vendor}</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      {editingItem === material.id ? (
-                        <select
-                          value={editFormData.shift}
-                          onChange={(e) => setEditFormData({...editFormData, shift: e.target.value})}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                        >
-                          <option value="First">First</option>
-                          <option value="Second">Second</option>
-                          <option value="Third">Third</option>
-                        </select>
-                      ) : (
-                        <span className="text-gray-900">{material.shift || 'N/A'}</span>
                       )}
                     </td>
                     <td className="px-6 py-4">

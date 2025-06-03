@@ -1826,18 +1826,34 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
 <tbody className="divide-y divide-gray-200">
   {Object.entries(colours)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([colour, rows]) => (
-    <React.Fragment key={`${product}-${colour}`}>
-      {/* “Colour” grouping row */}
-      <tr
-        onClick={() => toggleColour(product, colour)}
-        className="cursor-pointer hover:bg-gray-200"
-      >
-        {/* colspan = number of <th> = 8 */}
-        <td colSpan="8" className="p-3 font-medium">
-          {colour}
-        </td>
-      </tr>
+    .map(([colour, rows]) => {
+      const totals = rows.reduce((acc, item) => {
+        acc[item.type] = (acc[item.type] || 0) + item.numberOfBundles;
+        return acc;
+      }, {});
+      const summary = TYPES.map(t =>
+        totals[t] ? `${t === 'Bundle' ? 'Bundles' : t}: ${totals[t]}` : null
+      )
+        .filter(Boolean)
+        .join(' ');
+      const isExpanded = expanded[`${product}-${colour}`];
+      return (
+        <React.Fragment key={`${product}-${colour}`}>
+          {/* "Colour" grouping row */}
+          <tr
+            onClick={() => toggleColour(product, colour)}
+            className="cursor-pointer hover:bg-gray-200"
+          >
+            {/* colspan = number of <th> = 8 */}
+            <td colSpan="8" className="p-3 font-medium">
+              <div className="flex justify-between items-center">
+                <span>
+                  {colour} {summary}
+                </span>
+                <span>{isExpanded ? '▼' : '▶'}</span>
+              </div>
+            </td>
+          </tr>
 
       {/* Expandable detail rows for just this product + this colour */}
       {expanded[`${product}-${colour}`] &&

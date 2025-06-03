@@ -1626,7 +1626,8 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
 
   const startEdit = (item) => {
     setEditingItem(item.id);
-    setEditFormData(item);
+    // Ensure colour is included when starting an edit
+    setEditFormData({ ...item, colour: item.colour });
     setOriginalWarehouse(item.warehouse);
   };
 
@@ -1641,7 +1642,19 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
       return;
     }
     
-    updateWarehouseItem(editingItem, editFormData, originalData);
+    // Include colour so it can also be updated
+    updateWarehouseItem(
+      editingItem,
+      {
+        type: editFormData.type,
+        stage: editFormData.stage,
+        dateCreated: editFormData.dateCreated,
+        numberOfBundles: editFormData.numberOfBundles,
+        warehouse: editFormData.warehouse,
+        colour: editFormData.colour,
+      },
+      originalData
+    );
     setEditingItem(null);
     setEditFormData({});
   };
@@ -1967,11 +1980,7 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
               ) : (
                 <div className="flex gap-2">
                   <button
-                    onClick={() => {
-                      setEditingItem(item.id);
-                      setEditFormData(item);
-                      setOriginalWarehouse(item.warehouse);
-                    }}
+                    onClick={() => startEdit(item)}
                     className="text-blue-600 hover:text-blue-800 text-sm"
                   >
                     Edit
@@ -2001,6 +2010,25 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
               )}
             </td>
           </tr>
+          {editingItem === item.id && (
+            <tr className="bg-gray-50">
+              <td colSpan="7" className="px-6 py-3">
+                <select
+                  value={editFormData.colour}
+                  onChange={e =>
+                    setEditFormData({ ...editFormData, colour: e.target.value })
+                  }
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                >
+                  {settings.colors.map(color => (
+                    <option key={color} value={color}>
+                      {color}
+                    </option>
+                  ))}
+                </select>
+              </td>
+            </tr>
+          )}
         ))}
     </React.Fragment>
   ))}

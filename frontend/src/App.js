@@ -124,7 +124,8 @@ const initialRawMaterials = [
     dateReceived: '2024-12-15',
     dateCreated: '2024-12-15',
     lastUsed: '2024-12-15',
-    bagsAvailable: 5
+    bagsAvailable: 5,
+    shift: 'First'
   },
   {
     id: 2,
@@ -138,7 +139,8 @@ const initialRawMaterials = [
     dateReceived: '2024-12-14',
     dateCreated: '2024-12-14',
     lastUsed: null,
-    bagsAvailable: 4
+    bagsAvailable: 4,
+    shift: 'Second'
   }
 ];
 
@@ -152,7 +154,8 @@ const initialWarehouseInventory = [
     dateCreated: '2024-12-15',
     numberOfBundles: 25,
     warehouse: 'Dresden',
-    stage: 'Available'
+    stage: 'Available',
+    shift: 'First'
   },
   {
     id: 2,
@@ -163,7 +166,8 @@ const initialWarehouseInventory = [
     dateCreated: '2024-12-14',
     numberOfBundles: 18,
     warehouse: 'BC',
-    stage: 'Available'
+    stage: 'Available',
+    shift: 'Second'
   }
 ];
 
@@ -447,13 +451,14 @@ function App() {
       productId,
       dateCreated: new Date().toISOString().split('T')[0],
       warehouse: 'Dresden', // All production starts in Dresden
-      stage: 'Available' // Default stage
+      stage: 'Available', // Default stage
+      shift: productionData.shift
     };
 
     setWarehouseInventory([...warehouseInventory, newProduction]);
     addActivity(
       'Production Added',
-      `Product ID: ${productId}, ${productionData.product} - ${productionData.colour} (${productionData.type}), ${productionData.numberOfBundles} bundles`,
+      `Product ID: ${productId}, ${productionData.product} - ${productionData.colour} (${productionData.type}), ${productionData.numberOfBundles} bundles, ${productionData.shift} Shift`,
       'Lead Hand'
     );
   };
@@ -1205,6 +1210,7 @@ const ProductionView = ({ addProduction, settings }) => {
     product: '',
     colour: '',
     type: '',
+    shift: 'First',
     numberOfBundles: ''
   });
 
@@ -1212,7 +1218,8 @@ const ProductionView = ({ addProduction, settings }) => {
     e.preventDefault();
     addProduction({
       ...formData,
-      numberOfBundles: parseInt(formData.numberOfBundles)
+      numberOfBundles: parseInt(formData.numberOfBundles),
+      shift: formData.shift
     });
     
     // Reset form
@@ -1220,6 +1227,7 @@ const ProductionView = ({ addProduction, settings }) => {
       product: '',
       colour: '',
       type: '',
+      shift: 'First',
       numberOfBundles: ''
     });
     
@@ -1277,6 +1285,20 @@ const ProductionView = ({ addProduction, settings }) => {
                 {TYPES.map(type => (
                   <option key={type} value={type}>{type}</option>
                 ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Shift</label>
+              <select
+                value={formData.shift}
+                onChange={(e) => setFormData({...formData, shift: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="First">First</option>
+                <option value="Second">Second</option>
+                <option value="Third">Third</option>
               </select>
             </div>
 
@@ -1361,6 +1383,7 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PO Number</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Raw Material</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shift</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Starting Weight</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Weight</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bags Available</th>
@@ -1418,6 +1441,21 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
                         </select>
                       ) : (
                         <span className="text-gray-900">{material.vendor}</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {editingItem === material.id ? (
+                        <select
+                          value={editFormData.shift}
+                          onChange={(e) => setEditFormData({...editFormData, shift: e.target.value})}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        >
+                          <option value="First">First</option>
+                          <option value="Second">Second</option>
+                          <option value="Third">Third</option>
+                        </select>
+                      ) : (
+                        <span className="text-gray-900">{material.shift || 'N/A'}</span>
                       )}
                     </td>
                     <td className="px-6 py-4">

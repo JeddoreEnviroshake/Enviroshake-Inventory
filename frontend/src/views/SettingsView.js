@@ -382,8 +382,18 @@ const SettingsView = ({ settings, updateSettings }) => {
       </div>
 
       {showValuesModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-h-[80vh] overflow-y-auto w-full max-w-3xl">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowValuesModal(false);
+            }
+          }}
+        >
+          <div
+            className="bg-white rounded-lg p-6 max-h-[80vh] overflow-y-auto w-full max-w-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-lg font-semibold mb-4">Raw Material Values</h3>
             <table className="min-w-full border text-sm">
               <thead>

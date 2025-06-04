@@ -72,12 +72,27 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
                         onClick={() => toggleMaterial(materialName)}
                         className="cursor-pointer hover:bg-gray-200"
                       >
-                        <td colSpan="11" className="p-3 font-medium">
+                        <td colSpan="10" className="p-3 font-medium">
                           <div className="flex justify-between items-center">
-                            <div className="grid grid-cols-3 w-full">
+                            <div className="grid grid-cols-4 w-full">
                               <div>{materialName}</div>
                               <div>{`Total Weight: ${totalWeight.toLocaleString()} lbs`}</div>
                               <div>{`Bags: ${totalBags}`}</div>
+                              {(() => {
+                                const statusInfo = getStatusInfo({
+                                  rawMaterial: materialName,
+                                  currentWeight: totalWeight,
+                                });
+                                return (
+                                  <div>
+                                    <span
+                                      className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
+                                    >
+                                      {statusInfo.status}
+                                    </span>
+                                  </div>
+                                );
+                              })()}
                             </div>
                             <span className="ml-4">{isExpanded ? '▼' : '▶'}</span>
                           </div>
@@ -95,14 +110,12 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bags Available</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Created</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Used</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                       )}
 
                       {isExpanded &&
                         rows.map(material => {
-                          const statusInfo = getStatusInfo(material);
                           return (
                             <tr key={material.id} className="hover:bg-gray-50">
                               <td className="px-6 py-4">
@@ -196,11 +209,6 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
                               </td>
                               <td className="px-6 py-4 text-gray-900">{material.dateCreated}</td>
                               <td className="px-6 py-4 text-gray-900">{material.lastUsed || 'Never'}</td>
-                              <td className="px-6 py-4">
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
-                                  {statusInfo.status}
-                                </span>
-                              </td>
                               <td className="px-6 py-4">
                                 {editingItem === material.id ? (
                                   <div className="flex gap-2">

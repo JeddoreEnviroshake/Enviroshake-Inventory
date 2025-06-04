@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 const SettingsView = ({ settings, updateSettings }) => {
-  const [formData, setFormData] = useState(settings);
+  const [formData, setFormData] = useState({
+    ...settings,
+    avgBatchesPerDay: settings.avgBatchesPerDay || 0
+  });
   const [materialValues, setMaterialValues] = useState(settings.rawMaterialValues || {});
   const [showValuesModal, setShowValuesModal] = useState(false);
   const [newRawMaterial, setNewRawMaterial] = useState('');
@@ -10,7 +13,10 @@ const SettingsView = ({ settings, updateSettings }) => {
 
   // Update formData when settings prop changes
   useEffect(() => {
-    setFormData(settings);
+    setFormData({
+      ...settings,
+      avgBatchesPerDay: settings.avgBatchesPerDay || 0
+    });
     // Ensure materialValues contains an entry for every raw material
     const baseValues = settings.rawMaterialValues || {};
     const normalizedValues = { ...baseValues };
@@ -261,6 +267,20 @@ const SettingsView = ({ settings, updateSettings }) => {
           </div>
         </div>
 
+        {/* Avg Batches / Day */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Avg Batches / Day</h3>
+          <div className="mb-4">
+            <input
+              type="number"
+              step="0.01"
+              value={formData.avgBatchesPerDay}
+              onChange={e => setFormData({ ...formData, avgBatchesPerDay: parseFloat(e.target.value) || 0 })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
         {/* Raw Materials Management */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center justify-between">
@@ -376,7 +396,6 @@ const SettingsView = ({ settings, updateSettings }) => {
                   <th className="px-2 py-1 border">Minimum Quantity (lb)</th>
                   <th className="px-2 py-1 border">Price Per lb (CDN)</th>
                   <th className="px-2 py-1 border">Usage / Batch (lb)</th>
-                  <th className="px-2 py-1 border">Avg Batches / Day</th>
                 </tr>
               </thead>
               <tbody>
@@ -431,15 +450,6 @@ const SettingsView = ({ settings, updateSettings }) => {
                           step="0.01"
                           value={materialValues[name].usagePerBatch}
                           onChange={e => handleValueChange(name, 'usagePerBatch', parseFloat(e.target.value) || 0)}
-                          className="w-full border rounded px-1"
-                        />
-                      </td>
-                      <td className="px-2 py-1 border">
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={materialValues[name].avgBatchesPerDay}
-                          onChange={e => handleValueChange(name, 'avgBatchesPerDay', parseFloat(e.target.value) || 0)}
                           className="w-full border rounded px-1"
                         />
                       </td>

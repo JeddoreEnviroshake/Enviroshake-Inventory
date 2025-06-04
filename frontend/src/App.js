@@ -150,7 +150,18 @@ const initialActivityHistory = [
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
-  const [settings, setSettings] = useState(() => loadFromLocalStorage('enviroshake_settings', initialSettings));
+  const [settings, setSettings] = useState(() => {
+    const loaded = loadFromLocalStorage('enviroshake_settings', initialSettings);
+    // Ensure rawMaterialValues exists for all raw materials
+    const baseValues = loaded.rawMaterialValues || {};
+    const normalizedValues = { ...baseValues };
+    (loaded.rawMaterials || rawMaterialNames).forEach(name => {
+      if (!normalizedValues[name]) {
+        normalizedValues[name] = { vendor: '', minQuantity: 0, pricePerLb: 0, usagePerBatch: 0 };
+      }
+    });
+    return { ...loaded, rawMaterialValues: normalizedValues };
+  });
   const [rawMaterials, setRawMaterials] = useState(() => loadFromLocalStorage('enviroshake_rawMaterials', initialRawMaterials));
   const [warehouseInventory, setWarehouseInventory] = useState(() => loadFromLocalStorage('enviroshake_warehouseInventory', initialWarehouseInventory));
   const [activityHistory, setActivityHistory] = useState(() => loadFromLocalStorage('enviroshake_activityHistory', initialActivityHistory));

@@ -11,7 +11,20 @@ const SettingsView = ({ settings, updateSettings }) => {
   // Update formData when settings prop changes
   useEffect(() => {
     setFormData(settings);
-    setMaterialValues(settings.rawMaterialValues || {});
+    // Ensure materialValues contains an entry for every raw material
+    const baseValues = settings.rawMaterialValues || {};
+    const normalizedValues = { ...baseValues };
+    (settings.rawMaterials || []).forEach(name => {
+      if (!normalizedValues[name]) {
+        normalizedValues[name] = {
+          vendor: '',
+          minQuantity: 0,
+          pricePerLb: 0,
+          usagePerBatch: 0
+        };
+      }
+    });
+    setMaterialValues(normalizedValues);
   }, [settings]);
 
   const handleSave = () => {

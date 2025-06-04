@@ -488,7 +488,7 @@ function App() {
             <button
               onClick={() => setCurrentView('receiving')}
               className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
-                currentView === 'receiving' ? 'bg-green-700 text-green-300' : 'text-gray-300'
+                currentView === 'receiving' ? 'bg-green-700 text-white' : 'text-gray-300'
               }`}
             >
               📦 Receiving
@@ -497,7 +497,7 @@ function App() {
             <button
               onClick={() => setCurrentView('using')}
               className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
-                currentView === 'using' ? 'bg-green-700 text-green-300' : 'text-gray-300'
+                currentView === 'using' ? 'bg-green-700 text-white' : 'text-gray-300'
               }`}
             >
               🔧 Using
@@ -506,7 +506,7 @@ function App() {
             <button
               onClick={() => setCurrentView('production')}
               className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
-                currentView === 'production' ? 'bg-green-700 text-green-300' : 'text-gray-300'
+                currentView === 'production' ? 'bg-green-700 text-white' : 'text-gray-300'
               }`}
             >
               📝 Lead Hand Log
@@ -519,7 +519,7 @@ function App() {
             <button
               onClick={() => setCurrentView('rawMaterials')}
               className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
-                currentView === 'rawMaterials' ? 'bg-green-700 text-green-300' : 'text-gray-300'
+                currentView === 'rawMaterials' ? 'bg-green-700 text-white' : 'text-gray-300'
               }`}
             >
               🧱 Raw Materials
@@ -528,7 +528,7 @@ function App() {
             <button
               onClick={() => setCurrentView('warehouse')}
               className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
-                currentView === 'warehouse' ? 'bg-green-700 text-green-300' : 'text-gray-300'
+                currentView === 'warehouse' ? 'bg-green-700 text-white' : 'text-gray-300'
               }`}
             >
               🏭 Warehouse
@@ -541,7 +541,7 @@ function App() {
             <button
               onClick={() => setCurrentView('activity')}
               className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
-                currentView === 'activity' ? 'bg-green-700 text-green-300' : 'text-gray-300'
+                currentView === 'activity' ? 'bg-green-700 text-white' : 'text-gray-300'
               }`}
             >
               📋 Activity History
@@ -550,7 +550,7 @@ function App() {
             <button
               onClick={() => setCurrentView('settings')}
               className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
-                currentView === 'settings' ? 'bg-green-700 text-green-300' : 'text-gray-300'
+                currentView === 'settings' ? 'bg-green-700 text-white' : 'text-gray-300'
               }`}
             >
               ⚙️ Settings
@@ -559,7 +559,7 @@ function App() {
             <button
               onClick={() => setCurrentView('reports')}
               className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
-                currentView === 'reports' ? 'bg-green-700 text-green-300' : 'text-gray-300'
+                currentView === 'reports' ? 'bg-green-700 text-white' : 'text-gray-300'
               }`}
             >
               📊 Reports

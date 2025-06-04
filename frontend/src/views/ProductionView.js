@@ -62,9 +62,12 @@ const ProductionView = ({ addProduction, settings }) => {
                 required
               >
                 <option value="">Select Colour</option>
-                {(settings?.colors || []).map(color => (
-                  <option key={color} value={color}>{color}</option>
-                ))}
+                {(settings?.colors || [])
+                  .slice()
+                  .sort((a, b) => a.localeCompare(b))
+                  .map(color => (
+                    <option key={color} value={color}>{color}</option>
+                  ))}
               </select>
             </div>
 

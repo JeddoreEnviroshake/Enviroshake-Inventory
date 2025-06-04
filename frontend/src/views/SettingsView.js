@@ -20,7 +20,16 @@ const SettingsView = ({ settings, updateSettings }) => {
           vendor: '',
           minQuantity: 0,
           pricePerLb: 0,
-          usagePerBatch: 0
+          usagePerBatch: 0,
+          avgBatchesPerDay: 0
+        };
+      } else {
+        normalizedValues[name] = {
+          vendor: normalizedValues[name].vendor || '',
+          minQuantity: normalizedValues[name].minQuantity || 0,
+          pricePerLb: normalizedValues[name].pricePerLb || 0,
+          usagePerBatch: normalizedValues[name].usagePerBatch || 0,
+          avgBatchesPerDay: normalizedValues[name].avgBatchesPerDay || 0
         };
       }
     });
@@ -36,7 +45,13 @@ const SettingsView = ({ settings, updateSettings }) => {
     if (newRawMaterial.trim() && !formData.rawMaterials.includes(newRawMaterial.trim())) {
       const updatedValues = {
         ...materialValues,
-        [newRawMaterial.trim()]: { vendor: '', minQuantity: 0, pricePerLb: 0, usagePerBatch: 0 }
+        [newRawMaterial.trim()]: {
+          vendor: '',
+          minQuantity: 0,
+          pricePerLb: 0,
+          usagePerBatch: 0,
+          avgBatchesPerDay: 0
+        }
       };
       const updatedFormData = {
         ...formData,
@@ -378,6 +393,7 @@ const SettingsView = ({ settings, updateSettings }) => {
                   <th className="px-2 py-1 border">Minimum Quantity (lb)</th>
                   <th className="px-2 py-1 border">Price Per lb (CDN)</th>
                   <th className="px-2 py-1 border">Usage / Batch (lb)</th>
+                  <th className="px-2 py-1 border">Avg Batches / Day</th>
                 </tr>
               </thead>
               <tbody>
@@ -432,6 +448,15 @@ const SettingsView = ({ settings, updateSettings }) => {
                           step="0.01"
                           value={materialValues[name].usagePerBatch}
                           onChange={e => handleValueChange(name, 'usagePerBatch', parseFloat(e.target.value) || 0)}
+                          className="w-full border rounded px-1"
+                        />
+                      </td>
+                      <td className="px-2 py-1 border">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={materialValues[name].avgBatchesPerDay}
+                          onChange={e => handleValueChange(name, 'avgBatchesPerDay', parseFloat(e.target.value) || 0)}
                           className="w-full border rounded px-1"
                         />
                       </td>

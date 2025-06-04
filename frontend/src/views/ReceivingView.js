@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { generateCode39Barcode, renderBarcodeSVG } from "../utils/barcode";
 const ReceivingView = ({ addRawMaterial, settings }) => {
   const [formData, setFormData] = useState({
     rawMaterial: '',

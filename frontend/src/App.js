@@ -468,15 +468,15 @@ function App() {
       {/* Sidebar */}
       <div className="fixed inset-y-0 left-0 w-64 bg-[#09713c] text-white">
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-blue-400">Enviroshake</h1>
+          <h1 className="text-2xl font-bold text-green-300">Enviroshake</h1>
           <p className="text-sm text-gray-300 mt-1">Inventory Tracking System</p>
         </div>
         
         <nav className="mt-8">
           <button
             onClick={() => setCurrentView('dashboard')}
-            className={`w-full text-left px-6 py-3 hover:bg-slate-800 transition-colors ${
-              currentView === 'dashboard' ? 'bg-slate-800 border-r-2 border-blue-400' : ''
+            className={`w-full text-left px-6 py-3 hover:bg-green-700 transition-colors ${
+              currentView === 'dashboard' ? 'bg-green-700 border-r-2 border-green-300' : ''
             }`}
           >
             📊 Dashboard
@@ -487,8 +487,8 @@ function App() {
             
             <button
               onClick={() => setCurrentView('receiving')}
-              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
-                currentView === 'receiving' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
+                currentView === 'receiving' ? 'bg-green-700 text-green-300' : 'text-gray-300'
               }`}
             >
               📦 Receiving
@@ -496,8 +496,8 @@ function App() {
             
             <button
               onClick={() => setCurrentView('using')}
-              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
-                currentView === 'using' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
+                currentView === 'using' ? 'bg-green-700 text-green-300' : 'text-gray-300'
               }`}
             >
               🔧 Using
@@ -505,8 +505,8 @@ function App() {
             
             <button
               onClick={() => setCurrentView('production')}
-              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
-                currentView === 'production' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
+                currentView === 'production' ? 'bg-green-700 text-green-300' : 'text-gray-300'
               }`}
             >
               📝 Lead Hand Log
@@ -518,8 +518,8 @@ function App() {
             
             <button
               onClick={() => setCurrentView('rawMaterials')}
-              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
-                currentView === 'rawMaterials' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
+                currentView === 'rawMaterials' ? 'bg-green-700 text-green-300' : 'text-gray-300'
               }`}
             >
               🧱 Raw Materials
@@ -527,8 +527,8 @@ function App() {
             
             <button
               onClick={() => setCurrentView('warehouse')}
-              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
-                currentView === 'warehouse' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
+                currentView === 'warehouse' ? 'bg-green-700 text-green-300' : 'text-gray-300'
               }`}
             >
               🏭 Warehouse
@@ -540,8 +540,8 @@ function App() {
             
             <button
               onClick={() => setCurrentView('activity')}
-              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
-                currentView === 'activity' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
+                currentView === 'activity' ? 'bg-green-700 text-green-300' : 'text-gray-300'
               }`}
             >
               📋 Activity History
@@ -549,8 +549,8 @@ function App() {
             
             <button
               onClick={() => setCurrentView('settings')}
-              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
-                currentView === 'settings' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
+                currentView === 'settings' ? 'bg-green-700 text-green-300' : 'text-gray-300'
               }`}
             >
               ⚙️ Settings
@@ -558,8 +558,8 @@ function App() {
             
             <button
               onClick={() => setCurrentView('reports')}
-              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-slate-800 transition-colors ${
-                currentView === 'reports' ? 'bg-slate-800 text-blue-400' : 'text-gray-300'
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
+                currentView === 'reports' ? 'bg-green-700 text-green-300' : 'text-gray-300'
               }`}
             >
               📊 Reports

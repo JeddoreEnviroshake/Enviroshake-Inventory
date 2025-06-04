@@ -1831,11 +1831,14 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
         acc[item.type] = (acc[item.type] || 0) + item.numberOfBundles;
         return acc;
       }, {});
-      const summary = TYPES.map(t =>
-        totals[t] ? `${t === 'Bundle' ? 'Bundles' : t}: ${totals[t]}` : null
-      )
-        .filter(Boolean)
-        .join(' ');
+      const bundleTotal = totals['Bundle'] || 0;
+      const capTotal = Object.keys(totals)
+        .filter(type => type.startsWith('Cap'))
+        .reduce((sum, type) => sum + totals[type], 0);
+      const summaryParts = [];
+      if (bundleTotal) summaryParts.push(`Bundles: ${bundleTotal}`);
+      if (capTotal) summaryParts.push(`Caps: ${capTotal}`);
+      const summary = summaryParts.join('  ');
       const isExpanded = expanded[`${product}-${colour}`];
       return (
         <React.Fragment key={`${product}-${colour}`}>
@@ -1847,8 +1850,9 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
             {/* colspan = number of <th> = 8 */}
             <td colSpan="8" className="p-3 font-medium">
               <div className="flex justify-between items-center">
-                <span>
-                  {colour} {summary}
+                <span className="flex items-center">
+                  <span>{colour}</span>
+                  <span className="ml-4">{summary}</span>
                 </span>
                 <span>{isExpanded ? '▼' : '▶'}</span>
               </div>

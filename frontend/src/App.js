@@ -128,6 +128,17 @@ const initialActivityHistory = [
     action: 'Material Used',
     details: 'Barcode: BAR001PO5691, Used: 1159 lbs',
     user: 'Lead Hand - John Smith'
+  },
+  {
+    id: 3,
+    timestamp: '2024-12-16 09:00:00',
+    action: 'Raw Material Updated',
+    itemId: 'BAR001PO5691',
+    changes: {
+      bagsAvailable: { from: 6, to: 5 },
+      currentWeight: { from: 9259, to: 8100 }
+    },
+    user: 'Inventory Manager'
   }
 ];
 
@@ -179,11 +190,16 @@ function App() {
 
   // Enhanced activity logging for edits
   const addEditActivity = (action, itemId, changes, user = 'System') => {
-    const changeDetails = Object.entries(changes)
-      .map(([field, {from, to}]) => `${field}: "${from}" → "${to}"`)
-      .join(', ');
-    
-    addActivity(action, `${itemId} - ${changeDetails}`, user);
+    const newActivity = {
+      id: Math.max(...activityHistory.map(a => a.id), 0) + 1,
+      timestamp: new Date().toLocaleString(),
+      action,
+      itemId,
+      changes,
+      user
+    };
+
+    setActivityHistory([newActivity, ...activityHistory]);
   };
 
   // Generate barcode
@@ -236,7 +252,7 @@ function App() {
     if (Object.keys(changes).length > 0) {
       addEditActivity(
         'Raw Material Updated',
-        `Barcode: ${originalData.barcode}`,
+        originalData.barcode,
         changes,
         'Inventory Manager'
       );
@@ -425,7 +441,7 @@ function App() {
     if (Object.keys(changes).length > 0) {
       addEditActivity(
         'Warehouse Item Updated',
-        `Product ID: ${originalData.productId}`,
+        originalData.productId,
         changes,
         'Warehouse Manager'
       );

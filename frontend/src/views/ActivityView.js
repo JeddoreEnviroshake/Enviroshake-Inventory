@@ -11,7 +11,8 @@ const ActivityView = ({ activityHistory }) => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Changes / Details</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
               </tr>
             </thead>
@@ -24,7 +25,20 @@ const ActivityView = ({ activityHistory }) => {
                       {activity.action}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{activity.details}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{activity.itemId || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    {activity.changes ? (
+                      <ul className="list-disc pl-4">
+                        {Object.entries(activity.changes).map(([field, value]) => (
+                          <li key={field}>
+                            {field}: "{value.from}" → "{value.to}"
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      activity.details
+                    )}
+                  </td>
                   <td className="px-6 py-4 text-sm text-gray-600">{activity.user}</td>
                 </tr>
               ))}

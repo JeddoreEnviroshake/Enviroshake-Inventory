@@ -88,7 +88,7 @@ const ReportsView = ({ rawMaterials, warehouseInventory, activityHistory }) => {
               'raw_materials.csv',
               ['barcode', 'poNumber', 'rawMaterial', 'vendor', 'startingWeight', 'currentWeight', 'bagsAvailable', 'dateCreated', 'lastUsed']
             )}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+            className="bg-[#09713c] text-white px-4 py-2 rounded-lg hover:bg-[#09713c]"
           >
             📊 Export Raw Materials
           </button>

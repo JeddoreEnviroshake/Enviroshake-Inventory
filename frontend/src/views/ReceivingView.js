@@ -153,7 +153,7 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="w-full bg-[#09713c] text-white px-6 py-2 rounded-lg hover:bg-[#09713c] transition-colors"
             >
               Submit & Generate Label
             </button>

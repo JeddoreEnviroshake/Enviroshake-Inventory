@@ -468,7 +468,7 @@ function App() {
       {/* Sidebar */}
       <div className="fixed inset-y-0 left-0 w-64 bg-[#09713c] text-white">
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-green-300">Enviroshake</h1>
+          <h1 className="text-2xl font-bold text-white">Enviroshake</h1>
           <p className="text-sm text-gray-300 mt-1">Inventory Tracking System</p>
         </div>
         
@@ -483,7 +483,7 @@ function App() {
           </button>
           
           <div className="mt-6 px-6">
-            <h3 className="text-xs uppercase tracking-wide text-gray-400 mb-3">Operations</h3>
+            <h3 className="text-xs uppercase tracking-wide text-white mb-3">Operations</h3>
             
             <button
               onClick={() => setCurrentView('receiving')}
@@ -514,7 +514,7 @@ function App() {
           </div>
 
           <div className="mt-6 px-6">
-            <h3 className="text-xs uppercase tracking-wide text-gray-400 mb-3">Inventory</h3>
+            <h3 className="text-xs uppercase tracking-wide text-white mb-3">Inventory</h3>
             
             <button
               onClick={() => setCurrentView('rawMaterials')}
@@ -536,7 +536,7 @@ function App() {
           </div>
 
           <div className="mt-6 px-6">
-            <h3 className="text-xs uppercase tracking-wide text-gray-400 mb-3">System</h3>
+            <h3 className="text-xs uppercase tracking-wide text-white mb-3">System</h3>
             
             <button
               onClick={() => setCurrentView('activity')}

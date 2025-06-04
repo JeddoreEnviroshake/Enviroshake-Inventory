@@ -394,12 +394,19 @@ const SettingsView = ({ settings, updateSettings }) => {
                         />
                       </td>
                       <td className="px-2 py-1 border">
-                        <input
-                          type="text"
+                        <select
                           value={materialValues[name].vendor}
                           onChange={e => handleValueChange(name, 'vendor', e.target.value)}
                           className="w-full border rounded px-1"
-                        />
+                        >
+                          <option value="">Select Vendor</option>
+                          {formData.vendors
+                            .slice()
+                            .sort((a, b) => a.localeCompare(b))
+                            .map(vendor => (
+                              <option key={vendor} value={vendor}>{vendor}</option>
+                            ))}
+                        </select>
                       </td>
                       <td className="px-2 py-1 border">
                         <input

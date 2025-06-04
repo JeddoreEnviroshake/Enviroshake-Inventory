@@ -1844,10 +1844,6 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
       const capTotal = Object.keys(totals)
         .filter(type => type.startsWith('Cap'))
         .reduce((sum, type) => sum + totals[type], 0);
-      const summaryParts = [];
-      if (bundleTotal) summaryParts.push(`Bundles: ${bundleTotal}`);
-      if (capTotal) summaryParts.push(`Caps: ${capTotal}`);
-      const summary = summaryParts.join('  ');
       const isExpanded = expanded[`${product}-${colour}`];
       return (
         <React.Fragment key={`${product}-${colour}`}>
@@ -1859,11 +1855,14 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
             {/* colspan = number of <th> = 8 */}
             <td colSpan="8" className="p-3 font-medium">
               <div className="flex justify-between items-center">
-                <span className="flex items-center">
-                  <span>{colour}</span>
-                  <span className="ml-4">{summary}</span>
-                </span>
-                <span>{isExpanded ? '▼' : '▶'}</span>
+                <div className="grid grid-cols-5 w-full">
+                  <div>{colour}</div>
+                  <div>{bundleTotal > 0 ? `Bundles: ${bundleTotal}` : ''}</div>
+                  <div>{capTotal > 0 ? `Caps: ${capTotal}` : ''}</div>
+                  <div></div>
+                  <div></div>
+                </div>
+                <span className="ml-4">{isExpanded ? '▼' : '▶'}</span>
               </div>
             </td>
           </tr>

@@ -2008,7 +2008,7 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
             </td>
           </tr>
         ))}
-    </React.Fragment>
+    </>
   ))}
 </tbody>
               </table>

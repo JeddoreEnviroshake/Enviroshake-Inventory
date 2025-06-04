@@ -14,15 +14,21 @@ import ActivityView from './views/ActivityView';
 
 
 // Initial configuration values
+const rawMaterialNames = [
+  'PP EFS', 'PP Clear Co-Polymer', 'PP White', 'PE EFS', 'PE Clear', 'PE White',
+  'LXR', 'Rubber Crumb', 'Colour Masterbatch', 'PP EFS - HMF', 'Microingredients',
+  'Wax', 'AC MB CR20050', 'SC MB CR20060', 'Carbon Black MB CB84002',
+  'Cool Roof MB CSC 10030', 'TSL/CR CSC 10050', 'TSL MB CR20062',
+  'Disney Brown MB CR20080', 'FR78070PP', 'PP Co-Polymer Virgin', 'Wood Fiber'
+];
+
 const initialSettings = {
   lowStockAlertLevel: 0.2, // 20% of starting weight
-  rawMaterials: [
-    'PP EFS', 'PP Clear Co-Polymer', 'PP White', 'PE EFS', 'PE Clear', 'PE White', 
-    'LXR', 'Rubber Crumb', 'Colour Masterbatch', 'PP EFS - HMF', 'Microingredients', 
-    'Wax', 'AC MB CR20050', 'SC MB CR20060', 'Carbon Black MB CB84002', 
-    'Cool Roof MB CSC 10030', 'TSL/CR CSC 10050', 'TSL MB CR20062', 
-    'Disney Brown MB CR20080', 'FR78070PP', 'PP Co-Polymer Virgin', 'Wood Fiber'
-  ],
+  rawMaterials: rawMaterialNames,
+  rawMaterialValues: rawMaterialNames.reduce((acc, name) => {
+    acc[name] = { vendor: '', minQuantity: 0, pricePerLb: 0, usagePerBatch: 0 };
+    return acc;
+  }, {}),
   vendors: ['EFS Plastics', 'SM Polymers', 'Kraton', 'CRM Canada', 'Polyten', 'AWF'],
   emailAddresses: ['jeddore.mcdonald@enviroshake.com'],
   colors: ['Weathered Wood', 'Cedar Blend', 'Rustic Red', 'Storm Grey', 'Charcoal', 'Midnight Blue', 'Weathered Copper', 'Driftwood', 'Sage Green', 'Coastal Blue', 'Autumn Bronze']

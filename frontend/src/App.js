@@ -450,7 +450,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 w-64 bg-slate-900 text-white">
+      <div className="fixed inset-y-0 left-0 w-64 bg-[#09713c] text-white">
         <div className="p-6">
           <h1 className="text-2xl font-bold text-blue-400">Enviroshake</h1>
           <p className="text-sm text-gray-300 mt-1">Inventory Tracking System</p>

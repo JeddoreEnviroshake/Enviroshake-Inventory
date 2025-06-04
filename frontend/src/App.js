@@ -1795,35 +1795,7 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
             <h3 className="text-lg font-semibold text-gray-900 p-4 border-b bg-gray-50">{product}</h3>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Colour
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Product ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Stage
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date Created
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Number of Bundles
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Warehouse
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-<tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200">
   {Object.entries(colours)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([colour, rows]) => (
@@ -1840,12 +1812,23 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
       </tr>
 
       {/* Expandable detail rows for just this product + this colour */}
-      {expanded[`${product}-${colour}`] &&
-        rows
-          .slice()
-          .sort((a, b) => TYPES.indexOf(a.type) - TYPES.indexOf(b.type))
-          .map(item => (
-          <tr key={item.id} className="hover:bg-gray-50">
+      {expanded[`${product}-${colour}`] && (
+        <>
+          <tr className="bg-gray-50">
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Colour</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product ID</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stage</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Created</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number of Bundles</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warehouse</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+          </tr>
+          {rows
+            .slice()
+            .sort((a, b) => TYPES.indexOf(a.type) - TYPES.indexOf(b.type))
+            .map(item => (
+              <tr key={item.id} className="hover:bg-gray-50">
             <td className="px-6 py-4">
               {editingItem === item.id ? (
                 <select
@@ -2025,6 +2008,7 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
             </td>
           </tr>
         ))}
+        </>
     </React.Fragment>
   ))}
 </tbody>

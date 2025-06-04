@@ -1,10 +1,16 @@
 import React from "react";
 const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, settings, setCurrentView }) => {
   const totalRawMaterialWeight = rawMaterials.reduce((sum, item) => sum + item.currentWeight, 0);
-  const lowStockRawMaterials = rawMaterials.filter(item => {
-    const minQty = settings.rawMaterialValues?.[item.rawMaterial]?.minQuantity || 0;
-    return item.currentWeight < minQty;
-  });
+  const totalByMaterial = rawMaterials.reduce((acc, item) => {
+    acc[item.rawMaterial] = (acc[item.rawMaterial] || 0) + item.currentWeight;
+    return acc;
+  }, {});
+  const lowStockRawMaterials = Object.entries(totalByMaterial)
+    .filter(([name, weight]) => {
+      const minQty = settings.rawMaterialValues?.[name]?.minQuantity || 0;
+      return weight < minQty;
+    })
+    .map(([name, weight]) => ({ rawMaterial: name, totalWeight: weight }));
   const totalFinishedGoods = warehouseInventory.reduce((sum, item) => sum + item.numberOfBundles, 0);
   const recentActivities = activityHistory.slice(0, 5);
 
@@ -73,14 +79,11 @@ const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, sett
             </div>
             <div className="divide-y max-h-80 overflow-y-auto">
               {lowStockRawMaterials.map(material => (
-                <div key={material.id} className="p-4">
+                <div key={material.rawMaterial} className="p-4">
                   <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium text-gray-900">{material.rawMaterial}</p>
-                      <p className="text-sm text-gray-600">PO: {material.poNumber}</p>
-                    </div>
+                    <p className="font-medium text-gray-900">{material.rawMaterial}</p>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-red-600">{material.currentWeight.toLocaleString()} lbs</p>
+                      <p className="text-sm font-medium text-red-600">{material.totalWeight.toLocaleString()} lbs</p>
                       <p className="text-xs text-gray-500">
                         Min: {(settings.rawMaterialValues?.[material.rawMaterial]?.minQuantity || 0).toLocaleString()} lbs
                       </p>

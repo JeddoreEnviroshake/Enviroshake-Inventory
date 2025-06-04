@@ -157,7 +157,7 @@ const SettingsView = ({ settings, updateSettings }) => {
               />
               <button
                 onClick={addEmail}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                className="bg-[#09713c] text-white px-4 py-2 rounded-lg hover:bg-[#09713c]"
               >
                 Add
               </button>
@@ -195,7 +195,7 @@ const SettingsView = ({ settings, updateSettings }) => {
               />
               <button
                 onClick={addColor}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                className="bg-[#09713c] text-white px-4 py-2 rounded-lg hover:bg-[#09713c]"
               >
                 Add
               </button>
@@ -232,7 +232,7 @@ const SettingsView = ({ settings, updateSettings }) => {
               />
               <button
                 onClick={addRawMaterial}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                className="bg-[#09713c] text-white px-4 py-2 rounded-lg hover:bg-[#09713c]"
               >
                 Add
               </button>
@@ -269,7 +269,7 @@ const SettingsView = ({ settings, updateSettings }) => {
               />
               <button
                 onClick={addVendor}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                className="bg-[#09713c] text-white px-4 py-2 rounded-lg hover:bg-[#09713c]"
               >
                 Add
               </button>
@@ -292,10 +292,10 @@ const SettingsView = ({ settings, updateSettings }) => {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end">
+          <div className="flex justify-end">
           <button
             onClick={handleSave}
-            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
+            className="bg-[#09713c] text-white px-6 py-2 rounded-lg hover:bg-[#09713c]"
           >
             Save Settings
           </button>

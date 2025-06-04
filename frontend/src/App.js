@@ -34,6 +34,7 @@ const initialSettings = {
     };
     return acc;
   }, {}),
+  avgBatchesPerDay: 0,
   vendors: ['EFS Plastics', 'SM Polymers', 'Kraton', 'CRM Canada', 'Polyten', 'AWF'],
   emailAddresses: ['jeddore.mcdonald@enviroshake.com'],
   colors: ['Weathered Wood', 'Cedar Blend', 'Rustic Red', 'Storm Grey', 'Charcoal', 'Midnight Blue', 'Weathered Copper', 'Driftwood', 'Sage Green', 'Coastal Blue', 'Autumn Bronze']
@@ -157,6 +158,9 @@ function App() {
   const [currentView, setCurrentView] = useState('dashboard');
   const [settings, setSettings] = useState(() => {
     const loaded = loadFromLocalStorage('enviroshake_settings', initialSettings);
+    if (loaded.avgBatchesPerDay === undefined) {
+      loaded.avgBatchesPerDay = 0;
+    }
     // Ensure rawMaterialValues exists for all raw materials
     const baseValues = loaded.rawMaterialValues || {};
     const normalizedValues = { ...baseValues };

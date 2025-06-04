@@ -32,10 +32,10 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
   };
 
   const getStatusInfo = (material) => {
-    const percentage = (material.currentWeight / material.startingWeight);
-    if (percentage < settings.lowStockAlertLevel) {
+    const minQty = settings.rawMaterialValues?.[material.rawMaterial]?.minQuantity || 0;
+    if (material.currentWeight < minQty) {
       return { status: 'Low Stock', color: 'bg-red-100 text-red-800' };
-    } else if (percentage < 0.5) {
+    } else if (material.currentWeight < minQty * 1.5 && minQty > 0) {
       return { status: 'Medium', color: 'bg-yellow-100 text-yellow-800' };
     } else {
       return { status: 'Good', color: 'bg-green-100 text-green-800' };

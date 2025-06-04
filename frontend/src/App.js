@@ -23,7 +23,6 @@ const rawMaterialNames = [
 ];
 
 const initialSettings = {
-  lowStockAlertLevel: 0.2, // 20% of starting weight
   rawMaterials: rawMaterialNames,
   rawMaterialValues: rawMaterialNames.reduce((acc, name) => {
     acc[name] = {

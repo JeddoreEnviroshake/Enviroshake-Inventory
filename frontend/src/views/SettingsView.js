@@ -184,33 +184,6 @@ const SettingsView = ({ settings, updateSettings }) => {
       <h2 className="text-3xl font-bold text-gray-900 mb-8">Settings</h2>
       
       <div className="space-y-8">
-        {/* Low Stock Alert Level */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold mb-4">Low Stock Alert Level</h3>
-          <div className="max-w-md">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Alert when raw material drops below this percentage of starting weight
-            </label>
-            <div className="flex items-center gap-4">
-              <input
-                type="range"
-                min="0.1"
-                max="0.5"
-                step="0.05"
-                value={formData.lowStockAlertLevel}
-                onChange={(e) => {
-                  const updatedFormData = {...formData, lowStockAlertLevel: parseFloat(e.target.value)};
-                  setFormData(updatedFormData);
-                  updateSettings(updatedFormData);
-                }}
-                className="flex-1"
-              />
-              <span className="text-lg font-medium w-16">
-                {(formData.lowStockAlertLevel * 100).toFixed(0)}%
-              </span>
-            </div>
-          </div>
-        </div>
 
         {/* Email Addresses Management */}
         <div className="bg-white rounded-lg shadow-sm border p-6">

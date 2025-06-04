@@ -1,9 +1,10 @@
 import React from "react";
 const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, settings, setCurrentView }) => {
   const totalRawMaterialWeight = rawMaterials.reduce((sum, item) => sum + item.currentWeight, 0);
-  const lowStockRawMaterials = rawMaterials.filter(item => 
-    item.currentWeight < (item.startingWeight * settings.lowStockAlertLevel)
-  );
+  const lowStockRawMaterials = rawMaterials.filter(item => {
+    const minQty = settings.rawMaterialValues?.[item.rawMaterial]?.minQuantity || 0;
+    return item.currentWeight < minQty;
+  });
   const totalFinishedGoods = warehouseInventory.reduce((sum, item) => sum + item.numberOfBundles, 0);
   const recentActivities = activityHistory.slice(0, 5);
 
@@ -80,7 +81,9 @@ const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, sett
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-red-600">{material.currentWeight.toLocaleString()} lbs</p>
-                      <p className="text-xs text-gray-500">{((material.currentWeight / material.startingWeight) * 100).toFixed(1)}% remaining</p>
+                      <p className="text-xs text-gray-500">
+                        Min: {(settings.rawMaterialValues?.[material.rawMaterial]?.minQuantity || 0).toLocaleString()} lbs
+                      </p>
                     </div>
                   </div>
                 </div>

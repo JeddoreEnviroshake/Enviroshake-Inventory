@@ -1732,21 +1732,30 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
 
   // Calculate summary for selected warehouse
   const calculateSummary = () => {
-    const filteredData = selectedWarehouse === 'All' ? allInventory : allInventory.filter(item => item.warehouse === selectedWarehouse);
-    
+    const filteredData =
+      selectedWarehouse === 'All'
+        ? allInventory
+        : allInventory.filter(item => item.warehouse === selectedWarehouse);
+
     const summary = {};
     PRODUCTS.forEach(product => {
-      TYPES.forEach(type => {
-        const key = `${product} ${type}s`;
-        const total = filteredData
-          .filter(item => item.product === product && item.type === type)
-          .reduce((sum, item) => sum + item.numberOfBundles, 0);
-        if (total > 0) {
-          summary[key] = total;
-        }
-      });
+      // Bundles
+      const bundleTotal = filteredData
+        .filter(item => item.product === product && item.type === 'Bundle')
+        .reduce((sum, item) => sum + item.numberOfBundles, 0);
+      if (bundleTotal > 0) {
+        summary[`${product} Bundles`] = bundleTotal;
+      }
+
+      // Caps (group all cap types together)
+      const capsTotal = filteredData
+        .filter(item => item.product === product && item.type.startsWith('Cap'))
+        .reduce((sum, item) => sum + item.numberOfBundles, 0);
+      if (capsTotal > 0) {
+        summary[`${product} Caps`] = capsTotal;
+      }
     });
-    
+
     return summary;
   };
 

@@ -22,6 +22,16 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
     }
   }, [settings.vendors, settings.rawMaterials, formData.vendor, formData.rawMaterial]);
 
+  // Auto-select vendor when raw material changes based on settings
+  useEffect(() => {
+    if (!formData.rawMaterial) return;
+    const vendorVal = settings.rawMaterialValues?.[formData.rawMaterial]?.vendor;
+    const validVendor = vendorVal && settings.vendors.includes(vendorVal) ? vendorVal : '';
+    if (validVendor !== formData.vendor) {
+      setFormData(prev => ({ ...prev, vendor: validVendor }));
+    }
+  }, [formData.rawMaterial, settings.rawMaterialValues, settings.vendors]);
+
   // Force component to re-render when settings change
   const [refreshKey, setRefreshKey] = useState(0);
   useEffect(() => {

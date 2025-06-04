@@ -9,6 +9,7 @@ Professional inventory tracking system for finished goods with barcode scanning 
 - Multi-location inventory (Dresden, BC, Buffalo)
 - Thermal label printing (Zebra 4" x 6")
 - Complete audit trail and activity history
+- Automatically selects a vendor in Receiving based on Settings
 
 ## Installation
 1. Clone repository: `git clone [your-repo-url]`

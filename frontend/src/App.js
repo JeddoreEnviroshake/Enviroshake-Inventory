@@ -1867,12 +1867,42 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
             </td>
           </tr>
 
-      {/* Expandable detail rows for just this product + this colour */}
-      {expanded[`${product}-${colour}`] &&
-        rows
-          .slice()
-          .sort((a, b) => TYPES.indexOf(a.type) - TYPES.indexOf(b.type))
-          .map(item => (
+          {/* Header row for expanded colour */}
+          {isExpanded && (
+            <tr className="bg-gray-50">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Colour
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Product ID
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Type
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Stage
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Date Created
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Number of Bundles
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Warehouse
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          )}
+
+          {/* Expandable detail rows for just this product + this colour */}
+          {isExpanded &&
+            rows
+              .slice()
+              .sort((a, b) => TYPES.indexOf(a.type) - TYPES.indexOf(b.type))
+              .map(item => (
           <tr key={item.id} className="hover:bg-gray-50">
             <td className="px-6 py-4">
               {editingItem === item.id ? (

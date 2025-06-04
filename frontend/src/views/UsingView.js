@@ -180,7 +180,7 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
                     <div>Weight Out: {formData.weightOut} lbs</div>
                     <div>Spillage: {formData.estimatedSpillage || 0} lbs</div>
                     <div className="font-medium pt-2 border-t">
-                      <strong>Material Used: {(parseFloat(formData.weightIn) - parseFloat(formData.weightOut) - parseFloat(formData.estimatedSpillage || 0)).toFixed(1)} lbs</strong>
+                      <strong>Material Used: {(parseFloat(formData.weightIn) - parseFloat(formData.weightOut)).toFixed(1)} lbs</strong>
                     </div>
                   </div>
                 </div>

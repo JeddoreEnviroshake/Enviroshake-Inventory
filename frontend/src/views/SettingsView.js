@@ -133,6 +133,23 @@ const SettingsView = ({ settings, updateSettings }) => {
     updateSettings(updatedFormData);
   };
 
+  const handleNameChange = (oldName, newName) => {
+    setMaterialValues(prev => {
+      const { [oldName]: oldVal, ...rest } = prev;
+      return { ...rest, [newName]: oldVal };
+    });
+
+    setFormData(prev => {
+      const { rawMaterialValues, rawMaterials, ...rest } = prev;
+      const { [oldName]: oldVal, ...otherVals } = rawMaterialValues;
+      return {
+        ...rest,
+        rawMaterials: rawMaterials.map(n => n === oldName ? newName : n),
+        rawMaterialValues: { ...otherVals, [newName]: oldVal }
+      };
+    });
+  };
+
   const handleValueChange = (name, field, value) => {
     setMaterialValues(prev => ({
       ...prev,
@@ -368,7 +385,14 @@ const SettingsView = ({ settings, updateSettings }) => {
                   .sort((a, b) => a.localeCompare(b))
                   .map(name => (
                     <tr key={name}>
-                      <td className="px-2 py-1 border">{name}</td>
+                      <td className="px-2 py-1 border">
+                        <input
+                          type="text"
+                          value={name}
+                          onChange={e => handleNameChange(name, e.target.value)}
+                          className="w-full border rounded px-1"
+                        />
+                      </td>
                       <td className="px-2 py-1 border">
                         <input
                           type="text"

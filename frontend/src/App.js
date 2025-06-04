@@ -1795,221 +1795,41 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
             <h3 className="text-lg font-semibold text-gray-900 p-4 border-b bg-gray-50">{product}</h3>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <tbody className="divide-y divide-gray-200">
+<tbody className="divide-y divide-gray-200">
   {Object.entries(colours)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([colour, rows]) => (
-    <React.Fragment key={`${product}-${colour}`}>
-      {/* “Colour” grouping row */}
-      <tr
-        onClick={() => toggleColour(product, colour)}
-        className="cursor-pointer hover:bg-gray-200"
-      >
-        {/* colspan = number of <th> = 8 */}
-        <td colSpan="8" className="p-3 font-medium">
-          {colour}
-        </td>
-      </tr>
+      <React.Fragment key={`${product}-${colour}`}>
+        {/* Group row */}
+        <tr
+          onClick={() => toggleColour(product, colour)}
+          className="cursor-pointer hover:bg-gray-200"
+        >
+          <td colSpan="8" className="p-3 font-medium">
+            {colour}
+          </td>
+        </tr>
 
-      {/* Expandable detail rows for just this product + this colour */}
-      {expanded[`${product}-${colour}`] && (
-        <>
-          <tr className="bg-gray-50">
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Colour</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product ID</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stage</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Created</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number of Bundles</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warehouse</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-          </tr>
-          {rows
-            .slice()
-            .sort((a, b) => TYPES.indexOf(a.type) - TYPES.indexOf(b.type))
-            .map(item => (
-              <tr key={item.id} className="hover:bg-gray-50">
-            <td className="px-6 py-4">
-              {editingItem === item.id ? (
-                <select
-                  value={editFormData.colour}
-                  onChange={e =>
-                    setEditFormData({ ...editFormData, colour: e.target.value })
-                  }
-                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                >
-                  {settings.colors.map(c => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <span className="text-gray-900">{item.colour}</span>
-              )}
-            </td>
-            <td className="px-6 py-4">
-              <span className="font-mono text-sm text-blue-600">
-                {item.productId}
-              </span>
-            </td>
-            <td className="px-6 py-4">
-              {editingItem === item.id ? (
-                <select
-                  value={editFormData.type}
-                  onChange={e =>
-                    setEditFormData({ ...editFormData, type: e.target.value })
-                  }
-                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                >
-                  {TYPES.map(t => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <span className="text-gray-900">{item.type}</span>
-              )}
-            </td>
-            <td className="px-6 py-4">
-              {editingItem === item.id ? (
-                <select
-                  value={editFormData.stage}
-                  onChange={e =>
-                    setEditFormData({ ...editFormData, stage: e.target.value })
-                  }
-                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                >
-                  {STAGES.map(s => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    item.stage === 'Available'
-                      ? 'bg-green-100 text-green-800'
-                      : item.stage === 'Open'
-                      ? 'bg-blue-100 text-blue-800'
-                      : item.stage === 'Released'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : item.stage === 'Staged'
-                      ? 'bg-purple-100 text-purple-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}
-                >
-                  {item.stage}
-                </span>
-              )}
-            </td>
-            <td className="px-6 py-4">
-              {editingItem === item.id ? (
-                <input
-                  type="date"
-                  value={editFormData.dateCreated}
-                  onChange={e =>
-                    setEditFormData({ ...editFormData, dateCreated: e.target.value })
-                  }
-                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                />
-              ) : (
-                <span className="text-gray-900">{item.dateCreated}</span>
-              )}
-            </td>
-            <td className="px-6 py-4">
-              {editingItem === item.id ? (
-                <input
-                  type="number"
-                  value={editFormData.numberOfBundles}
-                  onChange={e =>
-                    setEditFormData({
-                      ...editFormData,
-                      numberOfBundles: parseInt(e.target.value, 10),
-                    })
-                  }
-                  className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                />
-              ) : (
-                <span className="font-medium">{item.numberOfBundles}</span>
-              )}
-            </td>
-            <td className="px-6 py-4">
-              {editingItem === item.id ? (
-                <select
-                  value={editFormData.warehouse}
-                  onChange={e =>
-                    setEditFormData({ ...editFormData, warehouse: e.target.value })
-                  }
-                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                >
-                  {WAREHOUSES.map(w => (
-                    <option key={w} value={w}>
-                      {w}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <span className="text-gray-900">{item.warehouse}</span>
-              )}
-            </td>
-            <td className="px-6 py-4">
-              {editingItem === item.id ? (
-                <div className="flex gap-2">
-                  <button
-                    onClick={saveEdit}
-                    className="text-green-600 hover:text-green-800 text-sm"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEditingItem(null);
-                      setEditFormData({});
-                    }}
-                    className="text-red-600 hover:text-red-800 text-sm"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => startEdit(item)}
-                    className="text-blue-600 hover:text-blue-800 text-sm"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleSplit(item)}
-                    className="text-purple-600 hover:text-purple-800 text-sm"
-                    disabled={item.numberOfBundles <= 1}
-                  >
-                    Split
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          'Are you sure you want to delete this inventory item?'
-                        )
-                      ) {
-                        deleteWarehouseItem(item.id);
-                      }
-                    }}
-                    className="text-red-600 hover:text-red-800 text-sm"
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </td>
-          </tr>
-        ))}
-    </>
-  ))}
+        {/* Expandable details */}
+        {expanded[`${product}-${colour}`] && (
+          <>
+            <tr className="bg-gray-50">
+              <th>Colour</th>
+              <th>Product ID</th>
+              <th>Type</th>
+              <th>Stage</th>
+              <th>Date Created</th>
+              <th>Number of Bundles</th>
+              <th>Warehouse</th>
+              <th>Actions</th>
+            </tr>
+            {rows.map(item => (
+              <tr key={item.id}>...</tr>
+            ))}
+          </>
+        )}
+      </React.Fragment>
+    ))}
 </tbody>
               </table>
             </div>

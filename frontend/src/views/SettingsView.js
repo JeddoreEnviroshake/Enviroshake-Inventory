@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 const SettingsView = ({ settings, updateSettings }) => {
   const [formData, setFormData] = useState(settings);
+  const [materialValues, setMaterialValues] = useState(settings.rawMaterialValues || {});
+  const [showValuesModal, setShowValuesModal] = useState(false);
   const [newRawMaterial, setNewRawMaterial] = useState('');
   const [newVendor, setNewVendor] = useState('');
   const [newEmail, setNewEmail] = useState('');
@@ -9,6 +11,20 @@ const SettingsView = ({ settings, updateSettings }) => {
   // Update formData when settings prop changes
   useEffect(() => {
     setFormData(settings);
+    // Ensure materialValues contains an entry for every raw material
+    const baseValues = settings.rawMaterialValues || {};
+    const normalizedValues = { ...baseValues };
+    (settings.rawMaterials || []).forEach(name => {
+      if (!normalizedValues[name]) {
+        normalizedValues[name] = {
+          vendor: '',
+          minQuantity: 0,
+          pricePerLb: 0,
+          usagePerBatch: 0
+        };
+      }
+    });
+    setMaterialValues(normalizedValues);
   }, [settings]);
 
   const handleSave = () => {
@@ -18,11 +34,17 @@ const SettingsView = ({ settings, updateSettings }) => {
 
   const addRawMaterial = () => {
     if (newRawMaterial.trim() && !formData.rawMaterials.includes(newRawMaterial.trim())) {
+      const updatedValues = {
+        ...materialValues,
+        [newRawMaterial.trim()]: { vendor: '', minQuantity: 0, pricePerLb: 0, usagePerBatch: 0 }
+      };
       const updatedFormData = {
         ...formData,
-        rawMaterials: [...formData.rawMaterials, newRawMaterial.trim()]
+        rawMaterials: [...formData.rawMaterials, newRawMaterial.trim()],
+        rawMaterialValues: updatedValues
       };
       setFormData(updatedFormData);
+      setMaterialValues(updatedValues);
       updateSettings(updatedFormData);
       setNewRawMaterial('');
     } else if (formData.rawMaterials.includes(newRawMaterial.trim())) {
@@ -31,11 +53,14 @@ const SettingsView = ({ settings, updateSettings }) => {
   };
 
   const removeRawMaterial = (material) => {
+    const { [material]: removed, ...rest } = materialValues;
     const updatedFormData = {
       ...formData,
-      rawMaterials: formData.rawMaterials.filter(m => m !== material)
+      rawMaterials: formData.rawMaterials.filter(m => m !== material),
+      rawMaterialValues: rest
     };
     setFormData(updatedFormData);
+    setMaterialValues(rest);
     updateSettings(updatedFormData);
   };
 
@@ -106,6 +131,20 @@ const SettingsView = ({ settings, updateSettings }) => {
     };
     setFormData(updatedFormData);
     updateSettings(updatedFormData);
+  };
+
+  const handleValueChange = (name, field, value) => {
+    setMaterialValues(prev => ({
+      ...prev,
+      [name]: { ...prev[name], [field]: value }
+    }));
+  };
+
+  const saveMaterialValues = () => {
+    const updatedFormData = { ...formData, rawMaterialValues: materialValues };
+    setFormData(updatedFormData);
+    updateSettings(updatedFormData);
+    setShowValuesModal(false);
   };
 
   return (
@@ -219,7 +258,15 @@ const SettingsView = ({ settings, updateSettings }) => {
 
         {/* Raw Materials Management */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold mb-4">Raw Materials</h3>
+          <h3 className="text-lg font-semibold mb-4 flex items-center justify-between">
+            <span>Raw Materials</span>
+            <button
+              onClick={() => setShowValuesModal(true)}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Edit Values
+            </button>
+          </h3>
           
           <div className="mb-4">
             <div className="flex gap-2">
@@ -288,11 +335,11 @@ const SettingsView = ({ settings, updateSettings }) => {
                 </button>
               </div>
             ))}
-          </div>
         </div>
+      </div>
 
         {/* Save Button */}
-          <div className="flex justify-end">
+        <div className="flex justify-end">
           <button
             onClick={handleSave}
             className="bg-[#09713c] text-white px-6 py-2 rounded-lg hover:bg-[#09713c]"
@@ -301,6 +348,83 @@ const SettingsView = ({ settings, updateSettings }) => {
           </button>
         </div>
       </div>
+
+      {showValuesModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-h-[80vh] overflow-y-auto w-full max-w-3xl">
+            <h3 className="text-lg font-semibold mb-4">Raw Material Values</h3>
+            <table className="min-w-full border text-sm">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="px-2 py-1 border">Raw Material</th>
+                  <th className="px-2 py-1 border">Vendor</th>
+                  <th className="px-2 py-1 border">Minimum Quantity (lb)</th>
+                  <th className="px-2 py-1 border">Price Per lb (CDN)</th>
+                  <th className="px-2 py-1 border">Usage / Batch (lb)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.keys(materialValues)
+                  .sort((a, b) => a.localeCompare(b))
+                  .map(name => (
+                    <tr key={name}>
+                      <td className="px-2 py-1 border">{name}</td>
+                      <td className="px-2 py-1 border">
+                        <input
+                          type="text"
+                          value={materialValues[name].vendor}
+                          onChange={e => handleValueChange(name, 'vendor', e.target.value)}
+                          className="w-full border rounded px-1"
+                        />
+                      </td>
+                      <td className="px-2 py-1 border">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={materialValues[name].minQuantity}
+                          onChange={e => handleValueChange(name, 'minQuantity', parseFloat(e.target.value) || 0)}
+                          className="w-full border rounded px-1"
+                        />
+                      </td>
+                      <td className="px-2 py-1 border">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={materialValues[name].pricePerLb}
+                          onChange={e => handleValueChange(name, 'pricePerLb', parseFloat(e.target.value) || 0)}
+                          className="w-full border rounded px-1"
+                        />
+                      </td>
+                      <td className="px-2 py-1 border">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={materialValues[name].usagePerBatch}
+                          onChange={e => handleValueChange(name, 'usagePerBatch', parseFloat(e.target.value) || 0)}
+                          className="w-full border rounded px-1"
+                        />
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+            <div className="flex justify-end mt-4 gap-2">
+              <button
+                onClick={saveMaterialValues}
+                className="bg-[#09713c] text-white px-4 py-2 rounded-lg"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setShowValuesModal(false)}
+                className="bg-gray-300 px-4 py-2 rounded-lg"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

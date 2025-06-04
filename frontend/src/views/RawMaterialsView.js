@@ -127,9 +127,12 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
                                     onChange={(e) => setEditFormData({ ...editFormData, rawMaterial: e.target.value })}
                                     className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                                   >
-                                    {settings.rawMaterials.map(rm => (
-                                      <option key={rm} value={rm}>{rm}</option>
-                                    ))}
+                                    {settings.rawMaterials
+                                      .slice()
+                                      .sort((a, b) => a.localeCompare(b))
+                                      .map(rm => (
+                                        <option key={rm} value={rm}>{rm}</option>
+                                      ))}
                                   </select>
                                 ) : (
                                   <span className="font-medium text-gray-900">{material.rawMaterial}</span>
@@ -142,9 +145,12 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
                                     onChange={(e) => setEditFormData({ ...editFormData, vendor: e.target.value })}
                                     className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                                   >
-                                    {settings.vendors.map(vendor => (
-                                      <option key={vendor} value={vendor}>{vendor}</option>
-                                    ))}
+                                    {settings.vendors
+                                      .slice()
+                                      .sort((a, b) => a.localeCompare(b))
+                                      .map(vendor => (
+                                        <option key={vendor} value={vendor}>{vendor}</option>
+                                      ))}
                                   </select>
                                 ) : (
                                   <span className="text-gray-900">{material.vendor}</span>

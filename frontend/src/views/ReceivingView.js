@@ -91,9 +91,12 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
                 required
               >
                 <option value="">Select Raw Material</option>
-                {settings.rawMaterials.map(material => (
-                  <option key={material} value={material}>{material}</option>
-                ))}
+                {settings.rawMaterials
+                  .slice()
+                  .sort((a, b) => a.localeCompare(b))
+                  .map(material => (
+                    <option key={material} value={material}>{material}</option>
+                  ))}
               </select>
             </div>
 
@@ -118,9 +121,12 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
                 required
               >
                 <option value="">Select Vendor</option>
-                {settings.vendors.map(vendor => (
-                  <option key={vendor} value={vendor}>{vendor}</option>
-                ))}
+                {settings.vendors
+                  .slice()
+                  .sort((a, b) => a.localeCompare(b))
+                  .map(vendor => (
+                    <option key={vendor} value={vendor}>{vendor}</option>
+                  ))}
               </select>
             </div>
 

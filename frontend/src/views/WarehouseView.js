@@ -273,11 +273,14 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
                   }
                   className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                 >
-                  {settings.colors.map(c => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
+                    {settings.colors
+                      .slice()
+                      .sort((a, b) => a.localeCompare(b))
+                      .map(c => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
                 </select>
               ) : (
                 <span className="text-gray-900">{item.colour}</span>

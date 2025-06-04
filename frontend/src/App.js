@@ -26,7 +26,13 @@ const initialSettings = {
   lowStockAlertLevel: 0.2, // 20% of starting weight
   rawMaterials: rawMaterialNames,
   rawMaterialValues: rawMaterialNames.reduce((acc, name) => {
-    acc[name] = { vendor: '', minQuantity: 0, pricePerLb: 0, usagePerBatch: 0 };
+    acc[name] = {
+      vendor: '',
+      minQuantity: 0,
+      pricePerLb: 0,
+      usagePerBatch: 0,
+      avgBatchesPerDay: 0
+    };
     return acc;
   }, {}),
   vendors: ['EFS Plastics', 'SM Polymers', 'Kraton', 'CRM Canada', 'Polyten', 'AWF'],
@@ -157,7 +163,21 @@ function App() {
     const normalizedValues = { ...baseValues };
     (loaded.rawMaterials || rawMaterialNames).forEach(name => {
       if (!normalizedValues[name]) {
-        normalizedValues[name] = { vendor: '', minQuantity: 0, pricePerLb: 0, usagePerBatch: 0 };
+        normalizedValues[name] = {
+          vendor: '',
+          minQuantity: 0,
+          pricePerLb: 0,
+          usagePerBatch: 0,
+          avgBatchesPerDay: 0
+        };
+      } else {
+        normalizedValues[name] = {
+          vendor: normalizedValues[name].vendor || '',
+          minQuantity: normalizedValues[name].minQuantity || 0,
+          pricePerLb: normalizedValues[name].pricePerLb || 0,
+          usagePerBatch: normalizedValues[name].usagePerBatch || 0,
+          avgBatchesPerDay: normalizedValues[name].avgBatchesPerDay || 0
+        };
       }
     });
     return { ...loaded, rawMaterialValues: normalizedValues };

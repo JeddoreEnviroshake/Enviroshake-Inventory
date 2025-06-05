@@ -427,7 +427,10 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto">
-            {formData.colors.map((color, index) => (
+            {formData.colors
+              .slice()
+              .sort((a, b) => a.localeCompare(b))
+              .map((color, index) => (
               <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
                 <span className="text-sm">{color}</span>
                 <button
@@ -506,7 +509,10 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto">
-            {formData.rawMaterials.map((material, index) => (
+            {formData.rawMaterials
+              .slice()
+              .sort((a, b) => a.localeCompare(b))
+              .map((material, index) => (
               <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
                 <span className="text-sm">{material}</span>
                 <button
@@ -565,7 +571,10 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-            {formData.vendors.map((vendor, index) => (
+            {formData.vendors
+              .slice()
+              .sort((a, b) => a.localeCompare(b))
+              .map((vendor, index) => (
               <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
                 <span className="text-sm">{vendor}</span>
                 <button
@@ -604,7 +613,10 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-semibold mb-4">Recipes</h3>
-            {formData.colors.map(color => (
+            {formData.colors
+              .slice()
+              .sort((a, b) => a.localeCompare(b))
+              .map(color => (
               <div key={color} className="mb-6">
                 <h4 className="font-semibold text-center mb-2">{color}</h4>
                 {recipes[color] && recipes[color].length > 0 && (

@@ -230,6 +230,13 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
     }));
   };
 
+  const removeRecipeRow = (color, index) => {
+    setRecipes(prev => ({
+      ...prev,
+      [color]: prev[color].filter((_, i) => i !== index)
+    }));
+  };
+
   const handleRecipeChange = (color, index, field, value) => {
     setRecipes(prev => ({
       ...prev,
@@ -606,6 +613,7 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
                       <tr className="bg-gray-100">
                         <th className="px-2 py-1 border">Raw Material</th>
                         <th className="px-2 py-1 border">Weight (lbs)</th>
+                        <th className="px-2 py-1 border"></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -634,6 +642,14 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
                               onChange={e => handleRecipeChange(color, idx, 'weight', parseFloat(e.target.value) || 0)}
                               className="w-full border rounded px-1"
                             />
+                          </td>
+                          <td className="px-2 py-1 border text-center">
+                            <button
+                              onClick={() => removeRecipeRow(color, idx)}
+                              className="text-red-600 hover:text-red-800 text-sm"
+                            >
+                              ✕
+                            </button>
                           </td>
                         </tr>
                       ))}

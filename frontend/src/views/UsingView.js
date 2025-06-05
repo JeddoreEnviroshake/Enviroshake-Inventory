@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-const UsingView = ({ rawMaterials, useRawMaterial }) => {
+const UsingView = ({ rawMaterials, useRawMaterial, openAlert }) => {
   const [formData, setFormData] = useState({
     barcode: '',
     leadHandName: '',
@@ -23,7 +23,7 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!scannedMaterial) {
-      alert('Please scan a valid barcode');
+      openAlert('Please scan a valid barcode');
       return;
     }
 
@@ -45,8 +45,8 @@ const UsingView = ({ rawMaterials, useRawMaterial }) => {
       notes: ''
     });
     setScannedMaterial(null);
-    
-    alert('Material usage recorded successfully!');
+
+    openAlert('Material usage recorded successfully!');
   };
 
   return (

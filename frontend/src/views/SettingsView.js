@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-const SettingsView = ({ settings, updateSettings }) => {
+const SettingsView = ({ settings, updateSettings, openAlert }) => {
   const [formData, setFormData] = useState({
     ...settings,
     avgBatchesPerDay: settings.avgBatchesPerDay || 0
@@ -44,7 +44,7 @@ const SettingsView = ({ settings, updateSettings }) => {
 
   const handleSave = () => {
     updateSettings(formData);
-    alert('Settings saved successfully! Changes will be available immediately.');
+    openAlert('Settings saved successfully! Changes will be available immediately.');
   };
 
   const addRawMaterial = () => {
@@ -69,7 +69,7 @@ const SettingsView = ({ settings, updateSettings }) => {
       updateSettings(updatedFormData);
       setNewRawMaterial('');
     } else if (formData.rawMaterials.includes(newRawMaterial.trim())) {
-      alert('This raw material already exists!');
+      openAlert('This raw material already exists!');
     }
   };
 
@@ -95,7 +95,7 @@ const SettingsView = ({ settings, updateSettings }) => {
       updateSettings(updatedFormData);
       setNewVendor('');
     } else if (formData.vendors.includes(newVendor.trim())) {
-      alert('This vendor already exists!');
+      openAlert('This vendor already exists!');
     }
   };
 
@@ -118,7 +118,7 @@ const SettingsView = ({ settings, updateSettings }) => {
       updateSettings(updatedFormData);
       setNewEmail('');
     } else if (formData.emailAddresses.includes(newEmail.trim())) {
-      alert('This email address already exists!');
+      openAlert('This email address already exists!');
     }
   };
 
@@ -141,7 +141,7 @@ const SettingsView = ({ settings, updateSettings }) => {
       updateSettings(updatedFormData);
       setNewColor('');
     } else if (formData.colors.includes(newColor.trim())) {
-      alert('This color already exists!');
+      openAlert('This color already exists!');
     }
   };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { generateCode39Barcode, renderBarcodeSVG } from "../utils/barcode";
-const ReceivingView = ({ addRawMaterial, settings }) => {
+const ReceivingView = ({ addRawMaterial, settings, openAlert }) => {
   const [formData, setFormData] = useState({
     rawMaterial: '',
     poNumber: '',
@@ -42,9 +42,9 @@ const ReceivingView = ({ addRawMaterial, settings }) => {
     e.preventDefault();
     
     // Validate form data
-    if (!formData.rawMaterial || !formData.poNumber || !formData.vendor || 
+    if (!formData.rawMaterial || !formData.poNumber || !formData.vendor ||
         !formData.bagsReceived || !formData.startingWeight) {
-      alert('Please fill in all required fields');
+      openAlert('Please fill in all required fields');
       return;
     }
     

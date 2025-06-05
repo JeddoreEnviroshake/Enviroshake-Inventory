@@ -11,6 +11,7 @@ import WarehouseView from './views/WarehouseView';
 import ReportsView from './views/ReportsView';
 import SettingsView from './views/SettingsView';
 import ActivityView from './views/ActivityView';
+import AlertModal from './components/AlertModal';
 
 
 // Initial configuration values
@@ -189,6 +190,15 @@ function App() {
   const [warehouseInventory, setWarehouseInventory] = useState(() => loadFromLocalStorage('enviroshake_warehouseInventory', initialWarehouseInventory));
   const [activityHistory, setActivityHistory] = useState(() => loadFromLocalStorage('enviroshake_activityHistory', initialActivityHistory));
   const [selectedWarehouse, setSelectedWarehouse] = useState('All');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [showAlert, setShowAlert] = useState(false);
+
+  const openAlert = (msg) => {
+    setAlertMessage(msg);
+    setShowAlert(true);
+  };
+
+  const closeAlert = () => setShowAlert(false);
 
   // Save to localStorage whenever data changes
   useEffect(() => {
@@ -213,7 +223,7 @@ function App() {
     console.log('Email sent to:', to);
     console.log('Subject:', subject);
     console.log('Body:', body);
-    alert(`Email would be sent to: ${to.join(', ')}\nSubject: ${subject}\nBody: ${body}`);
+    openAlert(`Email would be sent to: ${to.join(', ')}\nSubject: ${subject}\nBody: ${body}`);
   };
 
   // Add activity log entry with enhanced details
@@ -621,15 +631,15 @@ function App() {
         )}
         
         {currentView === 'receiving' && (
-          <ReceivingView addRawMaterial={addRawMaterial} settings={settings} />
+          <ReceivingView addRawMaterial={addRawMaterial} settings={settings} openAlert={openAlert} />
         )}
         
         {currentView === 'using' && (
-          <UsingView rawMaterials={rawMaterials} useRawMaterial={useRawMaterial} />
+          <UsingView rawMaterials={rawMaterials} useRawMaterial={useRawMaterial} openAlert={openAlert} />
         )}
         
         {currentView === 'production' && (
-          <ProductionView addProduction={addProduction} settings={settings} />
+          <ProductionView addProduction={addProduction} settings={settings} openAlert={openAlert} />
         )}
         
         {currentView === 'rawMaterials' && (
@@ -652,6 +662,7 @@ function App() {
             splitWarehouseItem={splitWarehouseItem}
             transferWarehouseItem={transferWarehouseItem}
             settings={settings}
+            openAlert={openAlert}
           />
         )}
         
@@ -660,17 +671,20 @@ function App() {
         )}
 
         {currentView === 'settings' && (
-          <SettingsView settings={settings} updateSettings={updateSettings} />
+          <SettingsView settings={settings} updateSettings={updateSettings} openAlert={openAlert} />
         )}
 
         {currentView === 'reports' && (
-          <ReportsView 
+          <ReportsView
             rawMaterials={rawMaterials}
             warehouseInventory={warehouseInventory}
             activityHistory={activityHistory}
           />
         )}
       </div>
+      {showAlert && (
+        <AlertModal message={alertMessage} onClose={closeAlert} />
+      )}
     </div>
   );
 }

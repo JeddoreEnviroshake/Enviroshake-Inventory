@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { PRODUCTS, TYPES } from "../constants";
-const ProductionView = ({ addProduction, settings }) => {
+const ProductionView = ({ addProduction, settings, openAlert }) => {
   const [formData, setFormData] = useState({
     product: '',
     colour: '',
@@ -26,7 +26,7 @@ const ProductionView = ({ addProduction, settings }) => {
       numberOfBundles: ''
     });
     
-    alert('Production logged successfully!');
+    openAlert('Production logged successfully!');
   };
 
   return (

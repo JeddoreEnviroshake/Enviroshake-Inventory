@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { PRODUCTS, WAREHOUSES, TYPES, STAGES } from "../constants";
-const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelectedWarehouse, updateWarehouseItem, deleteWarehouseItem, splitWarehouseItem, transferWarehouseItem, settings }) => {
+const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelectedWarehouse, updateWarehouseItem, deleteWarehouseItem, splitWarehouseItem, transferWarehouseItem, settings, openAlert }) => {
   const [editingItem, setEditingItem] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [showSplitModal, setShowSplitModal] = useState(false);
@@ -44,13 +44,13 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
     
     // Validation: Check if trying to transfer more than available
     if (transferQuantity > originalData.numberOfBundles) {
-      alert(`Cannot move more bundles than available. Current quantity: ${originalData.numberOfBundles} bundles`);
+      openAlert(`Cannot move more bundles than available. Current quantity: ${originalData.numberOfBundles} bundles`);
       return;
     }
     
     // Validation: Check minimum transfer
     if (transferQuantity < 1) {
-      alert('Transfer quantity must be at least 1');
+      openAlert('Transfer quantity must be at least 1');
       return;
     }
     
@@ -74,7 +74,7 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
 
   const handleSplit = (item) => {
     if (item.numberOfBundles <= 1) {
-      alert('Cannot split items with 1 or fewer bundles');
+      openAlert('Cannot split items with 1 or fewer bundles');
       return;
     }
     setSplitItemId(item.id);
@@ -85,11 +85,11 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
   const confirmSplit = () => {
     const item = inventory.find(i => i.id === splitItemId);
     if (splitQuantity >= item.numberOfBundles) {
-      alert('Split quantity must be less than current quantity');
+      openAlert('Split quantity must be less than current quantity');
       return;
     }
     if (splitQuantity < 1) {
-      alert('Split quantity must be at least 1');
+      openAlert('Split quantity must be at least 1');
       return;
     }
     

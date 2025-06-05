@@ -74,10 +74,21 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
                       >
                         <td colSpan="10" className="p-3 font-medium">
                           <div className="flex justify-between items-center">
-                            <div className="grid grid-cols-4 w-full">
+                            <div className="grid grid-cols-5 w-full">
                               <div>{materialName}</div>
                               <div>{`Total Weight: ${totalWeight.toLocaleString()} lbs`}</div>
                               <div>{`Bags: ${totalBags}`}</div>
+                              <div>
+                                {(() => {
+                                  const minQty = settings.rawMaterialValues?.[materialName]?.minQuantity || 0;
+                                  const usagePerBatch = settings.rawMaterialValues?.[materialName]?.usagePerBatch || 0;
+                                  const avgBatchesPerDay = settings.avgBatchesPerDay || 0;
+                                  const goodFor = usagePerBatch > 0 && avgBatchesPerDay > 0
+                                    ? (minQty / usagePerBatch) / avgBatchesPerDay
+                                    : 0;
+                                  return `Good For: ${goodFor.toFixed(1)} days`;
+                                })()}
+                              </div>
                               {(() => {
                                 const statusInfo = getStatusInfo({
                                   rawMaterial: materialName,

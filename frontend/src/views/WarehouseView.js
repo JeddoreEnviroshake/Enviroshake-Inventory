@@ -1,6 +1,19 @@
 import React, { useState } from "react";
 import { PRODUCTS, WAREHOUSES, TYPES, STAGES } from "../constants";
-const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelectedWarehouse, updateWarehouseItem, deleteWarehouseItem, splitWarehouseItem, transferWarehouseItem, settings, openAlert }) => {
+const WarehouseView = ({
+  inventory,
+  allInventory,
+  selectedWarehouse,
+  setSelectedWarehouse,
+  selectedStage,
+  setSelectedStage,
+  updateWarehouseItem,
+  deleteWarehouseItem,
+  splitWarehouseItem,
+  transferWarehouseItem,
+  settings,
+  openAlert,
+}) => {
   const [editingItem, setEditingItem] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [showSplitModal, setShowSplitModal] = useState(false);
@@ -118,12 +131,13 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
     setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // Calculate summary for selected warehouse
+  // Calculate summary for selected warehouse and stage
   const calculateSummary = () => {
-    const filteredData =
-      selectedWarehouse === 'All'
-        ? allInventory
-        : allInventory.filter(item => item.warehouse === selectedWarehouse);
+    const filteredData = allInventory.filter(
+      item =>
+        (selectedWarehouse === 'All' || item.warehouse === selectedWarehouse) &&
+        (selectedStage === 'All' || item.stage === selectedStage)
+    );
 
     const summary = {};
     PRODUCTS.forEach(product => {
@@ -153,24 +167,39 @@ const WarehouseView = ({ inventory, allInventory, selectedWarehouse, setSelected
     <div>
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-3xl font-bold text-gray-900">Warehouse Inventory</h2>
-        
-        <select
-          value={selectedWarehouse}
-          onChange={(e) => setSelectedWarehouse(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="All">All Warehouses</option>
-          {WAREHOUSES.map(warehouse => (
-            <option key={warehouse} value={warehouse}>{warehouse}</option>
-          ))}
-        </select>
+
+        <div className="flex items-center gap-4">
+          <select
+            value={selectedStage}
+            onChange={(e) => setSelectedStage(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="All">All Stages</option>
+            {STAGES.map(stage => (
+              <option key={stage} value={stage}>{stage}</option>
+            ))}
+          </select>
+
+          <select
+            value={selectedWarehouse}
+            onChange={(e) => setSelectedWarehouse(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="All">All Warehouses</option>
+            {WAREHOUSES.map(warehouse => (
+              <option key={warehouse} value={warehouse}>{warehouse}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Summary Section */}
       {Object.keys(summary).length > 0 && (
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            {selectedWarehouse === 'All' ? 'All Warehouses' : selectedWarehouse} Summary
+            {(selectedWarehouse === 'All' ? 'All Warehouses' : selectedWarehouse) +
+              ' - ' +
+              (selectedStage === 'All' ? 'All Stages' : selectedStage)} Summary
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {Object.entries(summary).map(([key, value]) => (

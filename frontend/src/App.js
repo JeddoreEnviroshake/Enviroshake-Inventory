@@ -210,6 +210,7 @@ function App() {
   const [rawMaterials, setRawMaterials] = useState(() => loadFromLocalStorage('enviroshake_rawMaterials', initialRawMaterials));
   const [warehouseInventory, setWarehouseInventory] = useState(() => loadFromLocalStorage('enviroshake_warehouseInventory', initialWarehouseInventory));
   const [activityHistory, setActivityHistory] = useState(() => loadFromLocalStorage('enviroshake_activityHistory', initialActivityHistory));
+  const [openCheckouts, setOpenCheckouts] = useState(() => loadFromLocalStorage('enviroshake_openCheckouts', []));
   const [selectedWarehouse, setSelectedWarehouse] = useState('All');
   const [selectedStage, setSelectedStage] = useState('All');
   const [alertMessage, setAlertMessage] = useState('');
@@ -238,6 +239,10 @@ function App() {
   useEffect(() => {
     saveToLocalStorage('enviroshake_activityHistory', activityHistory);
   }, [activityHistory]);
+
+  useEffect(() => {
+    saveToLocalStorage('enviroshake_openCheckouts', openCheckouts);
+  }, [openCheckouts]);
 
   // Email function (simulated for demo)
   const sendEmail = (to, subject, body) => {
@@ -371,6 +376,34 @@ function App() {
       'Material Used',
       `Barcode: ${usageData.barcode}, Used: ${weightUsed.toFixed(1)} lbs, Spillage: ${usageData.estimatedSpillage || 0} lbs, Finished Bag: ${usageData.finishedBag || 'No'}${usageData.notes ? `, Notes: ${usageData.notes}` : ''}`,
       `Lead Hand - ${usageData.leadHandName}`
+    );
+  };
+
+  const checkoutRawMaterial = (checkoutData) => {
+    const newEntry = {
+      ...checkoutData,
+      id: Math.max(0, ...openCheckouts.map(c => c.id)) + 1,
+      timestamp: new Date().toISOString()
+    };
+    setOpenCheckouts(entries => [newEntry, ...entries]);
+    addActivity(
+      'Material Checked Out',
+      `Barcode: ${checkoutData.barcode}, Weight In: ${checkoutData.weightIn} lbs`,
+      `Lead Hand - ${checkoutData.leadHandName}`
+    );
+  };
+
+  const checkinRawMaterial = (checkoutId, weightOut) => {
+    const entry = openCheckouts.find(c => c.id === checkoutId);
+    if (!entry) return;
+    const usageData = { ...entry, weightOut: parseFloat(weightOut) };
+    useRawMaterial(usageData);
+    setOpenCheckouts(entries => entries.filter(c => c.id !== checkoutId));
+    const used = entry.weightIn - parseFloat(weightOut) - (entry.estimatedSpillage || 0);
+    addActivity(
+      'Material Checked In',
+      `Barcode: ${entry.barcode}, Used: ${used.toFixed(1)} lbs`,
+      `Lead Hand - ${entry.leadHandName}`
     );
   };
 
@@ -672,7 +705,13 @@ function App() {
         )}
 
         {currentView === 'using' && (
-          <UsingView rawMaterials={rawMaterials} useRawMaterial={useRawMaterial} openAlert={openAlert} />
+          <UsingView
+            rawMaterials={rawMaterials}
+            openCheckouts={openCheckouts}
+            checkoutRawMaterial={checkoutRawMaterial}
+            checkinRawMaterial={checkinRawMaterial}
+            openAlert={openAlert}
+          />
         )}
         
         {currentView === 'production' && (

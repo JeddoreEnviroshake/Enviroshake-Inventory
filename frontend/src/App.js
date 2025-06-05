@@ -6,6 +6,7 @@ import DashboardView from './views/DashboardView';
 import ReceivingView from './views/ReceivingView';
 import UsingView from './views/UsingView';
 import ProductionView from './views/ProductionView';
+import PlanningView from './views/PlanningView';
 import RawMaterialsView from './views/RawMaterialsView';
 import WarehouseView from './views/WarehouseView';
 import ReportsView from './views/ReportsView';
@@ -566,6 +567,15 @@ function App() {
             >
               📦 Receiving
             </button>
+
+            <button
+              onClick={() => setCurrentView('planning')}
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
+                currentView === 'planning' ? 'bg-green-700 text-white' : 'text-gray-300'
+              }`}
+            >
+              🗓️ Planning
+            </button>
             
             <button
               onClick={() => setCurrentView('using')}
@@ -656,7 +666,11 @@ function App() {
         {currentView === 'receiving' && (
           <ReceivingView addRawMaterial={addRawMaterial} settings={settings} openAlert={openAlert} />
         )}
-        
+
+        {currentView === 'planning' && (
+          <PlanningView rawMaterials={rawMaterials} settings={settings} />
+        )}
+
         {currentView === 'using' && (
           <UsingView rawMaterials={rawMaterials} useRawMaterial={useRawMaterial} openAlert={openAlert} />
         )}

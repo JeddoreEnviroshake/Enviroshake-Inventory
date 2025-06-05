@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import { generateCode39Barcode, renderBarcodeSVG } from './utils/barcode';
-import { PRODUCTS, WAREHOUSES, TYPES, STAGES } from './constants';
+import { PRODUCTS, WAREHOUSES, TYPES } from './constants';
 import DashboardView from './views/DashboardView';
 import ReceivingView from './views/ReceivingView';
 import UsingView from './views/UsingView';
@@ -190,6 +190,7 @@ function App() {
   const [warehouseInventory, setWarehouseInventory] = useState(() => loadFromLocalStorage('enviroshake_warehouseInventory', initialWarehouseInventory));
   const [activityHistory, setActivityHistory] = useState(() => loadFromLocalStorage('enviroshake_activityHistory', initialActivityHistory));
   const [selectedWarehouse, setSelectedWarehouse] = useState('All');
+  const [selectedStage, setSelectedStage] = useState('All');
   const [alertMessage, setAlertMessage] = useState('');
   const [showAlert, setShowAlert] = useState(false);
 
@@ -508,10 +509,12 @@ function App() {
     );
   };
 
-  // Filter warehouse inventory by selected warehouse
-  const filteredWarehouseInventory = selectedWarehouse === 'All' 
-    ? warehouseInventory 
-    : warehouseInventory.filter(item => item.warehouse === selectedWarehouse);
+  // Filter warehouse inventory by selected warehouse and stage
+  const filteredWarehouseInventory = warehouseInventory.filter(
+    item =>
+      (selectedWarehouse === 'All' || item.warehouse === selectedWarehouse) &&
+      (selectedStage === 'All' || item.stage === selectedStage)
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -657,6 +660,8 @@ function App() {
             allInventory={warehouseInventory}
             selectedWarehouse={selectedWarehouse}
             setSelectedWarehouse={setSelectedWarehouse}
+            selectedStage={selectedStage}
+            setSelectedStage={setSelectedStage}
             updateWarehouseItem={updateWarehouseItem}
             deleteWarehouseItem={deleteWarehouseItem}
             splitWarehouseItem={splitWarehouseItem}

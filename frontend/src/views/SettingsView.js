@@ -11,6 +11,27 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
   const [newEmail, setNewEmail] = useState('');
   const [newColor, setNewColor] = useState('');
 
+  // Utility to export data to CSV
+  const exportToCSV = (data, filename, headers) => {
+    const csvContent = [
+      headers.join(','),
+      ...data.map(row => headers.map(h => {
+        const value = row[h] ?? '';
+        return `"${String(value).replace(/"/g, '""')}"`;
+      }).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', filename);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   // Update formData when settings prop changes
   useEffect(() => {
     setFormData({
@@ -185,6 +206,84 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
     setShowValuesModal(false);
   };
 
+  // Export / Import Helpers
+  const exportColors = () => {
+    const data = formData.colors.map(c => ({ color: c }));
+    exportToCSV(data, 'colors.csv', ['color']);
+  };
+
+  const importColors = (file) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const lines = e.target.result.trim().split(/\r?\n/).slice(1);
+      const colors = lines.map(l => l.split(',')[0].replace(/"/g, '').trim()).filter(Boolean);
+      const updated = { ...formData, colors };
+      setFormData(updated);
+      updateSettings(updated);
+    };
+    if (file) reader.readAsText(file);
+  };
+
+  const exportVendors = () => {
+    const data = formData.vendors.map(v => ({ vendor: v }));
+    exportToCSV(data, 'vendors.csv', ['vendor']);
+  };
+
+  const importVendors = (file) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const lines = e.target.result.trim().split(/\r?\n/).slice(1);
+      const vendors = lines.map(l => l.split(',')[0].replace(/"/g, '').trim()).filter(Boolean);
+      const updated = { ...formData, vendors };
+      setFormData(updated);
+      updateSettings(updated);
+    };
+    if (file) reader.readAsText(file);
+  };
+
+  const exportRawMaterials = () => {
+    const data = formData.rawMaterials.map(name => ({
+      rawMaterial: name,
+      vendor: materialValues[name]?.vendor || '',
+      minQuantity: materialValues[name]?.minQuantity || 0,
+      pricePerLb: materialValues[name]?.pricePerLb || 0,
+      usagePerBatch: materialValues[name]?.usagePerBatch || 0,
+      avgBatchesPerDay: materialValues[name]?.avgBatchesPerDay || 0
+    }));
+    exportToCSV(
+      data,
+      'raw_materials_settings.csv',
+      ['rawMaterial','vendor','minQuantity','pricePerLb','usagePerBatch','avgBatchesPerDay']
+    );
+  };
+
+  const importRawMaterials = (file) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const lines = e.target.result.trim().split(/\r?\n/).slice(1);
+      const materials = [];
+      const values = {};
+      lines.forEach(line => {
+        const [rawMaterial,vendor,minQty,pricePerLb,usagePerBatch,avgB] = line.split(',').map(s => s.replace(/"/g,'').trim());
+        if(rawMaterial){
+          materials.push(rawMaterial);
+          values[rawMaterial] = {
+            vendor: vendor || '',
+            minQuantity: parseFloat(minQty) || 0,
+            pricePerLb: parseFloat(pricePerLb) || 0,
+            usagePerBatch: parseFloat(usagePerBatch) || 0,
+            avgBatchesPerDay: parseFloat(avgB) || 0
+          };
+        }
+      });
+      const updated = { ...formData, rawMaterials: materials, rawMaterialValues: values };
+      setMaterialValues(values);
+      setFormData(updated);
+      updateSettings(updated);
+    };
+    if (file) reader.readAsText(file);
+  };
+
   return (
     <div>
       <h2 className="text-3xl font-bold text-gray-900 mb-8">Settings</h2>
@@ -231,7 +330,29 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
 
         {/* Colors Management */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold mb-4">Colors</h3>
+          <h3 className="text-lg font-semibold mb-4 flex items-center justify-between">
+            <span>Colors</span>
+            <div className="flex gap-2">
+              <button
+                onClick={exportColors}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Export CSV
+              </button>
+              <label className="text-sm text-blue-600 hover:underline cursor-pointer">
+                Import CSV
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={e => {
+                    importColors(e.target.files[0]);
+                    e.target.value = '';
+                  }}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </h3>
           <p className="text-sm text-gray-600 mb-4">Available colors for Lead Hand Log production entries.</p>
           
           <div className="mb-4">
@@ -285,12 +406,32 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center justify-between">
             <span>Raw Materials</span>
-            <button
-              onClick={() => setShowValuesModal(true)}
-              className="text-sm text-blue-600 hover:underline"
-            >
-              Edit Values
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowValuesModal(true)}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Edit Values
+              </button>
+              <button
+                onClick={exportRawMaterials}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Export CSV
+              </button>
+              <label className="text-sm text-blue-600 hover:underline cursor-pointer">
+                Import CSV
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={e => {
+                    importRawMaterials(e.target.files[0]);
+                    e.target.value = '';
+                  }}
+                  className="hidden"
+                />
+              </label>
+            </div>
           </h3>
           
           <div className="mb-4">
@@ -328,7 +469,29 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
 
         {/* Vendors Management */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold mb-4">Vendors</h3>
+          <h3 className="text-lg font-semibold mb-4 flex items-center justify-between">
+            <span>Vendors</span>
+            <div className="flex gap-2">
+              <button
+                onClick={exportVendors}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Export CSV
+              </button>
+              <label className="text-sm text-blue-600 hover:underline cursor-pointer">
+                Import CSV
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={e => {
+                    importVendors(e.target.files[0]);
+                    e.target.value = '';
+                  }}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </h3>
           
           <div className="mb-4">
             <div className="flex gap-2">

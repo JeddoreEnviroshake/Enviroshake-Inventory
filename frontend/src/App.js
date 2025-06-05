@@ -13,6 +13,7 @@ import ReportsView from './views/ReportsView';
 import SettingsView from './views/SettingsView';
 import ActivityView from './views/ActivityView';
 import AlertModal from './components/AlertModal';
+import { loadLogs, saveLogs, logActivity } from './utils/activityLog';
 
 
 // Initial configuration values
@@ -209,7 +210,7 @@ function App() {
   });
   const [rawMaterials, setRawMaterials] = useState(() => loadFromLocalStorage('enviroshake_rawMaterials', initialRawMaterials));
   const [warehouseInventory, setWarehouseInventory] = useState(() => loadFromLocalStorage('enviroshake_warehouseInventory', initialWarehouseInventory));
-  const [activityHistory, setActivityHistory] = useState(() => loadFromLocalStorage('enviroshake_activityHistory', initialActivityHistory));
+  const [activityHistory, setActivityHistory] = useState(() => loadLogs().length ? loadLogs() : initialActivityHistory);
   const [openCheckouts, setOpenCheckouts] = useState(() => loadFromLocalStorage('enviroshake_openCheckouts', []));
   const [selectedWarehouse, setSelectedWarehouse] = useState('All');
   const [selectedStage, setSelectedStage] = useState('All');
@@ -237,7 +238,7 @@ function App() {
   }, [warehouseInventory]);
 
   useEffect(() => {
-    saveToLocalStorage('enviroshake_activityHistory', activityHistory);
+    saveLogs(activityHistory);
   }, [activityHistory]);
 
   useEffect(() => {
@@ -255,28 +256,23 @@ function App() {
 
   // Add activity log entry with enhanced details
   const addActivity = (action, details, user = 'System') => {
-    const newActivity = {
-      id: Math.max(...activityHistory.map(a => a.id), 0) + 1,
-      timestamp: new Date().toLocaleString(),
-      action,
-      details,
-      user
-    };
-    setActivityHistory([newActivity, ...activityHistory]);
+    const entry = logActivity({ action, user, comment: details });
+    setActivityHistory(history => [entry, ...history]);
   };
 
   // Enhanced activity logging for edits
   const addEditActivity = (action, itemId, changes, user = 'System') => {
-    const newActivity = {
-      id: Math.max(...activityHistory.map(a => a.id), 0) + 1,
-      timestamp: new Date().toLocaleString(),
-      action,
-      itemId,
-      changes,
-      user
-    };
-
-    setActivityHistory([newActivity, ...activityHistory]);
+    const entries = Object.entries(changes).map(([field, value]) =>
+      logActivity({
+        action,
+        user,
+        itemId,
+        fieldChanged: field,
+        oldValue: value.from,
+        newValue: value.to
+      })
+    );
+    setActivityHistory(history => [...entries, ...history]);
   };
 
   // Generate barcode
@@ -746,7 +742,7 @@ function App() {
         )}
         
         {currentView === 'activity' && (
-          <ActivityView activityHistory={activityHistory} />
+          <ActivityView activityHistory={activityHistory} setActivityHistory={setActivityHistory} />
         )}
 
         {currentView === 'settings' && (

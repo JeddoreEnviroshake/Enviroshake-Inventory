@@ -38,7 +38,20 @@ const initialSettings = {
   avgBatchesPerDay: 0,
   vendors: ['EFS Plastics', 'SM Polymers', 'Kraton', 'CRM Canada', 'Polyten', 'AWF'],
   emailAddresses: ['jeddore.mcdonald@enviroshake.com'],
-  colors: ['Weathered Wood', 'Cedar Blend', 'Rustic Red', 'Storm Grey', 'Charcoal', 'Midnight Blue', 'Weathered Copper', 'Driftwood', 'Sage Green', 'Coastal Blue', 'Autumn Bronze']
+  colors: ['Weathered Wood', 'Cedar Blend', 'Rustic Red', 'Storm Grey', 'Charcoal', 'Midnight Blue', 'Weathered Copper', 'Driftwood', 'Sage Green', 'Coastal Blue', 'Autumn Bronze'],
+  colorRecipes: {
+    'Weathered Wood': [],
+    'Cedar Blend': [],
+    'Rustic Red': [],
+    'Storm Grey': [],
+    'Charcoal': [],
+    'Midnight Blue': [],
+    'Weathered Copper': [],
+    'Driftwood': [],
+    'Sage Green': [],
+    'Coastal Blue': [],
+    'Autumn Bronze': []
+  }
 };
 
 
@@ -184,7 +197,14 @@ function App() {
         };
       }
     });
-    return { ...loaded, rawMaterialValues: normalizedValues };
+    const baseRecipes = loaded.colorRecipes || {};
+    const normalizedRecipes = { ...baseRecipes };
+    (loaded.colors || initialSettings.colors).forEach(color => {
+      if (!normalizedRecipes[color]) {
+        normalizedRecipes[color] = [];
+      }
+    });
+    return { ...loaded, rawMaterialValues: normalizedValues, colorRecipes: normalizedRecipes };
   });
   const [rawMaterials, setRawMaterials] = useState(() => loadFromLocalStorage('enviroshake_rawMaterials', initialRawMaterials));
   const [warehouseInventory, setWarehouseInventory] = useState(() => loadFromLocalStorage('enviroshake_warehouseInventory', initialWarehouseInventory));

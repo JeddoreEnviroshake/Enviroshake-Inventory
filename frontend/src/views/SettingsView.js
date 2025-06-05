@@ -6,6 +6,8 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
   });
   const [materialValues, setMaterialValues] = useState(settings.rawMaterialValues || {});
   const [showValuesModal, setShowValuesModal] = useState(false);
+  const [recipes, setRecipes] = useState(settings.colorRecipes || {});
+  const [showRecipesModal, setShowRecipesModal] = useState(false);
   const [newRawMaterial, setNewRawMaterial] = useState('');
   const [newVendor, setNewVendor] = useState('');
   const [newEmail, setNewEmail] = useState('');
@@ -34,9 +36,17 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
 
   // Update formData when settings prop changes
   useEffect(() => {
+    const baseRecipes = settings.colorRecipes || {};
+    const normalizedRecipes = { ...baseRecipes };
+    (settings.colors || []).forEach(color => {
+      if (!normalizedRecipes[color]) {
+        normalizedRecipes[color] = [];
+      }
+    });
     setFormData({
       ...settings,
-      avgBatchesPerDay: settings.avgBatchesPerDay || 0
+      avgBatchesPerDay: settings.avgBatchesPerDay || 0,
+      colorRecipes: normalizedRecipes
     });
     // Ensure materialValues contains an entry for every raw material
     const baseValues = settings.rawMaterialValues || {};
@@ -61,6 +71,7 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
       }
     });
     setMaterialValues(normalizedValues);
+    setRecipes(normalizedRecipes);
   }, [settings]);
 
   const handleSave = () => {
@@ -154,11 +165,14 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
 
   const addColor = () => {
     if (newColor.trim() && !formData.colors.includes(newColor.trim())) {
+      const updatedRecipes = { ...recipes, [newColor.trim()]: [] };
       const updatedFormData = {
         ...formData,
-        colors: [...formData.colors, newColor.trim()]
+        colors: [...formData.colors, newColor.trim()],
+        colorRecipes: updatedRecipes
       };
       setFormData(updatedFormData);
+      setRecipes(updatedRecipes);
       updateSettings(updatedFormData);
       setNewColor('');
     } else if (formData.colors.includes(newColor.trim())) {
@@ -167,11 +181,14 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
   };
 
   const removeColor = (color) => {
+    const { [color]: removed, ...restRecipes } = recipes;
     const updatedFormData = {
       ...formData,
-      colors: formData.colors.filter(c => c !== color)
+      colors: formData.colors.filter(c => c !== color),
+      colorRecipes: restRecipes
     };
     setFormData(updatedFormData);
+    setRecipes(restRecipes);
     updateSettings(updatedFormData);
   };
 
@@ -204,6 +221,29 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
     setFormData(updatedFormData);
     updateSettings(updatedFormData);
     setShowValuesModal(false);
+  };
+
+  const addRecipeRow = (color) => {
+    setRecipes(prev => ({
+      ...prev,
+      [color]: [...(prev[color] || []), { rawMaterial: '', weight: 0 }]
+    }));
+  };
+
+  const handleRecipeChange = (color, index, field, value) => {
+    setRecipes(prev => ({
+      ...prev,
+      [color]: prev[color].map((r, i) =>
+        i === index ? { ...r, [field]: value } : r
+      )
+    }));
+  };
+
+  const saveRecipes = () => {
+    const updatedFormData = { ...formData, colorRecipes: recipes };
+    setFormData(updatedFormData);
+    updateSettings(updatedFormData);
+    setShowRecipesModal(false);
   };
 
   // Export / Import Helpers
@@ -333,6 +373,12 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
           <h3 className="text-lg font-semibold mb-4 flex items-center justify-between">
             <span>Colors</span>
             <div className="flex gap-2">
+              <button
+                onClick={() => setShowRecipesModal(true)}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Recipes
+              </button>
               <button
                 onClick={exportColors}
                 className="text-sm text-blue-600 hover:underline"
@@ -536,6 +582,91 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
           </button>
         </div>
       </div>
+
+      {showRecipesModal && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowRecipesModal(false);
+            }
+          }}
+        >
+          <div
+            className="bg-white rounded-lg p-6 max-h-[80vh] overflow-y-auto w-full max-w-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold mb-4">Recipes</h3>
+            {formData.colors.map(color => (
+              <div key={color} className="mb-6">
+                <h4 className="font-semibold text-center mb-2">{color}</h4>
+                {recipes[color] && recipes[color].length > 0 && (
+                  <table className="min-w-full border text-sm mb-2">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="px-2 py-1 border">Raw Material</th>
+                        <th className="px-2 py-1 border">Weight (lbs)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recipes[color].map((row, idx) => (
+                        <tr key={idx}>
+                          <td className="px-2 py-1 border">
+                            <select
+                              value={row.rawMaterial}
+                              onChange={e => handleRecipeChange(color, idx, 'rawMaterial', e.target.value)}
+                              className="w-full border rounded px-1"
+                            >
+                              <option value="">Select Raw Material</option>
+                              {formData.rawMaterials
+                                .slice()
+                                .sort((a, b) => a.localeCompare(b))
+                                .map(rm => (
+                                  <option key={rm} value={rm}>{rm}</option>
+                                ))}
+                            </select>
+                          </td>
+                          <td className="px-2 py-1 border">
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={row.weight}
+                              onChange={e => handleRecipeChange(color, idx, 'weight', parseFloat(e.target.value) || 0)}
+                              className="w-full border rounded px-1"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => addRecipeRow(color)}
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Add Raw Material
+                  </button>
+                </div>
+              </div>
+            ))}
+            <div className="flex justify-end mt-4 gap-2">
+              <button
+                onClick={saveRecipes}
+                className="bg-[#09713c] text-white px-4 py-2 rounded-lg"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setShowRecipesModal(false)}
+                className="bg-gray-300 px-4 py-2 rounded-lg"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showValuesModal && (
         <div

@@ -516,14 +516,15 @@ function App() {
       dateCreated: new Date().toISOString().split('T')[0],
       warehouse: 'Dresden', // All production starts in Dresden
       stage: 'Available', // Default stage
-      shift: productionData.shift
+      shift: productionData.shift,
+      leadHandName: productionData.leadHandName
     };
 
     setWarehouseInventory([...warehouseInventory, newProduction]);
     addActivity(
       'Production Added',
       `Product ID: ${productId}, ${productionData.product} - ${productionData.colour} (${productionData.type}), ${productionData.numberOfBundles} bundles, ${productionData.shift} Shift`,
-      'Lead Hand'
+      `Lead Hand - ${productionData.leadHandName}`
     );
   };
 

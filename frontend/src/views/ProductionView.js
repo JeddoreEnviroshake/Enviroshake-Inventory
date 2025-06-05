@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { PRODUCTS, TYPES } from "../constants";
 const ProductionView = ({ addProduction, settings, openAlert }) => {
   const [formData, setFormData] = useState({
+    leadHandName: '',
     product: '',
     colour: '',
     type: '',
@@ -14,11 +15,13 @@ const ProductionView = ({ addProduction, settings, openAlert }) => {
     addProduction({
       ...formData,
       numberOfBundles: parseInt(formData.numberOfBundles),
-      shift: formData.shift
+      shift: formData.shift,
+      leadHandName: formData.leadHandName
     });
     
     // Reset form
     setFormData({
+      leadHandName: '',
       product: '',
       colour: '',
       type: '',
@@ -98,6 +101,18 @@ const ProductionView = ({ addProduction, settings, openAlert }) => {
                 <option value="Second">Second</option>
                 <option value="Third">Third</option>
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Lead Hand</label>
+              <input
+                type="text"
+                value={formData.leadHandName}
+                onChange={(e) => setFormData({...formData, leadHandName: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter lead hand name"
+                required
+              />
             </div>
 
             <div>

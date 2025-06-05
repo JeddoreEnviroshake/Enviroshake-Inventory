@@ -255,17 +255,47 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
 
   // Export / Import Helpers
   const exportColors = () => {
-    const data = formData.colors.map(c => ({ color: c }));
-    exportToCSV(data, 'colors.csv', ['color']);
+    const data = formData.colors.flatMap(color => {
+      const recs = recipes[color] || [];
+      return recs.length > 0
+        ? recs.map(r => ({
+            color,
+            rawMaterial: r.rawMaterial || '',
+            weight: r.weight || 0
+          }))
+        : [{ color, rawMaterial: '', weight: '' }];
+    });
+    exportToCSV(data, 'colors.csv', ['color', 'rawMaterial', 'weight']);
   };
 
   const importColors = (file) => {
     const reader = new FileReader();
     reader.onload = e => {
       const lines = e.target.result.trim().split(/\r?\n/).slice(1);
-      const colors = lines.map(l => l.split(',')[0].replace(/"/g, '').trim()).filter(Boolean);
-      const updated = { ...formData, colors };
+      const colorsSet = new Set();
+      const recipesData = {};
+      lines.forEach(line => {
+        const [color, rawMaterial = '', weightStr = ''] = line
+          .split(',')
+          .map(s => s.replace(/"/g, '').trim());
+        if (!color) return;
+        colorsSet.add(color);
+        if (!recipesData[color]) recipesData[color] = [];
+        if (rawMaterial) {
+          recipesData[color].push({
+            rawMaterial,
+            weight: parseFloat(weightStr) || 0
+          });
+        }
+      });
+      const colors = Array.from(colorsSet);
+      const normalizedRecipes = colors.reduce((acc, c) => {
+        acc[c] = recipesData[c] || [];
+        return acc;
+      }, {});
+      const updated = { ...formData, colors, colorRecipes: normalizedRecipes };
       setFormData(updated);
+      setRecipes(normalizedRecipes);
       updateSettings(updated);
     };
     if (file) reader.readAsText(file);

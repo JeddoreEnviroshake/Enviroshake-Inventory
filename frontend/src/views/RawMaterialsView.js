@@ -76,7 +76,7 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
                           <div className="flex justify-between items-center">
                             <div className="grid grid-cols-5 w-full">
                               <div>{materialName}</div>
-                              <div>{`Total Weight: ${totalWeight.toLocaleString()} lbs`}</div>
+                              <div>{`Weight: ${totalWeight.toLocaleString()} lbs`}</div>
                               <div>{`Bags: ${totalBags}`}</div>
                               <div>
                                 {(() => {

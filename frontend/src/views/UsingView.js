@@ -34,10 +34,10 @@ const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRa
         ...formData,
         barcode: entry.barcode,
         weightIn: entry.weightIn,
-        estimatedSpillage: entry.estimatedSpillage,
-        finishedBag: entry.finishedBag,
-        notes: entry.notes,
-        weightOut: ''
+        weightOut: '',
+        estimatedSpillage: '',
+        finishedBag: 'Yes',
+        notes: ''
       });
     } else {
       setScannedMaterial(null);
@@ -52,9 +52,9 @@ const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRa
         return;
       }
       checkoutRawMaterial({
-        ...formData,
-        weightIn: parseFloat(formData.weightIn),
-        estimatedSpillage: parseFloat(formData.estimatedSpillage) || 0
+        barcode: formData.barcode,
+        leadHandName: formData.leadHandName,
+        weightIn: parseFloat(formData.weightIn)
       });
       openAlert('Material checked out successfully!');
     } else {
@@ -62,7 +62,13 @@ const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRa
         openAlert('Please select a checkout record');
         return;
       }
-      checkinRawMaterial(parseInt(selectedCheckoutId, 10), parseFloat(formData.weightOut));
+      checkinRawMaterial(
+        parseInt(selectedCheckoutId, 10),
+        parseFloat(formData.weightOut),
+        parseFloat(formData.estimatedSpillage) || 0,
+        formData.finishedBag,
+        formData.notes
+      );
       openAlert('Material checked in successfully!');
       setSelectedCheckoutId('');
     }
@@ -89,14 +95,14 @@ const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRa
           onClick={() => setMode('checkout')}
           className={`px-4 py-2 rounded ${mode === 'checkout' ? 'bg-[#09713c] text-white' : 'bg-gray-200'}`}
         >
-          Check Out
+          Initial Weight
         </button>
         <button
           type="button"
           onClick={() => setMode('checkin')}
           className={`px-4 py-2 rounded ${mode === 'checkin' ? 'bg-[#09713c] text-white' : 'bg-gray-200'}`}
         >
-          Check In
+          End Weight
         </button>
       </div>
 
@@ -183,7 +189,7 @@ const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRa
               </div>
             )}
 
-            {mode === 'checkout' && (
+            {mode === 'checkin' && (
               <>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Estimated Spillage (lbs) - Optional</label>

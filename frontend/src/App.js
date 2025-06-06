@@ -389,13 +389,19 @@ function App() {
     );
   };
 
-  const checkinRawMaterial = (checkoutId, weightOut) => {
+  const checkinRawMaterial = (checkoutId, weightOut, estimatedSpillage, finishedBag, notes) => {
     const entry = openCheckouts.find(c => c.id === checkoutId);
     if (!entry) return;
-    const usageData = { ...entry, weightOut: parseFloat(weightOut) };
+    const usageData = {
+      ...entry,
+      weightOut: parseFloat(weightOut),
+      estimatedSpillage,
+      finishedBag,
+      notes
+    };
     useRawMaterial(usageData);
     setOpenCheckouts(entries => entries.filter(c => c.id !== checkoutId));
-    const used = entry.weightIn - parseFloat(weightOut) - (entry.estimatedSpillage || 0);
+    const used = entry.weightIn - parseFloat(weightOut) - (estimatedSpillage || 0);
     addActivity(
       'Material Checked In',
       `Barcode: ${entry.barcode}, Used: ${used.toFixed(1)} lbs`,

@@ -15,11 +15,30 @@ const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRa
 
   const handleBarcodeChange = (e) => {
     const barcode = e.target.value;
-    setFormData({...formData, barcode});
+    setFormData({ ...formData, barcode });
 
     if (mode === 'checkout') {
       const material = rawMaterials.find(m => m.barcode === barcode);
       setScannedMaterial(material);
+    } else {
+      const entry = openCheckouts.find(c => c.barcode === barcode);
+      if (entry) {
+        setSelectedCheckoutId(entry.id.toString());
+        const material = rawMaterials.find(m => m.barcode === barcode);
+        setScannedMaterial(material);
+        setFormData({
+          ...formData,
+          barcode,
+          weightIn: entry.weightIn,
+          weightOut: '',
+          estimatedSpillage: '',
+          finishedBag: 'Yes',
+          notes: ''
+        });
+      } else {
+        setSelectedCheckoutId('');
+        setScannedMaterial(null);
+      }
     }
   };
 
@@ -127,22 +146,35 @@ const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRa
             )}
 
             {mode === 'checkin' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Select Checkout</label>
-                <select
-                  value={selectedCheckoutId}
-                  onChange={handleSelectCheckout}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Select...</option>
-                  {openCheckouts.map(co => (
-                    <option key={co.id} value={co.id}>
-                      {co.barcode} - {co.leadHandName}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Scan Barcode</label>
+                  <input
+                    type="text"
+                    value={formData.barcode}
+                    onChange={handleBarcodeChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Scan or enter barcode"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Select Checkout</label>
+                  <select
+                    value={selectedCheckoutId}
+                    onChange={handleSelectCheckout}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Select...</option>
+                    {openCheckouts.map(co => (
+                      <option key={co.id} value={co.id}>
+                        {co.barcode} - {co.leadHandName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
             )}
 
             {mode === 'checkout' && (
@@ -234,7 +266,7 @@ const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRa
               className="w-full bg-[#09713c] text-white px-6 py-2 rounded-lg hover:bg-[#09713c] transition-colors"
               disabled={mode === 'checkout' ? !scannedMaterial : !selectedCheckoutId || !formData.weightOut}
             >
-              {mode === 'checkout' ? 'Check Out' : 'Check In'}
+              Record Weight
             </button>
           </form>
         </div>
@@ -253,6 +285,7 @@ const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRa
                   <div><strong>PO Number:</strong> {scannedMaterial.poNumber}</div>
                   <div><strong>Current Weight:</strong> {scannedMaterial.currentWeight.toLocaleString()} lbs</div>
                   <div><strong>Bags Available:</strong> {scannedMaterial.bagsAvailable}</div>
+                  <div><strong>Expected Bag Weight:</strong> {scannedMaterial.bagsAvailable ? (scannedMaterial.currentWeight / scannedMaterial.bagsAvailable).toFixed(1) : 'N/A'} lbs</div>
                 </div>
               </div>
               
@@ -273,7 +306,7 @@ const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRa
           ) : (
             <div className="text-center text-gray-500 py-8">
               <div className="text-4xl mb-4">📷</div>
-              <p>{mode === 'checkout' ? 'Scan a barcode to view material information' : 'Select a checkout above'}</p>
+              <p>{mode === 'checkout' ? 'Scan a barcode to view material information' : 'Scan a barcode or select a checkout above'}</p>
             </div>
           )}
         </div>

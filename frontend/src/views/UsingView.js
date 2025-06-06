@@ -13,6 +13,9 @@ const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRa
   const [mode, setMode] = useState('checkout');
   const [selectedCheckoutId, setSelectedCheckoutId] = useState('');
 
+  const isCheckedOut =
+    mode === 'checkout' && openCheckouts.some(c => c.barcode === formData.barcode);
+
   const handleBarcodeChange = (e) => {
     const barcode = e.target.value;
     setFormData({ ...formData, barcode });
@@ -263,8 +266,8 @@ const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRa
 
             <button
               type="submit"
-              className="w-full bg-[#09713c] text-white px-6 py-2 rounded-lg hover:bg-[#09713c] transition-colors"
-              disabled={mode === 'checkout' ? !scannedMaterial : !selectedCheckoutId || !formData.weightOut}
+              className="w-full bg-[#09713c] text-white px-6 py-2 rounded-lg hover:bg-[#09713c] transition-colors disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+              disabled={mode === 'checkout' ? !scannedMaterial || isCheckedOut : !selectedCheckoutId || !formData.weightOut}
             >
               Record Weight
             </button>
@@ -277,8 +280,8 @@ const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRa
           
           {scannedMaterial ? (
             <div className="space-y-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h4 className="font-medium text-green-800 mb-2">✓ Material Found</h4>
+              <div className={`${isCheckedOut ? 'bg-orange-50 border-orange-200' : 'bg-green-50 border-green-200'} rounded-lg p-4`}>
+                <h4 className={`font-medium mb-2 ${isCheckedOut ? 'text-orange-800' : 'text-green-800'}`}>{isCheckedOut ? '⚠️ Material Checked Out' : '✓ Material Found'}</h4>
                 <div className="space-y-2 text-sm">
                   <div><strong>Raw Material:</strong> {scannedMaterial.rawMaterial}</div>
                   <div><strong>Vendor:</strong> {scannedMaterial.vendor}</div>

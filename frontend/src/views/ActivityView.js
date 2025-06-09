@@ -1,6 +1,16 @@
 import React, { useMemo, useState } from "react";
 import { updateComment, exportLogs } from "../utils/activityLog";
 
+const formatTimestamp = ts => {
+  const d = new Date(ts);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+};
+
 const PAGE_SIZE = 10;
 
 const ActivityView = ({ activityHistory, setActivityHistory }) => {
@@ -127,13 +137,12 @@ const ActivityView = ({ activityHistory, setActivityHistory }) => {
                 <th className="px-2 py-3 text-left">New</th>
                 <th className="px-2 py-3 text-left">User</th>
                 <th className="px-2 py-3 text-left">Comment</th>
-                <th className="px-2 py-3 text-left">Ref ID</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {pageData.map(log => (
                 <tr key={log.id} className="hover:bg-gray-50">
-                  <td className="px-2 py-2 whitespace-nowrap">{log.timestamp}</td>
+                  <td className="px-2 py-2 whitespace-nowrap">{formatTimestamp(log.timestamp)}</td>
                   <td className="px-2 py-2 whitespace-nowrap">{log.action}</td>
                   <td className="px-2 py-2 whitespace-nowrap">{log.itemId || '-'}</td>
                   <td className="px-2 py-2 whitespace-nowrap">{log.fieldChanged || '-'}</td>
@@ -141,13 +150,12 @@ const ActivityView = ({ activityHistory, setActivityHistory }) => {
                   <td className="px-2 py-2 whitespace-nowrap">{log.newValue ?? '-'}</td>
                   <td className="px-2 py-2 whitespace-nowrap">{log.user}</td>
                   <td className="px-2 py-2">
-                    <input
-                      className="border px-1 py-0.5 rounded w-full"
-                      defaultValue={log.comment || ''}
-                      onBlur={e => handleCommentBlur(log.id, e.target.value)}
-                    />
+                      <input
+                        className="border px-1 py-0.5 rounded w-full"
+                        defaultValue={log.comment || ''}
+                        onBlur={e => handleCommentBlur(log.id, e.target.value)}
+                      />
                   </td>
-                  <td className="px-2 py-2 whitespace-nowrap">{log.referenceId || '-'}</td>
                 </tr>
               ))}
             </tbody>

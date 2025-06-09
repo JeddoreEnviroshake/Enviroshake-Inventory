@@ -398,21 +398,31 @@ function App() {
   const checkinRawMaterial = (checkoutId, weightOut, estimatedSpillage, finishedBag, notes) => {
     const entry = openCheckouts.find(c => c.id === checkoutId);
     if (!entry) return;
+    const weightOutNum = parseFloat(weightOut);
+    const material = rawMaterials.find(m => m.barcode === entry.barcode);
+    const oldWeight = material ? material.currentWeight : null;
+    const weightUsed = entry.weightIn - weightOutNum - (estimatedSpillage || 0);
+    const newWeight = material ? Math.max(0, material.currentWeight - weightUsed) : null;
     const usageData = {
       ...entry,
-      weightOut: parseFloat(weightOut),
+      weightOut: weightOutNum,
       estimatedSpillage,
       finishedBag,
       notes
     };
     useRawMaterial(usageData);
     setOpenCheckouts(entries => entries.filter(c => c.id !== checkoutId));
-    const used = entry.weightIn - parseFloat(weightOut) - (estimatedSpillage || 0);
-    addActivity(
-      'Material Checked In',
-      `Barcode: ${entry.barcode}, Used: ${used.toFixed(1)} lbs`,
-      `Lead Hand - ${entry.leadHandName}`
-    );
+
+    const entryLog = logActivity({
+      action: 'End Weight Recorded',
+      user: `Lead Hand - ${entry.leadHandName}`,
+      itemId: entry.barcode,
+      fieldChanged: 'Weight Out (lbs)',
+      value: weightOutNum,
+      oldValue: oldWeight,
+      newValue: newWeight
+    });
+    setActivityHistory(history => [entryLog, ...history]);
   };
 
   // Delete raw material
@@ -529,11 +539,14 @@ function App() {
     };
 
     setWarehouseInventory([...warehouseInventory, newProduction]);
-    addActivity(
-      'Production Added',
-      `Product ID: ${productId}, ${productionData.product} - ${productionData.colour} (${productionData.type}), ${productionData.numberOfBundles} bundles, ${productionData.shift} Shift`,
-      `Lead Hand - ${productionData.leadHandName}`
-    );
+    const entry = logActivity({
+      action: 'Product Added',
+      user: `Lead Hand - ${productionData.leadHandName}`,
+      itemId: productId,
+      fieldChanged: 'Number of Bundles',
+      newValue: productionData.numberOfBundles
+    });
+    setActivityHistory(history => [entry, ...history]);
   };
 
   // Update warehouse inventory with enhanced logging

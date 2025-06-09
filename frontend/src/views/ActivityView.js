@@ -146,7 +146,7 @@ const ActivityView = ({ activityHistory, setActivityHistory }) => {
                   <td className="px-2 py-2 whitespace-nowrap">{log.action}</td>
                   <td className="px-2 py-2 whitespace-nowrap">{log.itemId || '-'}</td>
                   <td className="px-2 py-2 whitespace-nowrap">{log.fieldChanged || '-'}</td>
-                  <td className="px-2 py-2 whitespace-nowrap">{log.newValue ?? log.oldValue ?? '-'}</td>
+                  <td className="px-2 py-2 whitespace-nowrap">{log.value ?? log.newValue ?? log.oldValue ?? '-'}</td>
                   <td className="px-2 py-2 whitespace-nowrap">
                     {log.oldValue !== null && log.oldValue !== undefined && log.newValue !== null && log.newValue !== undefined
                       ? `${log.oldValue} > ${log.newValue}`

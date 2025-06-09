@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { generateCode39Barcode, renderBarcodeSVG } from "../utils/barcode";
 const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, settings }) => {
   const [editingItem, setEditingItem] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [printingItem, setPrintingItem] = useState(null);
   const [expanded, setExpanded] = useState({});
+  const [search, setSearch] = useState('');
 
   const startEdit = (item) => {
     setEditingItem(item.id);
@@ -42,7 +43,16 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
     }
   };
 
-  const groupedByMaterial = rawMaterials.reduce((acc, item) => {
+  const filteredMaterials = useMemo(() => {
+    if (!search) return rawMaterials;
+    const term = search.toLowerCase();
+    return rawMaterials.filter(m => {
+      const haystack = `${m.rawMaterial} ${m.poNumber} ${m.vendor} ${m.barcode}`.toLowerCase();
+      return haystack.includes(term);
+    });
+  }, [rawMaterials, search]);
+
+  const groupedByMaterial = filteredMaterials.reduce((acc, item) => {
     if (!acc[item.rawMaterial]) acc[item.rawMaterial] = [];
     acc[item.rawMaterial].push(item);
     return acc;
@@ -55,7 +65,17 @@ const RawMaterialsView = ({ rawMaterials, updateRawMaterial, deleteRawMaterial, 
   return (
     <div>
       <h2 className="text-3xl font-bold text-gray-900 mb-8">Raw Material Inventory</h2>
-      
+
+      <div className="bg-white p-4 rounded-lg shadow-sm border mb-4">
+        <input
+          type="text"
+          placeholder="Search by material, PO number, vendor..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="border px-2 py-1 rounded w-full"
+        />
+      </div>
+
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">

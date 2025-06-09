@@ -12,6 +12,7 @@ import WarehouseView from './views/WarehouseView';
 import ReportsView from './views/ReportsView';
 import SettingsView from './views/SettingsView';
 import ActivityView from './views/ActivityView';
+import ThisMonthView from './views/ThisMonthView';
 import AlertModal from './components/AlertModal';
 import { loadLogs, saveLogs, logActivity } from './utils/activityLog';
 
@@ -735,8 +736,30 @@ function App() {
           </div>
 
           <div className="mt-6 px-6">
+            <h3 className="text-xs uppercase tracking-wide text-white mb-3">Reports</h3>
+
+            <button
+              onClick={() => setCurrentView('reports')}
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
+                currentView === 'reports' ? 'bg-green-700 text-white' : 'text-gray-300'
+              }`}
+            >
+              📊 Reports
+            </button>
+
+            <button
+              onClick={() => setCurrentView('thisMonth')}
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
+                currentView === 'thisMonth' ? 'bg-green-700 text-white' : 'text-gray-300'
+              }`}
+            >
+              📆 This Month
+            </button>
+          </div>
+
+          <div className="mt-6 px-6">
             <h3 className="text-xs uppercase tracking-wide text-white mb-3">System</h3>
-            
+
             <button
               onClick={() => setCurrentView('activity')}
               className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
@@ -745,7 +768,7 @@ function App() {
             >
               📋 Activity History
             </button>
-            
+
             <button
               onClick={() => setCurrentView('settings')}
               className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
@@ -753,15 +776,6 @@ function App() {
               }`}
             >
               ⚙️ Settings
-            </button>
-            
-            <button
-              onClick={() => setCurrentView('reports')}
-              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
-                currentView === 'reports' ? 'bg-green-700 text-white' : 'text-gray-300'
-              }`}
-            >
-              📊 Reports
             </button>
           </div>
         </nav>
@@ -837,6 +851,14 @@ function App() {
 
         {currentView === 'reports' && (
           <ReportsView
+            rawMaterials={rawMaterials}
+            warehouseInventory={warehouseInventory}
+            activityHistory={activityHistory}
+          />
+        )}
+
+        {currentView === 'thisMonth' && (
+          <ThisMonthView
             rawMaterials={rawMaterials}
             warehouseInventory={warehouseInventory}
             activityHistory={activityHistory}

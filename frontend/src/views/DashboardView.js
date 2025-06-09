@@ -9,9 +9,27 @@ const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, sett
   const totalWeightReceivedThisMonth = rawMaterials
     .filter(item => {
       const date = new Date(item.dateReceived);
-      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+      return (
+        date.getMonth() === currentMonth &&
+        date.getFullYear() === currentYear
+      );
     })
     .reduce((sum, item) => sum + item.startingWeight, 0);
+
+  const totalWeightConsumedThisMonth = activityHistory
+    .filter(activity => {
+      if (activity.action !== 'Material Used') return false;
+      const date = new Date(activity.timestamp);
+      return (
+        date.getMonth() === currentMonth &&
+        date.getFullYear() === currentYear
+      );
+    })
+    .reduce((sum, activity) => {
+      const match = activity.details.match(/Used:\s*([\d,.]+)/i);
+      const used = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
+      return sum + used;
+    }, 0);
   const totalByMaterial = rawMaterials.reduce((acc, item) => {
     acc[item.rawMaterial] = (acc[item.rawMaterial] || 0) + item.currentWeight;
     return acc;
@@ -30,7 +48,7 @@ const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, sett
       <h2 className="text-3xl font-bold text-gray-900 mb-8">Dashboard Overview</h2>
       
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-sm border cursor-pointer hover:shadow-md transition-shadow"
              onClick={() => setCurrentView('rawMaterials')}>
           <h3 className="text-sm font-medium text-gray-500">Raw Materials</h3>
@@ -52,9 +70,15 @@ const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, sett
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-sm font-medium text-gray-500">Raw Materials</h3>
-          <p className="text-3xl font-bold text-blue-600 mt-2">{totalWeightReceivedThisMonth.toLocaleString()}</p>
-          <p className="text-sm text-gray-600 mt-1">lbs received</p>
+          <h3 className="text-sm font-medium text-gray-500">Received</h3>
+          <p className="text-3xl font-bold text-blue-600 mt-2">{totalWeightReceivedThisMonth.toLocaleString()} lbs</p>
+          <p className="text-sm text-gray-600 mt-1">of raw materials this month</p>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-sm font-medium text-gray-500">Consumed</h3>
+          <p className="text-3xl font-bold text-blue-600 mt-2">{totalWeightConsumedThisMonth.toLocaleString()} lbs</p>
+          <p className="text-sm text-gray-600 mt-1">of raw materials this month</p>
         </div>
       </div>
 

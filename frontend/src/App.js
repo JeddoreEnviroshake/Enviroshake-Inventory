@@ -389,7 +389,7 @@ function App() {
       'Initial Weight Recorded',
       checkoutData.barcode,
       {
-        'Weigh In (lbs)': { from: null, to: checkoutData.weightIn }
+        'Weight In (lbs)': { from: null, to: checkoutData.weightIn }
       },
       `Lead Hand - ${checkoutData.leadHandName}`
     );

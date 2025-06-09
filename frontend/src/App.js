@@ -160,7 +160,7 @@ const initialActivityHistory = [
   {
     id: 3,
     timestamp: '2024-12-16 09:00:00',
-    action: 'Raw Material Updated',
+    action: 'Raw Material Edited',
     itemId: 'BAR001PO5691',
     changes: {
       bagsAvailable: { from: 6, to: 5 },
@@ -268,6 +268,7 @@ function App() {
         user,
         itemId,
         fieldChanged: field,
+        value: value.to,
         oldValue: value.from,
         newValue: value.to
       })
@@ -327,7 +328,7 @@ function App() {
 
     if (Object.keys(changes).length > 0) {
       addEditActivity(
-        'Raw Material Updated',
+        'Raw Material Edited',
         originalData.barcode,
         changes,
         'Inventory Manager'
@@ -429,11 +430,14 @@ function App() {
   const deleteRawMaterial = (id) => {
     const material = rawMaterials.find(r => r.id === id);
     setRawMaterials(rawMaterials.filter(r => r.id !== id));
-    addActivity(
-      'Raw Material Deleted',
-      `Barcode: ${material.barcode}, ${material.rawMaterial}, PO: ${material.poNumber}`,
-      'Inventory Manager'
-    );
+    const entry = logActivity({
+      action: 'Raw Material Deleted',
+      user: 'Inventory Manager',
+      itemId: material.barcode,
+      oldValue: `${material.rawMaterial}`,
+      newValue: 'Deleted'
+    });
+    setActivityHistory(history => [entry, ...history]);
   };
 
   // Delete warehouse item
@@ -567,7 +571,7 @@ function App() {
 
     if (Object.keys(changes).length > 0) {
       addEditActivity(
-        'Warehouse Item Updated',
+        'Warehouse Inventory Edited',
         originalData.productId,
         changes,
         'Warehouse Manager'
@@ -576,13 +580,73 @@ function App() {
   };
 
   // Update settings
-  const updateSettings = (newSettings) => {
+  const updateSettings = (newSettings, options = {}) => {
+    const old = settings;
     setSettings(newSettings);
-    addActivity(
-      'Settings Updated',
-      'System configuration updated',
-      'Administrator'
-    );
+
+    // Track changes between old and new settings
+    const entries = [];
+
+    if (newSettings.avgBatchesPerDay !== old.avgBatchesPerDay) {
+      entries.push(
+        logActivity({
+          action: options.actionOverride || 'Settings Changed',
+          user: 'Administrator',
+          itemId: 'Avg Batches / Day',
+          fieldChanged: 'Avg Batches / Day',
+          value: newSettings.avgBatchesPerDay,
+          oldValue: old.avgBatchesPerDay,
+          newValue: newSettings.avgBatchesPerDay
+        })
+      );
+    }
+
+    const arrayFields = [
+      ['emailAddresses', 'Email Addresses'],
+      ['colors', 'Colors'],
+      ['rawMaterials', 'Raw Materials'],
+      ['vendors', 'Vendors']
+    ];
+
+    arrayFields.forEach(([key, label]) => {
+      const oldArr = old[key] || [];
+      const newArr = newSettings[key] || [];
+      newArr.forEach(val => {
+        if (!oldArr.includes(val)) {
+          entries.push(
+            logActivity({
+              action: options.actionOverride || 'Settings Changed',
+              user: 'Administrator',
+              itemId: label,
+              fieldChanged: label,
+              value: val,
+              newValue: val
+            })
+          );
+        }
+      });
+    });
+
+    if (options.csvField) {
+      entries.unshift(
+        logActivity({
+          action: 'CSV Import',
+          user: 'Administrator',
+          fieldChanged: options.csvField
+        })
+      );
+    }
+
+    if (entries.length === 0) {
+      entries.push(
+        logActivity({
+          action: options.actionOverride || 'Settings Changed',
+          user: 'Administrator'
+        })
+      );
+    }
+
+    setActivityHistory(history => [...entries, ...history]);
   };
 
   // Filter warehouse inventory by selected warehouse and stage

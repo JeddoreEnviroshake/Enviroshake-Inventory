@@ -296,7 +296,7 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
       const updated = { ...formData, colors, colorRecipes: normalizedRecipes };
       setFormData(updated);
       setRecipes(normalizedRecipes);
-      updateSettings(updated);
+      updateSettings(updated, { csvField: 'Colors' });
     };
     if (file) reader.readAsText(file);
   };
@@ -313,7 +313,7 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
       const vendors = lines.map(l => l.split(',')[0].replace(/"/g, '').trim()).filter(Boolean);
       const updated = { ...formData, vendors };
       setFormData(updated);
-      updateSettings(updated);
+      updateSettings(updated, { csvField: 'Vendors' });
     };
     if (file) reader.readAsText(file);
   };
@@ -356,7 +356,7 @@ const SettingsView = ({ settings, updateSettings, openAlert }) => {
       const updated = { ...formData, rawMaterials: materials, rawMaterialValues: values };
       setMaterialValues(values);
       setFormData(updated);
-      updateSettings(updated);
+      updateSettings(updated, { csvField: 'Raw Materials' });
     };
     if (file) reader.readAsText(file);
   };

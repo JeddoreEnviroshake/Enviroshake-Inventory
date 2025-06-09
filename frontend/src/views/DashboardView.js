@@ -1,6 +1,16 @@
 import React from "react";
 const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, settings, setCurrentView }) => {
   const totalRawMaterialWeight = rawMaterials.reduce((sum, item) => sum + item.currentWeight, 0);
+  // Calculate total weight received for the current month
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const totalWeightReceivedThisMonth = rawMaterials
+    .filter(item => {
+      const date = new Date(item.dateReceived);
+      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+    })
+    .reduce((sum, item) => sum + item.startingWeight, 0);
   const totalByMaterial = rawMaterials.reduce((acc, item) => {
     acc[item.rawMaterial] = (acc[item.rawMaterial] || 0) + item.currentWeight;
     return acc;
@@ -41,9 +51,9 @@ const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, sett
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-sm font-medium text-gray-500">Active Materials</h3>
-          <p className="text-3xl font-bold text-blue-600 mt-2">{rawMaterials.length}</p>
-          <p className="text-sm text-gray-600 mt-1">Different batches</p>
+          <h3 className="text-sm font-medium text-gray-500">Raw Materials</h3>
+          <p className="text-3xl font-bold text-blue-600 mt-2">{totalWeightReceivedThisMonth.toLocaleString()}</p>
+          <p className="text-sm text-gray-600 mt-1">lbs received</p>
         </div>
       </div>
 

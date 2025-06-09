@@ -153,7 +153,7 @@ const initialActivityHistory = [
   {
     id: 2,
     timestamp: '2024-12-15 15:45:12',
-    action: 'Material Used',
+    action: 'End Weight Recorded',
     details: 'Barcode: BAR001PO5691, Used: 1159 lbs',
     user: 'Lead Hand - John Smith'
   },
@@ -372,11 +372,7 @@ function App() {
       );
     }
 
-    addActivity(
-      'Material Used',
-      `Barcode: ${usageData.barcode}, Used: ${weightUsed.toFixed(1)} lbs, Spillage: ${usageData.estimatedSpillage || 0} lbs, Finished Bag: ${usageData.finishedBag || 'No'}${usageData.notes ? `, Notes: ${usageData.notes}` : ''}`,
-      `Lead Hand - ${usageData.leadHandName}`
-    );
+    // Logging handled in checkinRawMaterial with "End Weight Recorded" action
   };
 
   const checkoutRawMaterial = (checkoutData) => {
@@ -421,7 +417,8 @@ function App() {
       fieldChanged: 'Weight Out (lbs)',
       value: weightOutNum,
       oldValue: oldWeight,
-      newValue: newWeight
+      newValue: newWeight,
+      comment: notes
     });
     setActivityHistory(history => [entryLog, ...history]);
   };

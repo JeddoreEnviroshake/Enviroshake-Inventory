@@ -17,7 +17,7 @@ const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, sett
 
   const totalWeightConsumedThisMonth = activityHistory
     .filter(activity => {
-      if (activity.action !== 'Material Used') return false;
+      if (activity.action !== 'End Weight Recorded') return false;
       const date = new Date(activity.timestamp);
       return (
         date.getMonth() === currentMonth &&
@@ -25,9 +25,10 @@ const DashboardView = ({ rawMaterials, warehouseInventory, activityHistory, sett
       );
     })
     .reduce((sum, activity) => {
-      const match = activity.details.match(/Used:\s*([\d,.]+)/i);
-      const used = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
-      return sum + used;
+      const oldVal = parseFloat(activity.oldValue ?? 0);
+      const newVal = parseFloat(activity.newValue ?? oldVal);
+      const used = oldVal - newVal;
+      return sum + (isNaN(used) ? 0 : used);
     }, 0);
   const totalByMaterial = rawMaterials.reduce((acc, item) => {
     acc[item.rawMaterial] = (acc[item.rawMaterial] || 0) + item.currentWeight;

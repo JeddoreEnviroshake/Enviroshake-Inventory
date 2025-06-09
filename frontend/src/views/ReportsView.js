@@ -40,7 +40,7 @@ const ReportsView = ({ rawMaterials, warehouseInventory, activityHistory }) => {
         case 'Receiving':
           return isInDateRange && activity.action === 'Raw Material Received';
         case 'Using':
-          return isInDateRange && activity.action === 'Material Used';
+          return isInDateRange && activity.action === 'End Weight Recorded';
         case 'Lead Hand Log':
           return isInDateRange && activity.action === 'Production Added';
         default:

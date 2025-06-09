@@ -81,7 +81,7 @@ const ReportsView = ({ rawMaterials, warehouseInventory, activityHistory }) => {
       {/* CSV Export Section */}
       <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Export Data</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
             onClick={() => exportToCSV(
               rawMaterials,
@@ -101,16 +101,6 @@ const ReportsView = ({ rawMaterials, warehouseInventory, activityHistory }) => {
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
           >
             🏭 Export Warehouse
-          </button>
-          <button
-            onClick={() => exportToCSV(
-              activityHistory,
-              'activity_history.csv',
-              ['timestamp', 'action', 'details', 'user']
-            )}
-            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
-          >
-            📋 Export Activity
           </button>
         </div>
       </div>

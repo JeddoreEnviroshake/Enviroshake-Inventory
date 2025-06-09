@@ -11,6 +11,23 @@ const PlanningView = ({ rawMaterials, settings }) => {
   const [result, setResult] = useState(null);
   const [batchInfo, setBatchInfo] = useState(null);
 
+  const calculateResult = (additionalValue) => {
+    const additional = parseFloat(additionalValue);
+    if (isNaN(additional) || additional <= 0 || !batchInfo) return null;
+
+    const purchases = batchInfo.data
+      .map(d => {
+        const usedForAvailable = batchInfo.minBatches * d.perBatch;
+        const leftover = d.available - usedForAvailable;
+        const needed = additional * d.perBundle;
+        const toBuy = Math.max(0, needed - leftover);
+        return { rawMaterial: d.rawMaterial, amount: toBuy };
+      })
+      .filter(p => p.amount > 0);
+
+    return { purchases };
+  };
+
   useEffect(() => {
     const { product, colour, type } = formData;
     if (!product || !colour || !type) {
@@ -46,23 +63,24 @@ const PlanningView = ({ rawMaterials, settings }) => {
     setBatchInfo({ divType, data, minBatches });
   }, [formData.product, formData.colour, formData.type, rawMaterials, settings.colorRecipes]);
 
+  useEffect(() => {
+    const { product, colour, type, numberOfBundles } = formData;
+    if (!product || !colour || !type || !numberOfBundles || !batchInfo || batchInfo.error) {
+      setResult(null);
+      return;
+    }
+
+    const res = calculateResult(numberOfBundles);
+    setResult(res);
+  }, [formData.numberOfBundles, batchInfo]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const { product, colour, type, numberOfBundles } = formData;
     if (!product || !colour || !type || !numberOfBundles || !batchInfo) return;
 
-    const additional = parseFloat(numberOfBundles);
-    if (isNaN(additional) || additional <= 0) return;
-
-    const purchases = batchInfo.data.map(d => {
-      const usedForAvailable = batchInfo.minBatches * d.perBatch;
-      const leftover = d.available - usedForAvailable;
-      const needed = additional * d.perBundle;
-      const toBuy = Math.max(0, needed - leftover);
-      return { rawMaterial: d.rawMaterial, amount: toBuy };
-    }).filter(p => p.amount > 0);
-
-    setResult({ purchases });
+    const res = calculateResult(numberOfBundles);
+    if (res) setResult(res);
   };
 
   return (

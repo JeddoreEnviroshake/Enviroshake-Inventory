@@ -297,9 +297,12 @@ function App() {
     };
     
     setRawMaterials([...rawMaterials, newMaterial]);
-    addActivity(
-      'Raw Material Received',
-      `PO: ${materialData.poNumber}, ${materialData.rawMaterial}, ${materialData.bagsReceived} bags, ${materialData.startingWeight.toLocaleString()} lbs`,
+    addEditActivity(
+      'Received Raw Material',
+      barcode,
+      {
+        'Current Weight': { from: null, to: materialData.startingWeight }
+      },
       'Purchasing Manager'
     );
     
@@ -382,9 +385,12 @@ function App() {
       timestamp: new Date().toISOString()
     };
     setOpenCheckouts(entries => [newEntry, ...entries]);
-    addActivity(
-      'Material Checked Out',
-      `Barcode: ${checkoutData.barcode}, Weight In: ${checkoutData.weightIn} lbs`,
+    addEditActivity(
+      'Initial Weight Recorded',
+      checkoutData.barcode,
+      {
+        'Weigh In (lbs)': { from: null, to: checkoutData.weightIn }
+      },
       `Lead Hand - ${checkoutData.leadHandName}`
     );
   };

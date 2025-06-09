@@ -133,8 +133,8 @@ const ActivityView = ({ activityHistory, setActivityHistory }) => {
                 <th className="px-2 py-3 text-left">Action</th>
                 <th className="px-2 py-3 text-left">Item ID</th>
                 <th className="px-2 py-3 text-left">Field</th>
-                <th className="px-2 py-3 text-left">Old</th>
-                <th className="px-2 py-3 text-left">New</th>
+                <th className="px-2 py-3 text-left">Value</th>
+                <th className="px-2 py-3 text-left">From &gt; To</th>
                 <th className="px-2 py-3 text-left">User</th>
                 <th className="px-2 py-3 text-left">Comment</th>
               </tr>
@@ -146,8 +146,12 @@ const ActivityView = ({ activityHistory, setActivityHistory }) => {
                   <td className="px-2 py-2 whitespace-nowrap">{log.action}</td>
                   <td className="px-2 py-2 whitespace-nowrap">{log.itemId || '-'}</td>
                   <td className="px-2 py-2 whitespace-nowrap">{log.fieldChanged || '-'}</td>
-                  <td className="px-2 py-2 whitespace-nowrap">{log.oldValue ?? '-'}</td>
-                  <td className="px-2 py-2 whitespace-nowrap">{log.newValue ?? '-'}</td>
+                  <td className="px-2 py-2 whitespace-nowrap">{log.newValue ?? log.oldValue ?? '-'}</td>
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    {log.oldValue !== null && log.oldValue !== undefined && log.newValue !== null && log.newValue !== undefined
+                      ? `${log.oldValue} > ${log.newValue}`
+                      : '-'}
+                  </td>
                   <td className="px-2 py-2 whitespace-nowrap">{log.user}</td>
                   <td className="px-2 py-2">
                       <input

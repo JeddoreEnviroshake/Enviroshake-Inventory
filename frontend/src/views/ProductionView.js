@@ -70,7 +70,7 @@ const ProductionView = ({ addProduction, settings, openAlert }) => {
       <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl mx-auto">
         {/* Basic Fields */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold mb-4">Basic Fields</h3>
+          <h3 className="text-lg font-semibold mb-4">Lead Hand</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Lead Hand</label>
@@ -100,7 +100,7 @@ const ProductionView = ({ addProduction, settings, openAlert }) => {
 
         {/* Production */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold mb-4">Production</h3>
+          <h3 className="text-lg font-semibold mb-4">Production (pieces)</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Line 1 Production</label>
@@ -241,19 +241,6 @@ const ProductionView = ({ addProduction, settings, openAlert }) => {
           {batches.map((batch, idx) => (
             <div key={idx} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Batches Made</label>
-                <input
-                  type="number"
-                  value={batch.batchesMade}
-                  onChange={(e) => {
-                    const arr = [...batches];
-                    arr[idx] = { ...arr[idx], batchesMade: e.target.value };
-                    setBatches(arr);
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Colour</label>
                 <select
                   value={batch.colour}
@@ -274,6 +261,19 @@ const ProductionView = ({ addProduction, settings, openAlert }) => {
                       </option>
                     ))}
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Batches Made</label>
+                <input
+                  type="number"
+                  value={batch.batchesMade}
+                  onChange={(e) => {
+                    const arr = [...batches];
+                    arr[idx] = { ...arr[idx], batchesMade: e.target.value };
+                    setBatches(arr);
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
               </div>
             </div>
           ))}
@@ -317,7 +317,7 @@ const ProductionView = ({ addProduction, settings, openAlert }) => {
 
         {/* Disposal */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold mb-4">Disposal</h3>
+          <h3 className="text-lg font-semibold mb-4">Disposal (lbs)</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               ["Matilda", "matilda"],

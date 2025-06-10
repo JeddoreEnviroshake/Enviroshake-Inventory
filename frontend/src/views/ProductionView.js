@@ -32,12 +32,16 @@ const ProductionView = ({ addProduction, settings, openAlert }) => {
 
   const addBundleRow = () => setBundles((b) => [...b, emptyBundle]);
   const addBatchRow = () => setBatches((b) => [...b, emptyBatch]);
+  const deleteBundleRow = (idx) =>
+    setBundles((b) => b.filter((_, i) => i !== idx));
+  const deleteBatchRow = (idx) =>
+    setBatches((b) => b.filter((_, i) => i !== idx));
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (bundles.length > 0) {
-      const { product, colour, type, numberOfBundles } = bundles[0];
+    bundles.forEach(({ product, colour, type, numberOfBundles }) => {
+      if (!product) return;
       addProduction({
         leadHandName: basic.leadHandName,
         product,
@@ -46,7 +50,7 @@ const ProductionView = ({ addProduction, settings, openAlert }) => {
         shift: basic.shift,
         numberOfBundles: parseInt(numberOfBundles) || 0,
       });
-    }
+    });
 
     setBasic({ leadHandName: "", shift: "First" });
     setProduction({
@@ -145,7 +149,10 @@ const ProductionView = ({ addProduction, settings, openAlert }) => {
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <h3 className="text-lg font-semibold mb-4">Bundles Strapped</h3>
           {bundles.map((bundle, idx) => (
-            <div key={idx} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div
+              key={idx}
+              className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4 items-end"
+            >
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Product</label>
                 <select
@@ -224,6 +231,15 @@ const ProductionView = ({ addProduction, settings, openAlert }) => {
                   required
                 />
               </div>
+              <div className="flex justify-center md:justify-start">
+                <button
+                  type="button"
+                  onClick={() => deleteBundleRow(idx)}
+                  className="text-red-500 text-2xl font-bold"
+                >
+                  -
+                </button>
+              </div>
             </div>
           ))}
           <button
@@ -239,7 +255,10 @@ const ProductionView = ({ addProduction, settings, openAlert }) => {
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <h3 className="text-lg font-semibold mb-4">Batches Made</h3>
           {batches.map((batch, idx) => (
-            <div key={idx} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div
+              key={idx}
+              className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 items-end"
+            >
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Colour</label>
                 <select
@@ -274,6 +293,15 @@ const ProductionView = ({ addProduction, settings, openAlert }) => {
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
+              </div>
+              <div className="flex justify-center md:justify-start">
+                <button
+                  type="button"
+                  onClick={() => deleteBatchRow(idx)}
+                  className="text-red-500 text-2xl font-bold"
+                >
+                  -
+                </button>
               </div>
             </div>
           ))}

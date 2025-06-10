@@ -530,18 +530,21 @@ function App() {
   // Add production (Lead Hand Log)
   const addProduction = (productionData) => {
     const productId = generateProductId();
-    const newProduction = {
-      ...productionData,
-      id: Math.max(...warehouseInventory.map(w => w.id), 0) + 1,
-      productId,
-      dateCreated: new Date().toISOString().split('T')[0],
-      warehouse: 'Dresden', // All production starts in Dresden
-      stage: 'Available', // Default stage
-      shift: productionData.shift,
-      leadHandName: productionData.leadHandName
-    };
 
-    setWarehouseInventory([...warehouseInventory, newProduction]);
+    setWarehouseInventory(prevInventory => {
+      const newProduction = {
+        ...productionData,
+        id: Math.max(...prevInventory.map(w => w.id), 0) + 1,
+        productId,
+        dateCreated: new Date().toISOString().split('T')[0],
+        warehouse: 'Dresden', // All production starts in Dresden
+        stage: 'Available', // Default stage
+        shift: productionData.shift,
+        leadHandName: productionData.leadHandName
+      };
+      return [...prevInventory, newProduction];
+    });
+
     const entry = logActivity({
       action: 'Product Added',
       user: `Lead Hand - ${productionData.leadHandName}`,

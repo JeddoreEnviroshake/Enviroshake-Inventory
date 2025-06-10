@@ -13,6 +13,7 @@ import ReportsView from './views/ReportsView';
 import SettingsView from './views/SettingsView';
 import ActivityView from './views/ActivityView';
 import ThisMonthView from './views/ThisMonthView';
+import DailyProductionSummaryView from './views/DailyProductionSummaryView';
 import AlertModal from './components/AlertModal';
 import { loadLogs, saveLogs, logActivity } from './utils/activityLog';
 
@@ -755,6 +756,15 @@ function App() {
             >
               📆 This Month
             </button>
+
+            <button
+              onClick={() => setCurrentView('dailyProductionSummary')}
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
+                currentView === 'dailyProductionSummary' ? 'bg-green-700 text-white' : 'text-gray-300'
+              }`}
+            >
+              📅 Daily Production Summary
+            </button>
           </div>
 
           <div className="mt-6 px-6">
@@ -863,6 +873,10 @@ function App() {
             warehouseInventory={warehouseInventory}
             activityHistory={activityHistory}
           />
+        )}
+
+        {currentView === 'dailyProductionSummary' && (
+          <DailyProductionSummaryView />
         )}
       </div>
       {showAlert && (

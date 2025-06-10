@@ -766,7 +766,7 @@ function App() {
                 currentView === 'dailyProductionSummary' ? 'bg-green-700 text-white' : 'text-gray-300'
               }`}
             >
-              📅 Daily Production Summary
+              📅 Daily Production
             </button>
           </div>
 

@@ -21,6 +21,9 @@ const ActivitySnapshotView = ({ activityHistory }) => {
   const [sortField, setSortField] = useState(null);
   const [sortDirection, setSortDirection] = useState("asc");
 
+  const sortArrow = field =>
+    sortField === field ? (sortDirection === "asc" ? " \u25B2" : " \u25BC") : "";
+
   const handleSort = field => {
     setSortField(prev => {
       if (prev === field) {
@@ -153,15 +156,15 @@ const ActivitySnapshotView = ({ activityHistory }) => {
           <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('timestamp')}>Timestamp</th>
-              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('action')}>Action</th>
-              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('user')}>User</th>
-              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('itemId')}>Item ID</th>
-              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('fieldChanged')}>Field</th>
-              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('oldValue')}>Old Value</th>
-              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('newValue')}>New Value</th>
+              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('timestamp')}>Timestamp{sortArrow('timestamp')}</th>
+              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('action')}>Action{sortArrow('action')}</th>
+              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('user')}>User{sortArrow('user')}</th>
+              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('itemId')}>Item ID{sortArrow('itemId')}</th>
+              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('fieldChanged')}>Field{sortArrow('fieldChanged')}</th>
+              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('oldValue')}>Old Value{sortArrow('oldValue')}</th>
+              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('newValue')}>New Value{sortArrow('newValue')}</th>
               {fields.map(f => (
-                <th key={f} className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort(f)}>{f}</th>
+                <th key={f} className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort(f)}>{f}{sortArrow(f)}</th>
               ))}
             </tr>
             <tr>

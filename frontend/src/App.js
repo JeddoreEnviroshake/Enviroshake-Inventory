@@ -897,7 +897,7 @@ function App() {
         )}
 
         {currentView === 'dailyProductionSummary' && (
-          <DailyProductionSummaryView />
+          <DailyProductionSummaryView activityHistory={activityHistory} />
         )}
       </div>
       {showAlert && (

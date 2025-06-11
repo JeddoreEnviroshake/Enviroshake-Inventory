@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { logFormSubmission } from "../utils/activityLog";
 const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRawMaterial, openAlert }) => {
   const [formData, setFormData] = useState({
     barcode: '',
@@ -78,6 +79,12 @@ const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRa
         leadHandName: formData.leadHandName,
         weightIn: parseFloat(formData.weightIn)
       });
+      logFormSubmission({
+        action: 'Initial Weight',
+        user: `Lead Hand - ${formData.leadHandName}`,
+        itemId: formData.barcode,
+        formData: { barcode: formData.barcode, leadHandName: formData.leadHandName, weightIn: formData.weightIn }
+      });
       openAlert('Material checked out successfully!');
     } else {
       if (!selectedCheckoutId) {
@@ -91,6 +98,18 @@ const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRa
         formData.finishedBag,
         formData.notes
       );
+      logFormSubmission({
+        action: 'End Weight',
+        user: `Lead Hand - ${formData.leadHandName}`,
+        itemId: formData.barcode,
+        formData: {
+          barcode: formData.barcode,
+          weightOut: formData.weightOut,
+          estimatedSpillage: formData.estimatedSpillage,
+          finishedBag: formData.finishedBag,
+          notes: formData.notes
+        }
+      });
       openAlert('Material checked in successfully!');
       setSelectedCheckoutId('');
     }

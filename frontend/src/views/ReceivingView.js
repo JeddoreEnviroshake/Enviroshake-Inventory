@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { generateCode39Barcode, renderBarcodeSVG } from "../utils/barcode";
+import { logFormSubmission } from "../utils/activityLog";
 const ReceivingView = ({ addRawMaterial, settings, openAlert }) => {
   const [formData, setFormData] = useState({
     rawMaterial: '',
@@ -63,10 +64,17 @@ const ReceivingView = ({ addRawMaterial, settings, openAlert }) => {
       bagsReceived: parseInt(formData.bagsReceived),
       startingWeight: parseFloat(formData.startingWeight)
     });
-    
+
     setLabelData(currentLabelData);
     setGeneratedBarcode(barcode);
     setShowLabel(true);
+
+    logFormSubmission({
+      action: 'Receiving Form',
+      user: 'Purchasing Manager',
+      itemId: barcode,
+      formData: { ...formData, barcode }
+    });
     
     // Reset form
     setFormData({

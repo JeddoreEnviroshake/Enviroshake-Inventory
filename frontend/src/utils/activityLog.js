@@ -33,7 +33,8 @@ export function logActivity({
   oldValue = null,
   newValue = null,
   comment = '',
-  referenceId = null
+  referenceId = null,
+  formData = null
 }) {
   const logs = loadLogs();
   const entry = {
@@ -48,7 +49,8 @@ export function logActivity({
     newValue,
     comment,
     referenceId,
-    details: comment // for backward compatibility
+    details: comment, // for backward compatibility
+    formData
   };
   logs.unshift(entry);
   saveLogs(logs);
@@ -64,6 +66,10 @@ export function updateComment(logId, comment) {
     return logs[idx];
   }
   return null;
+}
+
+export function logFormSubmission({ action = '', user = 'System', itemId = null, formData = {}, comment = '', referenceId = null }) {
+  return logActivity({ action, user, itemId, comment, referenceId, formData });
 }
 
 export function getLogs({
@@ -121,13 +127,17 @@ export function exportLogs(logs, format = 'csv') {
     'oldValue',
     'newValue',
     'comment',
-    'referenceId'
+    'referenceId',
+    'formData'
   ];
   const rows = [headers.join(',')];
   data.forEach(log => {
     const row = headers
       .map(h => {
-        const val = log[h] !== undefined && log[h] !== null ? log[h] : '';
+        let val = log[h] !== undefined && log[h] !== null ? log[h] : '';
+        if (typeof val === 'object') {
+          val = JSON.stringify(val);
+        }
         return `"${String(val).replace(/"/g, '""')}"`;
       })
       .join(',');

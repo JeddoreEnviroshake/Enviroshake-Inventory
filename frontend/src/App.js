@@ -279,6 +279,11 @@ function App() {
     setActivityHistory(history => [...entries, ...history]);
   };
 
+  const addFormSubmissionLog = ({ action = '', user = 'System', itemId = null, formData = {}, comment = '', referenceId = null }) => {
+    const entry = logFormSubmission({ action, user, itemId, formData, comment, referenceId });
+    setActivityHistory(history => [entry, ...history]);
+  };
+
   // Generate barcode
   const generateBarcode = (poNumber, rawMaterial) => {
     const timestamp = Date.now().toString().slice(-4);
@@ -816,7 +821,12 @@ function App() {
         )}
         
         {currentView === 'receiving' && (
-          <ReceivingView addRawMaterial={addRawMaterial} settings={settings} openAlert={openAlert} />
+          <ReceivingView
+            addRawMaterial={addRawMaterial}
+            settings={settings}
+            openAlert={openAlert}
+            logFormSubmission={addFormSubmissionLog}
+          />
         )}
 
         {currentView === 'planning' && (
@@ -830,11 +840,17 @@ function App() {
             checkoutRawMaterial={checkoutRawMaterial}
             checkinRawMaterial={checkinRawMaterial}
             openAlert={openAlert}
+            logFormSubmission={addFormSubmissionLog}
           />
         )}
         
         {currentView === 'production' && (
-          <ProductionView addProduction={addProduction} settings={settings} openAlert={openAlert} />
+          <ProductionView
+            addProduction={addProduction}
+            settings={settings}
+            openAlert={openAlert}
+            logFormSubmission={addFormSubmissionLog}
+          />
         )}
         
         {currentView === 'rawMaterials' && (

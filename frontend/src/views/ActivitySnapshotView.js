@@ -25,14 +25,16 @@ const ActivitySnapshotView = ({ activityHistory }) => {
     sortField === field ? (sortDirection === "asc" ? " \u25B2" : " \u25BC") : "";
 
   const handleSort = field => {
-    setSortField(prev => {
-      if (prev === field) {
-        setSortDirection(d => (d === "asc" ? "desc" : "asc"));
-        return field;
-      }
+    if (sortField === field) {
+      // Toggle direction when clicking the same header again
+      setSortDirection(d => (d === "asc" ? "desc" : "asc"));
+    } else {
+      // New field selected, default to ascending
+      setSortField(field);
       setSortDirection("asc");
-      return field;
-    });
+    }
+    // Ensure the field value is stored
+    setSortField(field);
   };
 
   useEffect(() => {

@@ -18,6 +18,19 @@ const ActivitySnapshotView = ({ activityHistory }) => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [columnFilters, setColumnFilters] = useState({});
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState("asc");
+
+  const handleSort = field => {
+    setSortField(prev => {
+      if (prev === field) {
+        setSortDirection(d => (d === "asc" ? "desc" : "asc"));
+        return field;
+      }
+      setSortDirection("asc");
+      return field;
+    });
+  };
 
   useEffect(() => {
     setPage(1);
@@ -38,30 +51,76 @@ const ActivitySnapshotView = ({ activityHistory }) => {
       }
       for (const [field, value] of Object.entries(columnFilters)) {
         if (!value) continue;
-        const val = value.toLowerCase();
-        if (log[field] !== undefined) {
-          if (!String(log[field]).toLowerCase().includes(val)) return false;
+        let logVal;
+        if (field === "timestamp") {
+          logVal = formatTimestamp(log.timestamp);
+        } else if (log[field] !== undefined) {
+          logVal = log[field];
         } else if (log.formData && log.formData[field] !== undefined) {
-          if (!String(log.formData[field]).toLowerCase().includes(val)) return false;
+          logVal = log.formData[field];
         }
+        if (logVal === undefined || String(logVal) !== value) return false;
       }
       return true;
     });
   }, [activityHistory, search, startDate, endDate, columnFilters]);
 
-  const pageCount = Math.max(1, Math.ceil(logs.length / PAGE_SIZE));
+  const columnOptions = useMemo(() => {
+    const opts = {};
+    const add = (field, value) => {
+      if (value === undefined || value === null) return;
+      if (!opts[field]) opts[field] = new Set();
+      opts[field].add(String(value));
+    };
+    activityHistory.forEach(log => {
+      [
+        "timestamp",
+        "action",
+        "user",
+        "itemId",
+        "fieldChanged",
+        "oldValue",
+        "newValue"
+      ].forEach(f => add(f, f === "timestamp" ? formatTimestamp(log.timestamp) : log[f]));
+      Object.entries(log.formData || {}).forEach(([f, v]) => add(f, v));
+    });
+    const result = {};
+    Object.keys(opts).forEach(k => {
+      result[k] = Array.from(opts[k]).sort();
+    });
+    return result;
+  }, [activityHistory]);
+
+  const sortedLogs = useMemo(() => {
+    const data = [...logs];
+    if (sortField) {
+      data.sort((a, b) => {
+        const getVal = l => {
+          if (sortField === "timestamp") return formatTimestamp(l.timestamp);
+          if (l[sortField] !== undefined) return l[sortField];
+          if (l.formData && l.formData[sortField] !== undefined) return l.formData[sortField];
+          return "";
+        };
+        return String(getVal(a)).localeCompare(String(getVal(b)));
+      });
+      if (sortDirection === "desc") data.reverse();
+    }
+    return data;
+  }, [logs, sortField, sortDirection]);
+
+  const pageCount = Math.max(1, Math.ceil(sortedLogs.length / PAGE_SIZE));
   const pageData = useMemo(
-    () => logs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-    [logs, page]
+    () => sortedLogs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [sortedLogs, page]
   );
 
   const fields = useMemo(() => {
     const set = new Set();
-    pageData.forEach(l => {
+    activityHistory.forEach(l => {
       Object.keys(l.formData || {}).forEach(f => set.add(f));
     });
     return Array.from(set).sort();
-  }, [pageData]);
+  }, [activityHistory]);
 
   return (
     <div>
@@ -94,15 +153,15 @@ const ActivitySnapshotView = ({ activityHistory }) => {
           <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-2 py-3 text-left">Timestamp</th>
-              <th className="px-2 py-3 text-left">Action</th>
-              <th className="px-2 py-3 text-left">User</th>
-              <th className="px-2 py-3 text-left">Item ID</th>
-              <th className="px-2 py-3 text-left">Field</th>
-              <th className="px-2 py-3 text-left">Old Value</th>
-              <th className="px-2 py-3 text-left">New Value</th>
+              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('timestamp')}>Timestamp</th>
+              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('action')}>Action</th>
+              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('user')}>User</th>
+              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('itemId')}>Item ID</th>
+              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('fieldChanged')}>Field</th>
+              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('oldValue')}>Old Value</th>
+              <th className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort('newValue')}>New Value</th>
               {fields.map(f => (
-                <th key={f} className="px-2 py-3 text-left">{f}</th>
+                <th key={f} className="px-2 py-3 text-left cursor-pointer" onClick={() => handleSort(f)}>{f}</th>
               ))}
             </tr>
             <tr>
@@ -117,14 +176,18 @@ const ActivitySnapshotView = ({ activityHistory }) => {
                 ...fields,
               ].map(col => (
                 <th key={col} className="px-2 py-1">
-                  <input
-                    type="text"
+                  <select
                     value={columnFilters[col] || ""}
                     onChange={e =>
                       setColumnFilters(prev => ({ ...prev, [col]: e.target.value }))
                     }
                     className="border px-1 py-0.5 rounded w-full"
-                  />
+                  >
+                    <option value="">All</option>
+                    {(columnOptions[col] || []).map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
                 </th>
               ))}
             </tr>

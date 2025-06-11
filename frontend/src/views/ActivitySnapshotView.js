@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
+import { exportLogs } from "../utils/activityLog";
 
 const formatTimestamp = ts => {
   const d = new Date(ts);
@@ -127,6 +128,23 @@ const ActivitySnapshotView = ({ activityHistory }) => {
     return Array.from(set).sort();
   }, [activityHistory]);
 
+  const triggerExport = () => {
+    const logsInRange = activityHistory.filter(log => {
+      if (startDate && new Date(log.timestamp) < new Date(startDate)) return false;
+      if (endDate && new Date(log.timestamp) > new Date(endDate)) return false;
+      return true;
+    });
+    const data = exportLogs(logsInRange, 'csv');
+    const blob = new Blob([data], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'activity_history.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   return (
     <div>
       <h2 className="text-3xl font-bold text-gray-900 mb-8">Activity</h2>
@@ -151,6 +169,14 @@ const ActivitySnapshotView = ({ activityHistory }) => {
             onChange={e => setEndDate(e.target.value)}
             className="border px-2 py-1 rounded"
           />
+        </div>
+        <div>
+          <button
+            onClick={triggerExport}
+            className="px-3 py-1 bg-[#09713c] text-white rounded hover:bg-[#09713c]"
+          >
+            Export CSV
+          </button>
         </div>
       </div>
       <div className="bg-white rounded-lg shadow-sm border">

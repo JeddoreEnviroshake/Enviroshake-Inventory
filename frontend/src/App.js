@@ -16,7 +16,7 @@ import ActivitySnapshotView from './views/ActivitySnapshotView';
 import ThisMonthView from './views/ThisMonthView';
 import DailyProductionSummaryView from './views/DailyProductionSummaryView';
 import AlertModal from './components/AlertModal';
-import { loadLogs, saveLogs, logActivity } from './utils/activityLog';
+import { loadLogs, saveLogs, logActivity, logFormSubmission } from './utils/activityLog';
 
 
 // Initial configuration values
@@ -277,6 +277,12 @@ function App() {
       })
     );
     setActivityHistory(history => [...entries, ...history]);
+  };
+
+  const addFormSubmissionLog = (params) => {
+    const entry = logFormSubmission(params);
+    setActivityHistory(history => [entry, ...history]);
+    return entry;
   };
 
   // Generate barcode
@@ -816,7 +822,12 @@ function App() {
         )}
         
         {currentView === 'receiving' && (
-          <ReceivingView addRawMaterial={addRawMaterial} settings={settings} openAlert={openAlert} />
+          <ReceivingView
+            addRawMaterial={addRawMaterial}
+            settings={settings}
+            openAlert={openAlert}
+            logFormSubmission={addFormSubmissionLog}
+          />
         )}
 
         {currentView === 'planning' && (
@@ -830,11 +841,17 @@ function App() {
             checkoutRawMaterial={checkoutRawMaterial}
             checkinRawMaterial={checkinRawMaterial}
             openAlert={openAlert}
+            logFormSubmission={addFormSubmissionLog}
           />
         )}
         
         {currentView === 'production' && (
-          <ProductionView addProduction={addProduction} settings={settings} openAlert={openAlert} />
+          <ProductionView
+            addProduction={addProduction}
+            settings={settings}
+            openAlert={openAlert}
+            logFormSubmission={addFormSubmissionLog}
+          />
         )}
         
         {currentView === 'rawMaterials' && (

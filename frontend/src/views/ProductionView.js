@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { PRODUCTS, TYPES } from "../constants";
-import { logFormSubmission } from "../utils/activityLog";
+
 
 const emptyBundle = { product: "", colour: "", type: "", numberOfBundles: "" };
 const emptyBatch = { batchesMade: "", colour: "" };
 
-const ProductionView = ({ addProduction, settings, openAlert }) => {
+const ProductionView = ({ addProduction, settings, openAlert, logFormSubmission }) => {
   const [basic, setBasic] = useState({ leadHandName: "", shift: "First" });
   const [production, setProduction] = useState({
     line1Production: "",

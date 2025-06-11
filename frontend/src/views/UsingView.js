@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { logFormSubmission } from "../utils/activityLog";
-const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRawMaterial, openAlert }) => {
+const UsingView = ({ rawMaterials, openCheckouts, checkoutRawMaterial, checkinRawMaterial, openAlert, logFormSubmission }) => {
   const [formData, setFormData] = useState({
     barcode: '',
     leadHandName: '',

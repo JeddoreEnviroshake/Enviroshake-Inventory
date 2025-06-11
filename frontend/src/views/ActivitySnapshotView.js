@@ -12,7 +12,7 @@ const formatTimestamp = ts => {
 
 const ActivitySnapshotView = ({ activityHistory }) => {
   const logs = useMemo(
-    () => activityHistory.filter(l => l.formData),
+    () => activityHistory,
     [activityHistory]
   );
 
@@ -35,6 +35,9 @@ const ActivitySnapshotView = ({ activityHistory }) => {
               <th className="px-2 py-3 text-left">Action</th>
               <th className="px-2 py-3 text-left">User</th>
               <th className="px-2 py-3 text-left">Item ID</th>
+              <th className="px-2 py-3 text-left">Field</th>
+              <th className="px-2 py-3 text-left">Old Value</th>
+              <th className="px-2 py-3 text-left">New Value</th>
               {fields.map(f => (
                 <th key={f} className="px-2 py-3 text-left">{f}</th>
               ))}
@@ -47,6 +50,13 @@ const ActivitySnapshotView = ({ activityHistory }) => {
                 <td className="px-2 py-2 whitespace-nowrap">{log.action}</td>
                 <td className="px-2 py-2 whitespace-nowrap">{log.user}</td>
                 <td className="px-2 py-2 whitespace-nowrap">{log.itemId || '-'}</td>
+                <td className="px-2 py-2 whitespace-nowrap">{log.fieldChanged || '-'}</td>
+                <td className="px-2 py-2 whitespace-nowrap">
+                  {log.oldValue !== null && log.oldValue !== undefined ? String(log.oldValue) : '-'}
+                </td>
+                <td className="px-2 py-2 whitespace-nowrap">
+                  {log.newValue !== null && log.newValue !== undefined ? String(log.newValue) : (log.value !== null && log.value !== undefined ? String(log.value) : '-')}
+                </td>
                 {fields.map(f => (
                   <td key={f} className="px-2 py-2 whitespace-nowrap">
                     {log.formData && log.formData[f] !== undefined ? String(log.formData[f]) : '-'}

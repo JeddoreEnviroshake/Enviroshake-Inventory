@@ -57,16 +57,6 @@ export function logActivity({
   return entry;
 }
 
-export function updateComment(logId, comment) {
-  const logs = loadLogs();
-  const idx = logs.findIndex(l => l.id === logId);
-  if (idx >= 0) {
-    logs[idx] = { ...logs[idx], comment, details: comment };
-    saveLogs(logs);
-    return logs[idx];
-  }
-  return null;
-}
 
 export function logFormSubmission({ action = '', user = 'System', itemId = null, formData = {}, comment = '', referenceId = null }) {
   return logActivity({ action, user, itemId, comment, referenceId, formData });

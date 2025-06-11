@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { PRODUCTS, TYPES } from "../constants";
+import { logFormSubmission } from "../utils/activityLog";
 
 const emptyBundle = { product: "", colour: "", type: "", numberOfBundles: "" };
 const emptyBatch = { batchesMade: "", colour: "" };
@@ -50,6 +51,19 @@ const ProductionView = ({ addProduction, settings, openAlert }) => {
         shift: basic.shift,
         numberOfBundles: parseInt(numberOfBundles) || 0,
       });
+    });
+
+    logFormSubmission({
+      action: 'Lead Hand Log',
+      user: `Lead Hand - ${basic.leadHandName}`,
+      formData: {
+        ...basic,
+        ...production,
+        bundles: JSON.stringify(bundles),
+        batches: JSON.stringify(batches),
+        binLevels: JSON.stringify(binLevels),
+        disposal: JSON.stringify(disposal)
+      }
     });
 
     setBasic({ leadHandName: "", shift: "First" });

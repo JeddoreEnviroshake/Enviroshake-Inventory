@@ -12,6 +12,7 @@ import WarehouseView from './views/WarehouseView';
 import ReportsView from './views/ReportsView';
 import SettingsView from './views/SettingsView';
 import ActivityView from './views/ActivityView';
+import ActivitySnapshotView from './views/ActivitySnapshotView';
 import ThisMonthView from './views/ThisMonthView';
 import DailyProductionSummaryView from './views/DailyProductionSummaryView';
 import AlertModal from './components/AlertModal';
@@ -779,7 +780,15 @@ function App() {
                 currentView === 'activity' ? 'bg-green-700 text-white' : 'text-gray-300'
               }`}
             >
-              📋 Activity History
+              📋 Activity
+            </button>
+            <button
+              onClick={() => setCurrentView('activityHistory')}
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
+                currentView === 'activityHistory' ? 'bg-green-700 text-white' : 'text-gray-300'
+              }`}
+            >
+              📜 Activity History
             </button>
 
             <button
@@ -855,6 +864,10 @@ function App() {
         )}
         
         {currentView === 'activity' && (
+          <ActivitySnapshotView activityHistory={activityHistory} />
+        )}
+
+        {currentView === 'activityHistory' && (
           <ActivityView activityHistory={activityHistory} setActivityHistory={setActivityHistory} />
         )}
 

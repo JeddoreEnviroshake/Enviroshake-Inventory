@@ -46,8 +46,14 @@ const ActivityView = ({ activityHistory, setActivityHistory }) => {
   const pageCount = Math.max(1, Math.ceil(filteredLogs.length / PAGE_SIZE));
   const pageData = filteredLogs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const uniqueActions = Array.from(new Set(activityHistory.map(a => a.action)));
-  const uniqueUsers = Array.from(new Set(activityHistory.map(a => a.user)));
+  const uniqueActions = useMemo(
+    () => Array.from(new Set(activityHistory.map(a => a.action))),
+    [activityHistory]
+  );
+  const uniqueUsers = useMemo(
+    () => Array.from(new Set(activityHistory.map(a => a.user))),
+    [activityHistory]
+  );
 
   const handleCommentBlur = (id, value) => {
     const updated = updateComment(id, value);

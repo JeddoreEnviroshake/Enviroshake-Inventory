@@ -14,15 +14,40 @@ const PAGE_SIZE = 10;
 
 const ActivitySnapshotView = ({ activityHistory }) => {
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [columnFilters, setColumnFilters] = useState({});
 
   useEffect(() => {
     setPage(1);
-  }, [activityHistory]);
+  }, [activityHistory, search, startDate, endDate, columnFilters]);
 
-  const logs = useMemo(
-    () => activityHistory,
-    [activityHistory]
-  );
+  const logs = useMemo(() => {
+    return activityHistory.filter(log => {
+      if (startDate && new Date(log.timestamp) < new Date(startDate)) {
+        return false;
+      }
+      if (endDate && new Date(log.timestamp) > new Date(endDate)) {
+        return false;
+      }
+      if (search) {
+        const term = search.toLowerCase();
+        const haystack = JSON.stringify(log).toLowerCase();
+        if (!haystack.includes(term)) return false;
+      }
+      for (const [field, value] of Object.entries(columnFilters)) {
+        if (!value) continue;
+        const val = value.toLowerCase();
+        if (log[field] !== undefined) {
+          if (!String(log[field]).toLowerCase().includes(val)) return false;
+        } else if (log.formData && log.formData[field] !== undefined) {
+          if (!String(log.formData[field]).toLowerCase().includes(val)) return false;
+        }
+      }
+      return true;
+    });
+  }, [activityHistory, search, startDate, endDate, columnFilters]);
 
   const pageCount = Math.max(1, Math.ceil(logs.length / PAGE_SIZE));
   const pageData = useMemo(
@@ -41,6 +66,29 @@ const ActivitySnapshotView = ({ activityHistory }) => {
   return (
     <div>
       <h2 className="text-3xl font-bold text-gray-900 mb-8">Activity</h2>
+      <div className="bg-white p-2 rounded-lg shadow-sm border mb-4 space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <input
+            type="text"
+            placeholder="Search"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="border px-2 py-1 rounded"
+          />
+          <input
+            type="date"
+            value={startDate}
+            onChange={e => setStartDate(e.target.value)}
+            className="border px-2 py-1 rounded"
+          />
+          <input
+            type="date"
+            value={endDate}
+            onChange={e => setEndDate(e.target.value)}
+            className="border px-2 py-1 rounded"
+          />
+        </div>
+      </div>
       <div className="bg-white rounded-lg shadow-sm border">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
@@ -55,6 +103,29 @@ const ActivitySnapshotView = ({ activityHistory }) => {
               <th className="px-2 py-3 text-left">New Value</th>
               {fields.map(f => (
                 <th key={f} className="px-2 py-3 text-left">{f}</th>
+              ))}
+            </tr>
+            <tr>
+              {[
+                "timestamp",
+                "action",
+                "user",
+                "itemId",
+                "fieldChanged",
+                "oldValue",
+                "newValue",
+                ...fields,
+              ].map(col => (
+                <th key={col} className="px-2 py-1">
+                  <input
+                    type="text"
+                    value={columnFilters[col] || ""}
+                    onChange={e =>
+                      setColumnFilters(prev => ({ ...prev, [col]: e.target.value }))
+                    }
+                    className="border px-1 py-0.5 rounded w-full"
+                  />
+                </th>
               ))}
             </tr>
           </thead>

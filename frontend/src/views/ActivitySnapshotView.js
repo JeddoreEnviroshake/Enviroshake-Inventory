@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 
 const formatTimestamp = ts => {
   const d = new Date(ts);
@@ -10,25 +10,40 @@ const formatTimestamp = ts => {
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 };
 
+const PAGE_SIZE = 10;
+
 const ActivitySnapshotView = ({ activityHistory }) => {
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activityHistory]);
+
   const logs = useMemo(
     () => activityHistory,
     [activityHistory]
   );
 
+  const pageCount = Math.max(1, Math.ceil(logs.length / PAGE_SIZE));
+  const pageData = useMemo(
+    () => logs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [logs, page]
+  );
+
   const fields = useMemo(() => {
     const set = new Set();
-    logs.forEach(l => {
+    pageData.forEach(l => {
       Object.keys(l.formData || {}).forEach(f => set.add(f));
     });
     return Array.from(set).sort();
-  }, [logs]);
+  }, [pageData]);
 
   return (
     <div>
       <h2 className="text-3xl font-bold text-gray-900 mb-8">Activity</h2>
-      <div className="bg-white rounded-lg shadow-sm border overflow-x-auto">
-        <table className="min-w-full text-sm">
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-2 py-3 text-left">Timestamp</th>
@@ -44,7 +59,7 @@ const ActivitySnapshotView = ({ activityHistory }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {logs.map(log => (
+            {pageData.map(log => (
               <tr key={log.id} className="hover:bg-gray-50">
                 <td className="px-2 py-2 whitespace-nowrap">{formatTimestamp(log.timestamp)}</td>
                 <td className="px-2 py-2 whitespace-nowrap">{log.action}</td>
@@ -66,9 +81,27 @@ const ActivitySnapshotView = ({ activityHistory }) => {
             ))}
           </tbody>
         </table>
+        </div>
+        <div className="flex justify-between items-center p-2 text-sm">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-2 py-1 border rounded disabled:opacity-50"
+          >
+            Prev
+          </button>
+          <span>Page {page} of {pageCount}</span>
+          <button
+            onClick={() => setPage(p => Math.min(pageCount, p + 1))}
+            disabled={page === pageCount}
+            className="px-2 py-1 border rounded disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-export default ActivitySnapshotView;
+export default React.memo(ActivitySnapshotView);

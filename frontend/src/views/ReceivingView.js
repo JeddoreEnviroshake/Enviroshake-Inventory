@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { generateCode39Barcode, renderBarcodeSVG } from "../utils/barcode";
-import { logFormSubmission } from "../utils/activityLog";
-const ReceivingView = ({ addRawMaterial, settings, openAlert }) => {
+const ReceivingView = ({ addRawMaterial, settings, openAlert, logFormSubmission }) => {
   const [formData, setFormData] = useState({
     rawMaterial: '',
     poNumber: '',

@@ -21,7 +21,7 @@ export const TYPES = [
 ];
 
 export const STAGES = [
-  'Available',
+  'Allocated',
   'Open',
   'Released',
   'Staged',

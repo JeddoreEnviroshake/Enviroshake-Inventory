@@ -128,7 +128,7 @@ const initialWarehouseInventory = [
     dateCreated: '2024-12-15',
     numberOfBundles: 25,
     warehouse: 'Dresden',
-    stage: 'Available',
+    stage: 'Allocated',
     shift: 'First'
   },
   {
@@ -140,7 +140,7 @@ const initialWarehouseInventory = [
     dateCreated: '2024-12-14',
     numberOfBundles: 18,
     warehouse: 'BC',
-    stage: 'Available',
+    stage: 'Allocated',
     shift: 'Second'
   }
 ];
@@ -649,7 +649,7 @@ function App() {
       // remove from QC and add to warehouse
       setQcInventory(inv => inv.filter(i => i.id !== id));
       setWarehouseInventory(prev => {
-        const newItem = { ...originalData, ...updatedData, stage: 'Available', id: Math.max(...prev.map(w => w.id), 0) + 1 };
+        const newItem = { ...originalData, ...updatedData, stage: 'Allocated', id: Math.max(...prev.map(w => w.id), 0) + 1 };
         return [...prev, newItem];
       });
       addActivity('QC Passed', `Product ID: ${originalData.productId} moved to Warehouse`, 'Quality Control');

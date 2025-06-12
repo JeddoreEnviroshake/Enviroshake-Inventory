@@ -29,6 +29,20 @@ const ProductionView = ({ addProduction, settings, openAlert, logFormSubmission 
     magnet: "",
     purges: "",
     others: "",
+    line1: "",
+    line2: "",
+  });
+  const [avgWeight, setAvgWeight] = useState({
+    line1Product: "",
+    line1Weight: "",
+    line2Product: "",
+    line2Weight: "",
+  });
+  const [downtime, setDowntime] = useState({
+    line1Type: "Scheduled",
+    line1Minutes: "",
+    line2Type: "Scheduled",
+    line2Minutes: "",
   });
 
   const addBundleRow = () => setBundles((b) => [...b, emptyBundle]);
@@ -59,6 +73,8 @@ const ProductionView = ({ addProduction, settings, openAlert, logFormSubmission 
       formData: {
         ...basic,
         ...production,
+        averageTileWeight: JSON.stringify(avgWeight),
+        downtime: JSON.stringify(downtime),
         bundles: JSON.stringify(bundles),
         batches: JSON.stringify(batches),
         binLevels: JSON.stringify(binLevels),
@@ -76,7 +92,9 @@ const ProductionView = ({ addProduction, settings, openAlert, logFormSubmission 
     setBundles([emptyBundle]);
     setBatches([emptyBatch]);
     setBinLevels({ rubber: 0, pp: 0, pe: 0, lxr: 0, hopper1: 0, hopper2: 0 });
-    setDisposal({ matilda: "", grinder: "", magnet: "", purges: "", others: "" });
+    setDisposal({ matilda: "", grinder: "", magnet: "", purges: "", others: "", line1: "", line2: "" });
+    setAvgWeight({ line1Product: "", line1Weight: "", line2Product: "", line2Weight: "" });
+    setDowntime({ line1Type: "Scheduled", line1Minutes: "", line2Type: "Scheduled", line2Minutes: "" });
 
     openAlert("Production logged successfully!");
   };
@@ -156,6 +174,44 @@ const ProductionView = ({ addProduction, settings, openAlert, logFormSubmission 
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
+        </div>
+      </div>
+
+        {/* Average Tile Weight */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Average Tile Weight</h3>
+          <div className="space-y-4">
+            {[
+              ["Line 1", "line1"],
+              ["Line 2", "line2"],
+            ].map(([label, key]) => (
+              <div key={key} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+                  <select
+                    value={avgWeight[`${key}Product`]}
+                    onChange={(e) => setAvgWeight({ ...avgWeight, [`${key}Product`]: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Product</option>
+                    {PRODUCTS.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Weight</label>
+                  <input
+                    type="number"
+                    value={avgWeight[`${key}Weight`]}
+                    onChange={(e) => setAvgWeight({ ...avgWeight, [`${key}Weight`]: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -362,11 +418,13 @@ const ProductionView = ({ addProduction, settings, openAlert, logFormSubmission 
           <h3 className="text-lg font-semibold mb-4">Disposal (lbs)</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              ["Matilda", "matilda"],
-              ["Grinder", "grinder"],
-              ["Magnet", "magnet"],
-              ["Purges", "purges"],
-              ["Others", "others"],
+            ["Matilda", "matilda"],
+            ["Grinder", "grinder"],
+            ["Magnet", "magnet"],
+            ["Purges", "purges"],
+            ["Others", "others"],
+            ["Line 1", "line1"],
+            ["Line 2", "line2"],
             ].map(([label, key]) => (
               <div key={key}>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
@@ -376,6 +434,41 @@ const ProductionView = ({ addProduction, settings, openAlert, logFormSubmission 
                   onChange={(e) => setDisposal({ ...disposal, [key]: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Downtime (minutes) */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-semibold mb-4">Downtime (minutes)</h3>
+          <div className="space-y-4">
+            {[
+              ["Line 1", "line1"],
+              ["Line 2", "line2"],
+            ].map(([label, key]) => (
+              <div key={key} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+                  <select
+                    value={downtime[`${key}Type`]}
+                    onChange={(e) => setDowntime({ ...downtime, [`${key}Type`]: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="Unscheduled">Unscheduled</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Minutes</label>
+                  <input
+                    type="number"
+                    placeholder="Minutes"
+                    value={downtime[`${key}Minutes`]}
+                    onChange={(e) => setDowntime({ ...downtime, [`${key}Minutes`]: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
             ))}
           </div>

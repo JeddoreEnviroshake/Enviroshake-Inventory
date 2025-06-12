@@ -365,7 +365,7 @@ const WarehouseView = ({
               ) : (
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    item.stage === 'Available' || item.stage === 'Pass'
+                    item.stage === 'Allocated' || item.stage === 'Pass'
                       ? 'bg-green-100 text-green-800'
                       : item.stage === 'Open' || item.stage === 'Pending Review'
                       ? 'bg-blue-100 text-blue-800'

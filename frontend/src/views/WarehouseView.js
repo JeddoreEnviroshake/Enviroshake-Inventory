@@ -3,8 +3,8 @@ import { PRODUCTS, WAREHOUSES, TYPES, STAGES } from "../constants";
 const WarehouseView = ({
   inventory,
   allInventory,
-  selectedWarehouse,
-  setSelectedWarehouse,
+  selectedWarehouse = 'All',
+  setSelectedWarehouse = () => {},
   selectedStage,
   setSelectedStage,
   updateWarehouseItem,
@@ -13,6 +13,9 @@ const WarehouseView = ({
   transferWarehouseItem,
   settings,
   openAlert,
+  title = 'Warehouse Inventory',
+  stageOptions = STAGES,
+  showWarehouseFilter = true,
 }) => {
   const [editingItem, setEditingItem] = useState(null);
   const [editFormData, setEditFormData] = useState({});
@@ -135,7 +138,9 @@ const WarehouseView = ({
   const calculateSummary = () => {
     const filteredData = allInventory.filter(
       item =>
-        (selectedWarehouse === 'All' || item.warehouse === selectedWarehouse) &&
+        (showWarehouseFilter
+          ? selectedWarehouse === 'All' || item.warehouse === selectedWarehouse
+          : true) &&
         (selectedStage === 'All' || item.stage === selectedStage)
     );
 
@@ -166,7 +171,7 @@ const WarehouseView = ({
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">Warehouse Inventory</h2>
+        <h2 className="text-3xl font-bold text-gray-900">{title}</h2>
 
         <div className="flex items-center gap-4">
           <select
@@ -175,21 +180,23 @@ const WarehouseView = ({
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="All">All Stages</option>
-            {STAGES.map(stage => (
+            {stageOptions.map(stage => (
               <option key={stage} value={stage}>{stage}</option>
             ))}
           </select>
 
-          <select
-            value={selectedWarehouse}
-            onChange={(e) => setSelectedWarehouse(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="All">All Warehouses</option>
-            {WAREHOUSES.map(warehouse => (
-              <option key={warehouse} value={warehouse}>{warehouse}</option>
-            ))}
-          </select>
+          {showWarehouseFilter && (
+            <select
+              value={selectedWarehouse}
+              onChange={(e) => setSelectedWarehouse(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="All">All Warehouses</option>
+              {WAREHOUSES.map(warehouse => (
+                <option key={warehouse} value={warehouse}>{warehouse}</option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
 
@@ -197,8 +204,9 @@ const WarehouseView = ({
       {Object.keys(summary).length > 0 && (
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            {(selectedWarehouse === 'All' ? 'All Warehouses' : selectedWarehouse) +
-              ' - ' +
+            {(showWarehouseFilter
+              ? (selectedWarehouse === 'All' ? 'All Warehouses' : selectedWarehouse) + ' - '
+              : '') +
               (selectedStage === 'All' ? 'All Stages' : selectedStage)} Summary
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -348,7 +356,7 @@ const WarehouseView = ({
                   }
                   className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                 >
-                  {STAGES.map(s => (
+                  {stageOptions.map(s => (
                     <option key={s} value={s}>
                       {s}
                     </option>
@@ -357,14 +365,16 @@ const WarehouseView = ({
               ) : (
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    item.stage === 'Available'
+                    item.stage === 'Available' || item.stage === 'Pass'
                       ? 'bg-green-100 text-green-800'
-                      : item.stage === 'Open'
+                      : item.stage === 'Open' || item.stage === 'Pending Review'
                       ? 'bg-blue-100 text-blue-800'
-                      : item.stage === 'Released'
+                      : item.stage === 'Released' || item.stage === 'Quarantine'
                       ? 'bg-yellow-100 text-yellow-800'
-                      : item.stage === 'Staged'
+                      : item.stage === 'Staged' || item.stage === 'Add to Regrind in Queue'
                       ? 'bg-purple-100 text-purple-800'
+                      : item.stage === 'Disposal'
+                      ? 'bg-red-100 text-red-800'
                       : 'bg-gray-100 text-gray-800'
                   }`}
                 >

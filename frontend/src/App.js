@@ -9,6 +9,7 @@ import ProductionView from './views/ProductionView';
 import PlanningView from './views/PlanningView';
 import RawMaterialsView from './views/RawMaterialsView';
 import WarehouseView from './views/WarehouseView';
+import QCCheckpointView from './views/QCCheckpointView';
 import ReportsView from './views/ReportsView';
 import SettingsView from './views/SettingsView';
 import ActivitySnapshotView from './views/ActivitySnapshotView';
@@ -144,6 +145,8 @@ const initialWarehouseInventory = [
   }
 ];
 
+const initialQCInventory = [];
+
 const initialActivityHistory = [
   {
     id: 1,
@@ -212,10 +215,12 @@ function App() {
   });
   const [rawMaterials, setRawMaterials] = useState(() => loadFromLocalStorage('enviroshake_rawMaterials', initialRawMaterials));
   const [warehouseInventory, setWarehouseInventory] = useState(() => loadFromLocalStorage('enviroshake_warehouseInventory', initialWarehouseInventory));
+  const [qcInventory, setQcInventory] = useState(() => loadFromLocalStorage('enviroshake_qcInventory', initialQCInventory));
   const [activityHistory, setActivityHistory] = useState(() => loadLogs().length ? loadLogs() : initialActivityHistory);
   const [openCheckouts, setOpenCheckouts] = useState(() => loadFromLocalStorage('enviroshake_openCheckouts', []));
   const [selectedWarehouse, setSelectedWarehouse] = useState('All');
   const [selectedStage, setSelectedStage] = useState('All');
+  const [selectedQCStage, setSelectedQCStage] = useState('All');
   const [alertMessage, setAlertMessage] = useState('');
   const [showAlert, setShowAlert] = useState(false);
 
@@ -238,6 +243,10 @@ function App() {
   useEffect(() => {
     saveToLocalStorage('enviroshake_warehouseInventory', warehouseInventory);
   }, [warehouseInventory]);
+
+  useEffect(() => {
+    saveToLocalStorage('enviroshake_qcInventory', qcInventory);
+  }, [qcInventory]);
 
   useEffect(() => {
     saveLogs(activityHistory);
@@ -537,14 +546,14 @@ function App() {
   const addProduction = (productionData) => {
     const productId = generateProductId();
 
-    setWarehouseInventory(prevInventory => {
+    setQcInventory(prevInventory => {
       const newProduction = {
         ...productionData,
         id: Math.max(...prevInventory.map(w => w.id), 0) + 1,
         productId,
         dateCreated: new Date().toISOString().split('T')[0],
         warehouse: 'Dresden', // All production starts in Dresden
-        stage: 'Available', // Default stage
+        stage: 'Pending Review', // Default stage in QC
         shift: productionData.shift,
         leadHandName: productionData.leadHandName
       };
@@ -564,7 +573,7 @@ function App() {
   // Update warehouse inventory with enhanced logging
   const updateWarehouseItem = (id, updatedData, originalData) => {
     setWarehouseInventory(inventory =>
-      inventory.map(item => 
+      inventory.map(item =>
         item.id === id ? { ...item, ...updatedData } : item
       )
     );
@@ -584,6 +593,79 @@ function App() {
         changes,
         'Warehouse Manager'
       );
+    }
+  };
+
+  // QC inventory operations
+  const deleteQCItem = (id) => {
+    const item = qcInventory.find(q => q.id === id);
+    setQcInventory(qcInventory.filter(q => q.id !== id));
+    addActivity(
+      'QC Item Deleted',
+      `Product ID: ${item.productId}, ${item.product} - ${item.colour} (${item.type}), ${item.numberOfBundles} bundles`,
+      'Quality Control'
+    );
+  };
+
+  const splitQCItem = (id, splitQuantity) => {
+    const originalItem = qcInventory.find(q => q.id === id);
+    const remainingQuantity = originalItem.numberOfBundles - splitQuantity;
+
+    const updatedOriginal = { ...originalItem, numberOfBundles: remainingQuantity };
+    const newSplitItem = { ...originalItem, id: Math.max(...qcInventory.map(w => w.id), 0) + 1, numberOfBundles: splitQuantity };
+
+    setQcInventory(inv => inv.map(i => i.id === id ? updatedOriginal : i).concat(newSplitItem));
+
+    addActivity(
+      'QC Item Split',
+      `Product ID: ${originalItem.productId}, Split ${splitQuantity} bundles from ${originalItem.numberOfBundles} total`,
+      'Quality Control'
+    );
+  };
+
+  const transferQCItem = (id, quantity, targetWarehouse) => {
+    const originalItem = qcInventory.find(q => q.id === id);
+    if (!originalItem) return;
+
+    if (quantity === originalItem.numberOfBundles) {
+      const updatedItem = { ...originalItem, warehouse: targetWarehouse };
+      setQcInventory(inv => inv.map(i => i.id === id ? updatedItem : i));
+    } else {
+      const remainingQuantity = originalItem.numberOfBundles - quantity;
+      const updatedOriginal = { ...originalItem, numberOfBundles: remainingQuantity };
+      const newTransferItem = { ...originalItem, id: Math.max(...qcInventory.map(w => w.id), 0) + 1, numberOfBundles: quantity, warehouse: targetWarehouse };
+      setQcInventory(inv => inv.map(i => i.id === id ? updatedOriginal : i).concat(newTransferItem));
+    }
+
+    addActivity(
+      'QC Transfer',
+      `Product ID: ${originalItem.productId}, Transferred ${quantity} bundles to ${targetWarehouse}`,
+      'Quality Control'
+    );
+  };
+
+  const updateQCItem = (id, updatedData, originalData) => {
+    if (updatedData.stage === 'Pass') {
+      // remove from QC and add to warehouse
+      setQcInventory(inv => inv.filter(i => i.id !== id));
+      setWarehouseInventory(prev => {
+        const newItem = { ...originalData, ...updatedData, stage: 'Available', id: Math.max(...prev.map(w => w.id), 0) + 1 };
+        return [...prev, newItem];
+      });
+      addActivity('QC Passed', `Product ID: ${originalData.productId} moved to Warehouse`, 'Quality Control');
+    } else {
+      setQcInventory(inv => inv.map(i => i.id === id ? { ...i, ...updatedData } : i));
+
+      const changes = {};
+      Object.keys(updatedData).forEach(key => {
+        if (originalData[key] !== updatedData[key]) {
+          changes[key] = { from: originalData[key], to: updatedData[key] };
+        }
+      });
+
+      if (Object.keys(changes).length > 0) {
+        addEditActivity('QC Inventory Edited', originalData.productId, changes, 'Quality Control');
+      }
     }
   };
 
@@ -664,6 +746,10 @@ function App() {
       (selectedStage === 'All' || item.stage === selectedStage)
   );
 
+  const filteredQCInventory = qcInventory.filter(
+    item => selectedQCStage === 'All' || item.stage === selectedQCStage
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
@@ -734,7 +820,16 @@ function App() {
             >
               🧱 Raw Materials
             </button>
-            
+
+            <button
+              onClick={() => setCurrentView('qc')}
+              className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
+                currentView === 'qc' ? 'bg-green-700 text-white' : 'text-gray-300'
+              }`}
+            >
+              🧪 QC Checkpoint
+            </button>
+
             <button
               onClick={() => setCurrentView('warehouse')}
               className={`block w-full text-left py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors ${
@@ -846,14 +941,29 @@ function App() {
         )}
         
         {currentView === 'rawMaterials' && (
-          <RawMaterialsView 
-            rawMaterials={rawMaterials} 
+          <RawMaterialsView
+            rawMaterials={rawMaterials}
             updateRawMaterial={updateRawMaterial}
             deleteRawMaterial={deleteRawMaterial}
             settings={settings}
           />
         )}
-        
+
+        {currentView === 'qc' && (
+          <QCCheckpointView
+            inventory={filteredQCInventory}
+            allInventory={qcInventory}
+            selectedStage={selectedQCStage}
+            setSelectedStage={setSelectedQCStage}
+            updateWarehouseItem={updateQCItem}
+            deleteWarehouseItem={deleteQCItem}
+            splitWarehouseItem={splitQCItem}
+            transferWarehouseItem={transferQCItem}
+            settings={settings}
+            openAlert={openAlert}
+          />
+        )}
+
         {currentView === 'warehouse' && (
           <WarehouseView
             inventory={filteredWarehouseInventory}

@@ -28,3 +28,11 @@ export const STAGES = [
   'Shipped',
   'Transfer'
 ];
+
+export const QC_STAGES = [
+  'Pending Review',
+  'Pass',
+  'Quarantine',
+  'Add to Regrind in Queue',
+  'Disposal'
+];

@@ -1003,6 +1003,7 @@ function App() {
             rawMaterials={rawMaterials}
             warehouseInventory={warehouseInventory}
             activityHistory={activityHistory}
+            qcInventory={qcInventory}
           />
         )}
 

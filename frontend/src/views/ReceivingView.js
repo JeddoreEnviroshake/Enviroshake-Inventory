@@ -100,8 +100,9 @@ const ReceivingView = ({ addRawMaterial, settings, openAlert, logFormSubmission 
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Raw Material</label>
+              <label htmlFor="raw-material" className="block text-sm font-medium text-gray-700 mb-1">Raw Material</label>
               <select
+                id="raw-material"
                 value={formData.rawMaterial}
                 onChange={(e) => setFormData({...formData, rawMaterial: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -118,8 +119,9 @@ const ReceivingView = ({ addRawMaterial, settings, openAlert, logFormSubmission 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">PO Number</label>
+              <label htmlFor="po-number" className="block text-sm font-medium text-gray-700 mb-1">PO Number</label>
               <input
+                id="po-number"
                 type="text"
                 value={formData.poNumber}
                 onChange={(e) => setFormData({...formData, poNumber: e.target.value})}
@@ -130,8 +132,9 @@ const ReceivingView = ({ addRawMaterial, settings, openAlert, logFormSubmission 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+              <label htmlFor="vendor" className="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
               <select
+                id="vendor"
                 value={formData.vendor}
                 onChange={(e) => setFormData({...formData, vendor: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -148,8 +151,9 @@ const ReceivingView = ({ addRawMaterial, settings, openAlert, logFormSubmission 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Bags Received</label>
+              <label htmlFor="bags-received" className="block text-sm font-medium text-gray-700 mb-1">Bags Received</label>
               <input
+                id="bags-received"
                 type="number"
                 value={formData.bagsReceived}
                 onChange={(e) => setFormData({...formData, bagsReceived: e.target.value})}
@@ -161,8 +165,9 @@ const ReceivingView = ({ addRawMaterial, settings, openAlert, logFormSubmission 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Weight Received (lbs)</label>
+              <label htmlFor="starting-weight" className="block text-sm font-medium text-gray-700 mb-1">Weight Received (lbs)</label>
               <input
+                id="starting-weight"
                 type="number"
                 step="0.1"
                 value={formData.startingWeight}

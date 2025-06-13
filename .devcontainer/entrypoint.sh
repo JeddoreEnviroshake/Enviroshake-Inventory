@@ -31,7 +31,7 @@ fi
 
 # Update frontend environment variables if frontend directory exists
 if [ -d "/app/frontend" ]; then
-    echo "WDS_SOCKET_PORT=443" > /app/frontend/.env
+    echo "WDS_SOCKET_PORT=3000" > /app/frontend/.env
     echo "REACT_APP_BACKEND_URL=${preview_endpoint}" >> /app/frontend/.env
 fi
 
